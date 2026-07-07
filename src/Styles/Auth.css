@@ -1,0 +1,146 @@
+
+/* Auth.css */
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Inter,sans-serif;
+}
+
+.auth-container{
+  display:flex;
+  height:100vh;
+  background:#F8FAFC;
+}
+
+.auth-left{
+  flex:1;
+  background:linear-gradient(
+    135deg,
+    #0B1320,
+    #1E293B
+  );
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:60px;
+}
+
+.overlay{
+  max-width:500px;
+}
+
+.overlay h1{
+  font-size:48px;
+  margin-bottom:20px;
+}
+
+.overlay p{
+  font-size:18px;
+  line-height:1.7;
+  opacity:.9;
+}
+
+.quote-box{
+  margin-top:40px;
+  padding:24px;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:20px;
+  backdrop-filter:blur(10px);
+}
+
+.auth-right{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.auth-card{
+  width:420px;
+  background:white;
+  padding:40px;
+  border-radius:24px;
+  box-shadow:0 10px 40px rgba(0,0,0,.08);
+}
+
+.auth-card h2{
+  font-size:32px;
+  color:#0F172A;
+  margin-bottom:10px;
+}
+
+.subtitle{
+  color:#64748B;
+  margin-bottom:30px;
+}
+
+.input-group{
+  margin-bottom:20px;
+}
+
+.input-group label{
+  display:block;
+  margin-bottom:8px;
+  font-weight:600;
+  color:#334155;
+}
+
+.input-group input,
+.input-group select{
+  width:100%;
+  padding:14px;
+  border:1px solid #E2E8F0;
+  border-radius:12px;
+  font-size:15px;
+}
+
+.input-group input:focus,
+.input-group select:focus{
+  outline:none;
+  border-color:#10B981;
+}
+
+.remember{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:24px;
+  font-size:14px;
+}
+
+.remember a{
+  color:#3B82F6;
+  text-decoration:none;
+}
+
+.login-btn{
+  width:100%;
+  padding:15px;
+  border:none;
+  background:#10B981;
+  color:white;
+  font-size:16px;
+  border-radius:14px;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.login-btn:hover{
+  background:#059669;
+}
+
+.bottom-text{
+  margin-top:24px;
+  text-align:center;
+  color:#64748B;
+}
+
+.bottom-text a{
+  color:#10B981;
+  text-decoration:none;
+  font-weight:600;
+}
