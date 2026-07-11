@@ -1,23 +1,13 @@
+// Compliance Dashboard\client\src\App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Settings from './pages/Settings';
+import ComplianceDashboard from './pages/Compliance';
+import './assets/Compliance.css';
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </div>
-    </Router>
+    <div className="App">
+      <ComplianceDashboard />
+    </div>
   );
 }
 

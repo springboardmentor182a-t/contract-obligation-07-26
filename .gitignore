@@ -2,8 +2,11 @@ node_modules/
 dist/
 build/
 coverage/
+package-lock.json
 .env
 logs/
 *.log
 .DS_Store
 Thumbs.db
+__pycache__/
+.venv/
