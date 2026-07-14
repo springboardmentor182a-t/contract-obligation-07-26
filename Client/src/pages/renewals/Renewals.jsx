@@ -1,281 +1,349 @@
-import React, { useState } from 'react';
-import { 
-  CalendarClock, Search, Filter, AlertTriangle, 
-  RefreshCw, CheckCircle, Clock, DollarSign,
-  ChevronRight, CalendarDays, ArrowRight
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Search, AlertTriangle, RefreshCw, CheckCircle, Clock,
+  XCircle, CalendarClock, Eye, PlayCircle, Bell, Filter,
+  TrendingUp, ArrowUpRight, Plus
 } from 'lucide-react';
-import FormInput from '../../components/Form/FormInput';
 import Button from '../../components/Buttons/Button';
-import Checkbox from '../../components/Form/Checkbox';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Doughnut } from 'react-chartjs-2';
-import '../contracts/Contracts.css';
 import './Renewals.css';
-
-ChartJS.register(ArcElement, Tooltip, Legend);
+import { API_BASE } from "../../constants";
 
 const Renewals = () => {
+  const navigate = useNavigate();
+  const [renewals, setRenewals] = useState([]);
+  const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState('All');
-  const [sortBy, setSortBy] = useState('expiryDate');
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [actionLoading, setActionLoading] = useState(null);
 
-  const handleBulkAction = () => {
-    if (selectedRows.length === 0) {
-      alert('Please select at least one renewal for bulk action.');
-      return;
-    }
-    alert(`Bulk action initiated for ${selectedRows.length} items:\n${selectedRows.join(', ')}`);
-    setSelectedRows([]);
-  };
-
-  const handleSelectRow = (id) => {
-    if (selectedRows.includes(id)) {
-      setSelectedRows(selectedRows.filter(rowId => rowId !== id));
-    } else {
-      setSelectedRows([...selectedRows, id]);
-    }
-  };
-
-  const renewalsData = [
-    { id: 'REN-001', contractId: 'CON-2023-089', entity: 'Adobe Systems', type: 'Software License', expiryDate: '2023-10-15', daysLeft: 12, value: '$12,000', status: 'Action Required', autoRenew: false },
-    { id: 'REN-002', contractId: 'CON-2023-045', entity: 'Downtown Plaza', type: 'Office Lease', expiryDate: '2023-11-30', daysLeft: 58, value: '$50,000/yr', status: 'Negotiating', autoRenew: false },
-    { id: 'REN-003', contractId: 'CON-2023-001', entity: 'TechCorp', type: 'Vendor Agreement', expiryDate: '2023-12-31', daysLeft: 89, value: '$120,000', status: 'Auto-Renewing', autoRenew: true },
-    { id: 'REN-004', contractId: 'CON-2022-404', entity: 'GlobalTech', type: 'Partnership', expiryDate: '2023-10-05', daysLeft: 2, value: '$250,000', status: 'Critical', autoRenew: false },
-    { id: 'REN-005', contractId: 'CON-2023-112', entity: 'HostProvider', type: 'Cloud Services', expiryDate: '2024-03-15', daysLeft: 164, value: '$45,000', status: 'On Track', autoRenew: true },
+  const categories = [
+    'All', 'Software License', 'Cloud Services', 'IT Services',
+    'Communication', 'Security', 'HR Software', 'ERP Software',
+    'Network Equipment'
   ];
 
-  const getStatusBadge = (status) => {
-    switch(status) {
-      case 'On Track': return <span className="rnw-status-pill rnw-success"><CheckCircle size={14} /> {status}</span>;
-      case 'Critical': return <span className="rnw-status-pill rnw-danger"><AlertTriangle size={14} /> {status}</span>;
-      case 'Action Required': return <span className="rnw-status-pill rnw-warning"><Clock size={14} /> Action Needed</span>;
-      case 'Auto-Renewing': return <span className="rnw-status-pill rnw-info"><RefreshCw size={14} /> {status}</span>;
-      case 'Negotiating': return <span className="rnw-status-pill rnw-primary"><DollarSign size={14} /> {status}</span>;
-      default: return <span className="rnw-status-pill">{status}</span>;
+  const statuses = ['All', 'Upcoming', 'In Progress', 'Renewed', 'Expired', 'Cancelled'];
+
+  const fetchSummary = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/renewals/summary`);
+      if (res.ok) {
+        const data = await res.json();
+        setSummary(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch summary:', err);
+    }
+  }, []);
+
+  const fetchRenewals = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (categoryFilter !== 'All') params.append('category', categoryFilter);
+      if (statusFilter !== 'All') params.append('status', statusFilter);
+
+      const res = await fetch(`${API_BASE}/renewals/?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setRenewals(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch renewals:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchTerm, categoryFilter, statusFilter]);
+
+  useEffect(() => {
+    fetchSummary();
+    fetchRenewals();
+  }, [fetchSummary, fetchRenewals]);
+
+  const handleStartRenewal = async (renewalId) => {
+    setActionLoading(renewalId);
+    try {
+      const res = await fetch(`${API_BASE}/renewals/${renewalId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'In Progress', performed_by: 'Current User' }),
+      });
+      if (res.ok) {
+        await fetchRenewals();
+        await fetchSummary();
+      }
+    } catch (err) {
+      console.error('Failed to start renewal:', err);
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  const getDaysLeftVisual = (days) => {
-    let colorClass = 'bg-success';
-    let urgencyText = 'Safe';
-    if (days <= 30) { colorClass = 'bg-danger'; urgencyText = 'Urgent'; }
-    else if (days <= 90) { colorClass = 'bg-warning'; urgencyText = 'Upcoming'; }
+  const handleSendReminder = async (renewalId) => {
+    setActionLoading(`remind-${renewalId}`);
+    try {
+      // Schedule a reminder for 7 days from now
+      const reminderDate = new Date();
+      reminderDate.setDate(reminderDate.getDate() + 7);
 
-    const maxDays = 365;
-    const widthPercentage = Math.min(100, Math.max(5, (days / maxDays) * 100));
+      const res = await fetch(`${API_BASE}/renewals/${renewalId}/reminder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reminder_date: reminderDate.toISOString(),
+          message: 'Renewal action required — please review',
+        }),
+      });
+      if (res.ok) {
+        alert('Reminder scheduled successfully!');
+        await fetchRenewals();
+      }
+    } catch (err) {
+      console.error('Failed to schedule reminder:', err);
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
+  const getStatusBadge = (status) => {
+    const config = {
+      'Upcoming':    { icon: <Clock size={13} />, className: 'rnw-badge-upcoming' },
+      'In Progress': { icon: <RefreshCw size={13} />, className: 'rnw-badge-progress' },
+      'Renewed':     { icon: <CheckCircle size={13} />, className: 'rnw-badge-renewed' },
+      'Expired':     { icon: <XCircle size={13} />, className: 'rnw-badge-expired' },
+      'Cancelled':   { icon: <XCircle size={13} />, className: 'rnw-badge-cancelled' },
+    };
+    const c = config[status] || { icon: null, className: '' };
     return (
-      <div className="days-visual-container">
-        <div className="days-header">
-          <span className="days-count">{days} days</span>
-          <span className={`days-urgency text-${colorClass.split('-')[1]}`}>{urgencyText}</span>
-        </div>
-        <div className="days-track">
-          <div className={`days-fill ${colorClass}`} style={{ width: `${widthPercentage}%` }}></div>
-        </div>
-      </div>
+      <span className={`rnw-status-badge ${c.className}`}>
+        {c.icon} {status}
+      </span>
     );
   };
 
-  let filteredItems = renewalsData.filter(item => {
-    const matchesSearch = item.entity.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          item.contractId.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    if (activeFilter === 'Critical') return matchesSearch && item.daysLeft <= 30;
-    if (activeFilter === 'Upcoming 90 Days') return matchesSearch && item.daysLeft <= 90 && item.daysLeft > 30;
-    if (activeFilter === 'Auto-Renew') return matchesSearch && item.autoRenew;
-    
-    return matchesSearch;
-  });
-
-  // Apply sorting
-  filteredItems.sort((a, b) => {
-    if (sortBy === 'expiryDate') {
-      return a.daysLeft - b.daysLeft;
-    } else if (sortBy === 'value') {
-      // Parse string values like '$120,000' or '$50,000/yr' to numbers for sorting
-      const valA = parseFloat(a.value.replace(/[^0-9.]/g, ''));
-      const valB = parseFloat(b.value.replace(/[^0-9.]/g, ''));
-      return valB - valA; // Descending value
+  const getDaysLeftDisplay = (days) => {
+    if (days < 0) {
+      return <span className="rnw-days-text rnw-days-expired">Expired</span>;
     }
-    return 0;
-  });
+    let urgencyClass = 'rnw-days-safe';
+    if (days <= 30) urgencyClass = 'rnw-days-critical';
+    else if (days <= 90) urgencyClass = 'rnw-days-warning';
 
-  const handleSelectAll = () => {
-    if (selectedRows.length === filteredItems.length && filteredItems.length > 0) {
-      setSelectedRows([]);
-    } else {
-      setSelectedRows(filteredItems.map(item => item.id));
-    }
+    return <span className={`rnw-days-text ${urgencyClass}`}>{days}d</span>;
   };
 
-  const chartData = {
-    labels: ['Critical (< 30 days)', 'Upcoming (30-90 days)', 'On Track (> 90 days)', 'Auto-Renewing'],
-    datasets: [
-      {
-        data: [2, 1, 1, 2], // Derived from the mock data
-        backgroundColor: [
-          '#ef4444', // Danger/Critical
-          '#f59e0b', // Warning/Upcoming
-          '#10b981', // Success/On Track
-          '#3b82f6', // Info/Auto-Renewing
-        ],
-        borderWidth: 0,
-        hoverOffset: 8
-      }
-    ]
+  const getActionRequired = (renewal) => {
+    if (renewal.status === 'Expired') return 'Review Required';
+    if (renewal.status === 'Cancelled') return 'N/A';
+    if (renewal.status === 'Renewed') return 'On Track';
+    if (renewal.status === 'In Progress') return 'Initiate Renewal';
+    if (renewal.days_until_expiry <= 30) return 'Initiate Renewal';
+    return 'Monitor Closely';
   };
 
-  const chartOptions = {
-    maintainAspectRatio: false,
-    cutout: '75%',
-    plugins: {
-      legend: {
-        position: 'right',
-        labels: {
-          usePointStyle: true,
-          padding: 20,
-          font: { family: 'inherit', size: 13 }
-        }
-      }
-    }
+  const formatValue = (value) => {
+    if (value >= 1000000) return `$${(value / 1000000).toFixed(2)}M`;
+    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+    return `$${value.toFixed(0)}`;
   };
+
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString('en-CA');
+  };
+
+  const summaryCards = summary ? [
+    {
+      label: 'Upcoming',
+      count: summary.upcoming,
+      icon: <Clock size={22} />,
+      colorClass: 'rnw-card-upcoming',
+      desc: 'Pending renewal'
+    },
+    {
+      label: 'In Progress',
+      count: summary.in_progress,
+      icon: <RefreshCw size={22} />,
+      colorClass: 'rnw-card-progress',
+      desc: 'Under review'
+    },
+    {
+      label: 'Renewed',
+      count: summary.renewed,
+      icon: <CheckCircle size={22} />,
+      colorClass: 'rnw-card-renewed',
+      desc: 'Successfully renewed'
+    },
+    {
+      label: 'Expired',
+      count: summary.expired,
+      icon: <XCircle size={22} />,
+      colorClass: 'rnw-card-expired',
+      desc: 'Past expiry date'
+    },
+    {
+      label: 'Cancelled',
+      count: summary.cancelled,
+      icon: <AlertTriangle size={22} />,
+      colorClass: 'rnw-card-cancelled',
+      desc: 'Renewal cancelled'
+    },
+  ] : [];
 
   return (
     <div className="renewals-dashboard fade-in">
+      {/* Header */}
       <div className="rnw-header-section">
         <div className="rnw-header-content">
-          <h1 className="rnw-title">Renewal Command Center</h1>
-          <p className="rnw-subtitle">Proactively manage upcoming contract expirations and negotiate better terms.</p>
+          <h1 className="rnw-title">Renewal Dashboard</h1>
+          <p className="rnw-subtitle">Monitor and manage upcoming contract renewals</p>
         </div>
         <div className="rnw-header-actions">
-          <Button variant="outline" icon={CalendarDays}>View Calendar</Button>
-          <Button variant="primary" icon={ArrowRight} onClick={handleBulkAction}>Bulk Action</Button>
+          <Button variant="outline" icon={TrendingUp}>Export</Button>
+          <Button variant="primary" icon={Plus}>Add Renewal</Button>
         </div>
       </div>
 
-      <div className="rnw-summary-cards">
-        <div className="rnw-card glass-orange">
-          <div className="rnw-card-icon"><AlertTriangle size={24} /></div>
-          <div className="rnw-card-data">
-            <h3>Needs Attention</h3>
-            <div className="rnw-val">2</div>
-            <p>Expiring in next 30 days</p>
-          </div>
-        </div>
-        
-        <div className="rnw-card glass-blue">
-          <div className="rnw-card-icon"><RefreshCw size={24} /></div>
-          <div className="rnw-card-data">
-            <h3>Auto-Renewing</h3>
-            <div className="rnw-val">14</div>
-            <p>Next 90 days</p>
-          </div>
-        </div>
-
-        <div className="rnw-card glass-green">
-          <div className="rnw-card-icon"><DollarSign size={24} /></div>
-          <div className="rnw-card-data">
-            <h3>Value at Risk</h3>
-            <div className="rnw-val">$312k</div>
-            <p>From upcoming expirations</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="rnw-chart-section animate-slide-up" style={{ animationDelay: '0.05s' }}>
-        <div className="rnw-chart-card">
-          <div className="rnw-chart-header">
-            <h3>Renewal Status Overview</h3>
-            <p className="text-muted" style={{fontSize: '0.85rem', marginTop: '0.2rem'}}>Distribution of upcoming expirations</p>
-          </div>
-          <div className="rnw-chart-container" style={{ height: '280px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Doughnut data={chartData} options={chartOptions} />
-          </div>
-        </div>
-      </div>
-
-      <div className="rnw-main-area animate-slide-up" style={{ animationDelay: '0.1s' }}>
-        
-        <div className="rnw-filter-tabs">
-          {['All', 'Critical', 'Upcoming 90 Days', 'Auto-Renew'].map(tab => (
-            <button 
-              key={tab} 
-              className={`rnw-filter-btn ${activeFilter === tab ? 'active' : ''}`}
-              onClick={() => setActiveFilter(tab)}
-            >
-              {tab}
-            </button>
+      {/* Stat Cards */}
+      {summary && (
+        <div className="rnw-stat-cards">
+          {summaryCards.map((card) => (
+            <div key={card.label} className={`rnw-stat-card ${card.colorClass}`}>
+              <div className="rnw-stat-icon">{card.icon}</div>
+              <div className="rnw-stat-info">
+                <div className="rnw-stat-count">{card.count}</div>
+                <div className="rnw-stat-label">{card.label}</div>
+                <div className="rnw-stat-desc">{card.desc}</div>
+              </div>
+            </div>
           ))}
         </div>
+      )}
 
-        <div className="rnw-table-wrapper">
-          <div className="rnw-toolbar">
-            <div className="rnw-search">
-              <Search size={18} className="search-icon" />
-              <input type="text" placeholder="Search by entity or contract ID..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-            </div>
-            <select 
+      {/* Alert Banner */}
+      {summary && summary.expiring_soon_no_action > 0 && (
+        <div className="rnw-alert-banner">
+          <AlertTriangle size={18} />
+          <span>
+            <strong>{summary.expiring_soon_no_action} contract{summary.expiring_soon_no_action > 1 ? 's' : ''}</strong> expiring within 30 days with no renewal action started.
+            Total value at risk: <strong>{formatValue(summary.total_value_at_risk)}</strong>
+          </span>
+        </div>
+      )}
+
+      {/* Contracts Table Section */}
+      <div className="rnw-main-area animate-slide-up">
+        <div className="rnw-section-header">
+          <h2>Contracts Requiring Renewal Action</h2>
+          <span className="rnw-view-all" onClick={() => setStatusFilter('All')}>
+            View All Contracts →
+          </span>
+        </div>
+
+        {/* Filter Bar */}
+        <div className="rnw-toolbar">
+          <div className="rnw-search">
+            <Search size={18} className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search contracts, vendors..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="rnw-filters">
+            <select
               className="rnw-select"
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
             >
-              <option value="expiryDate">Sort by: Expiry Date</option>
-              <option value="value">Sort by: Value</option>
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat === 'All' ? 'All Categories' : cat}</option>
+              ))}
+            </select>
+            <select
+              className="rnw-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              {statuses.map(s => (
+                <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>
+              ))}
             </select>
           </div>
+        </div>
 
-          <table className="rnw-data-table">
-            <thead>
-              <tr>
-                <th style={{ width: '40px' }}>
-                  <Checkbox 
-                    checked={filteredItems.length > 0 && selectedRows.length === filteredItems.length} 
-                    onChange={handleSelectAll} 
-                  />
-                </th>
-                <th>Contract Details</th>
-                <th>Timeline</th>
-                <th>Renewal Value</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredItems.map((item, index) => (
-                <tr key={item.id} className={`rnw-table-row ${selectedRows.includes(item.id) ? 'selected' : ''}`} style={{ animationDelay: `${index * 0.05}s` }}>
-                  <td>
-                    <Checkbox 
-                      checked={selectedRows.includes(item.id)}
-                      onChange={() => handleSelectRow(item.id)}
-                    />
-                  </td>
-                  <td>
-                    <div className="rnw-entity">{item.entity}</div>
-                    <div className="rnw-meta">{item.type} • ID: {item.contractId}</div>
-                  </td>
-                  <td style={{ width: '250px' }}>
-                    {getDaysLeftVisual(item.daysLeft)}
-                    <div className="rnw-meta mt-1">Exp: {item.expiryDate}</div>
-                  </td>
-                  <td>
-                    <div className="rnw-value-text">{item.value}</div>
-                    {item.autoRenew && <span className="rnw-micro-badge"><RefreshCw size={10} /> Auto</span>}
-                  </td>
-                  <td>{getStatusBadge(item.status)}</td>
-                  <td className="rnw-action-cell">
-                    <button className="rnw-action-btn">Review <ChevronRight size={16} /></button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          
-          {filteredItems.length === 0 && (
-            <div className="rnw-empty-state">
-              <p>No renewals match your criteria.</p>
+        {/* Table */}
+        <div className="rnw-table-wrapper">
+          {loading ? (
+            <div className="rnw-loading">
+              <div className="rnw-spinner"></div>
+              <p>Loading renewals...</p>
             </div>
+          ) : renewals.length === 0 ? (
+            <div className="rnw-empty-state">
+              <CalendarClock size={48} />
+              <h3>No renewals found</h3>
+              <p>Try adjusting your filters or search terms</p>
+            </div>
+          ) : (
+            <table className="rnw-data-table">
+              <thead>
+                <tr>
+                  <th>Contract</th>
+                  <th>Vendor</th>
+                  <th>Expiry Date</th>
+                  <th>Days Left</th>
+                  <th>Value</th>
+                  <th>Status</th>
+                  <th>Action Required</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {renewals.map((renewal, index) => (
+                  <tr
+                    key={renewal.renewal_id}
+                    className="rnw-table-row"
+                    style={{ animationDelay: `${index * 0.04}s` }}
+                  >
+                    <td>
+                      <div className="rnw-contract-name">{renewal.contract_name}</div>
+                      <div className="rnw-contract-id">{renewal.contract_id_ref}</div>
+                    </td>
+                    <td className="rnw-vendor">{renewal.vendor}</td>
+                    <td className="rnw-date">{formatDate(renewal.expiry_date)}</td>
+                    <td>{getDaysLeftDisplay(renewal.days_until_expiry)}</td>
+                    <td className="rnw-value">{formatValue(renewal.value)}</td>
+                    <td>{getStatusBadge(renewal.status)}</td>
+                    <td>
+                      <span className="rnw-action-required">{getActionRequired(renewal)}</span>
+                    </td>
+                    <td className="rnw-action-cell">
+                      {renewal.status === 'Upcoming' && renewal.days_until_expiry <= 90 ? (
+                        <button
+                          className="rnw-action-btn rnw-start-btn"
+                          onClick={(e) => { e.stopPropagation(); handleStartRenewal(renewal.renewal_id); }}
+                          disabled={actionLoading === renewal.renewal_id}
+                        >
+                          {actionLoading === renewal.renewal_id ? '...' : 'Start Renewal'}
+                        </button>
+                      ) : (
+                        <button
+                          className="rnw-action-btn rnw-view-btn"
+                          onClick={() => navigate(`/renewals/${renewal.renewal_id}`)}
+                        >
+                          View
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>

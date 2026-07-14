@@ -377,12 +377,8 @@ h3 {
 
 /* ===== Auth Cards ===== */
 .auth-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--color-bg-light) 0%, var(--color-bg) 100%);
-  padding: 1rem;
+  padding: 1rem 0;
+  width: 100%;
 }
 
 .auth-card {
@@ -393,6 +389,44 @@ h3 {
   width: 100%;
   max-width: 420px;
   animation: slideUp 0.5s ease-out;
+}
+
+.auth-card-wide {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 800px;
+  animation: slideUp 0.5s ease-out;
+}
+
+@media (max-width: 900px) {
+  .hidden-on-mobile {
+    display: none !important;
+  }
+}
+
+.auth-form-area {
+  flex: 0 0 450px;
+  padding: 2.5rem 3rem;
+  background-color: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .auth-form-area {
+    flex: 1;
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-form-area {
+    padding: 1.5rem 1rem;
+  }
 }
 
 @keyframes slideUp {
@@ -474,6 +508,9 @@ h3 {
   max-width: 500px;
   box-shadow: var(--shadow-lg);
   animation: scaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
@@ -482,6 +519,7 @@ h3 {
   align-items: center;
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 
 .modal-header h2 {
@@ -490,6 +528,7 @@ h3 {
 
 .modal-body {
   padding: 1.5rem;
+  overflow-y: auto;
 }
 
 .modal-footer {

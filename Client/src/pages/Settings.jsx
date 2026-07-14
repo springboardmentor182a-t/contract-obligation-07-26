@@ -1,21 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../components/DataDisplay/Card';
 import FormInput from '../components/Form/FormInput';
 import Checkbox from '../components/Form/Checkbox';
 import Button from '../components/Buttons/Button';
 import { Save, User, Bell, Shield } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { updateUser } from '../features/authentication/services/updateUser';
 
 const Settings = () => {
+  const { userProfile, refreshProfile } = useAuth();
   const [profile, setProfile] = useState({
-    name: 'Admin User',
-    email: 'admin@contractiq.com',
-    role: 'Administrator'
+    name: '',
+    email: '',
+    role: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [notifications, setNotifications] = useState(true);
 
-  const handleSave = (e) => {
+  useEffect(() => {
+    if (userProfile) {
+      setProfile({
+        name: userProfile.full_name || userProfile.name || '',
+        email: userProfile.email || '',
+        role: userProfile.role || '',
+        phone: userProfile.phone || '',
+        employeeId: userProfile.employee_id || '',
+        companyName: userProfile.company_name || '',
+        department: userProfile.department || '',
+        designation: userProfile.designation || '',
+        officeLocation: userProfile.location || ''
+      });
+    }
+  }, [userProfile]);
+
+  const handleSave = async (e) => {
     e.preventDefault();
-    console.log('Saved settings', profile, notifications);
+    setError('');
+    setSuccessMessage('');
+    setLoading(true);
+
+    try {
+      await updateUser({ 
+        name: profile.name, 
+        email: profile.email,
+        phone: profile.phone,
+        employeeId: profile.employeeId,
+        companyName: profile.companyName,
+        department: profile.department,
+        designation: profile.designation,
+        officeLocation: profile.officeLocation
+      });
+      await refreshProfile(); // Refresh global context
+      setSuccessMessage('Profile updated successfully!');
+    } catch (err) {
+      setError(err.message || 'Failed to update profile.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,6 +72,8 @@ const Settings = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
         <Card title="Profile Information" glow={true}>
+          {error && <div style={{ color: 'var(--color-danger)', marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>}
+          {successMessage && <div style={{ color: 'var(--color-success)', marginBottom: '1rem', fontSize: '0.9rem' }}>{successMessage}</div>}
           <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div className="input-group">
               <label className="input-label">Full Name</label>
@@ -52,6 +97,62 @@ const Settings = () => {
               />
             </div>
 
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="input-group">
+                <label className="input-label">Phone</label>
+                <FormInput 
+                  value={profile.phone} 
+                  onChange={(e) => setProfile({...profile, phone: e.target.value})} 
+                  style={{ width: '100%' }}
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Employee ID</label>
+                <FormInput 
+                  value={profile.employeeId} 
+                  onChange={(e) => setProfile({...profile, employeeId: e.target.value})} 
+                  style={{ width: '100%' }}
+                />
+              </div>
+            </div>
+
+            <div className="input-group">
+              <label className="input-label">Company Name</label>
+              <FormInput 
+                value={profile.companyName} 
+                onChange={(e) => setProfile({...profile, companyName: e.target.value})} 
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="input-group">
+                <label className="input-label">Department</label>
+                <FormInput 
+                  value={profile.department} 
+                  onChange={(e) => setProfile({...profile, department: e.target.value})} 
+                  style={{ width: '100%' }}
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Designation</label>
+                <FormInput 
+                  value={profile.designation} 
+                  onChange={(e) => setProfile({...profile, designation: e.target.value})} 
+                  style={{ width: '100%' }}
+                />
+              </div>
+            </div>
+
+            <div className="input-group">
+              <label className="input-label">Office Location</label>
+              <FormInput 
+                value={profile.officeLocation} 
+                onChange={(e) => setProfile({...profile, officeLocation: e.target.value})} 
+                style={{ width: '100%' }}
+              />
+            </div>
+
             <div className="input-group">
               <label className="input-label">Role</label>
               <FormInput 
@@ -61,8 +162,8 @@ const Settings = () => {
               />
             </div>
             
-            <Button type="submit" variant="primary" icon={Save}>
-              Save Profile
+            <Button type="submit" variant="primary" icon={Save} disabled={loading}>
+              {loading ? 'Saving...' : 'Save Profile'}
             </Button>
           </form>
         </Card>

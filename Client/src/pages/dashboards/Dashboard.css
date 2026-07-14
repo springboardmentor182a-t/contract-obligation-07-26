@@ -319,7 +319,6 @@
 .activity-table tbody tr:hover {
   background-color: var(--color-bg-light);
   box-shadow: inset 4px 0 0 var(--color-primary-light);
-  transform: translateX(4px);
 }
 
 .table-user {

@@ -1,25 +1,27 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
-  Files, 
-  AlertTriangle, 
-  CalendarClock, 
-  CheckCircle,
-  TrendingUp,
-  Activity,
-  Plus,
-  Search,
-  FileSignature,
-  FileWarning
+  Users, 
+  Activity, 
+  Bell, 
+  Settings,
+  UserPlus,
+  ShieldAlert,
+  Server,
+  TerminalSquare
 } from 'lucide-react';
 import ButtonGroup from '../../components/Buttons/ButtonGroup';
 import Dropdown from '../../components/Buttons/Dropdown';
 import Button from '../../components/Buttons/Button';
-import Card from '../../components/DataDisplay/Card';
-import Table from '../../components/DataDisplay/Table';
 import Badge from '../../components/DataDisplay/Badge';
 import Modal from '../../components/Modals/Modal';
 import FormInput from '../../components/Form/FormInput';
 import FormSelect from '../../components/Form/FormSelect';
+import SignupForm from '../../features/authentication/components/SignupForm';
+import { signupService } from '../../features/authentication/services/signup';
+import { getAllUsers } from '../../features/authentication/services/getAllUsers';
+import { getAuditLogs } from '../../features/auditLogs/services/getAuditLogs';
+import { getUserNotifications } from '../../features/notifications/services/notificationAPI';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,7 +37,6 @@ import {
 import { Line, Doughnut, Bar } from 'react-chartjs-2';
 import './Dashboard.css';
 
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -49,56 +50,89 @@ ChartJS.register(
 );
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [timeFilter, setTimeFilter] = useState('30D');
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [newContract, setNewContract] = useState({ name: '', companyName: '', vendorName: '', category: 'Vendor Contract', value: '', expiry: '' });
-  const [showAllActivities, setShowAllActivities] = useState(false);
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Admin' });
 
-  const [activities, setActivities] = useState([
-    { id: 1, user: 'Sarah Smith', avatar: 'SS', action: 'Approved', target: 'Vendor Agreement V2', time: '2 hours ago', status: 'Completed', type: 'success' },
-    { id: 2, user: 'John Doe', avatar: 'JD', action: 'Created', target: 'NDA - TechCorp', time: '4 hours ago', status: 'Pending', type: 'warning' },
-    { id: 3, user: 'System', avatar: 'SY', action: 'Flagged', target: 'Missed Obligation #1042', time: '1 day ago', status: 'Critical', type: 'danger' },
-    { id: 4, user: 'Alex Johnson', avatar: 'AJ', action: 'Renewed', target: 'Office Lease 2026', time: '2 days ago', status: 'Completed', type: 'success' },
-  ]);
+  const [users, setUsers] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
 
-  const handleUploadContract = (e) => {
-    e.preventDefault();
-    alert('Contract successfully submitted for draft!');
-    
-    // Add new activity
-    const newActivity = {
-      id: Date.now(),
-      user: 'Current User', 
-      avatar: 'CU',
-      action: 'Created',
-      target: newContract.name || 'New Contract',
-      time: 'Just now',
-      status: 'Draft',
-      type: 'primary'
+  React.useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [usersData, logsData, notifsData] = await Promise.all([
+          getAllUsers().catch(() => []),
+          getAuditLogs().catch(() => []),
+          getUserNotifications().catch(() => [])
+        ]);
+        setUsers(usersData);
+        setAuditLogs(logsData);
+        setNotifications(notifsData);
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
     };
-    setActivities([newActivity, ...activities]);
+    fetchData();
+  }, []);
 
-    setIsUploadModalOpen(false);
-    setNewContract({ name: '', companyName: '', vendorName: '', category: 'Vendor Contract', value: '', expiry: '' });
+  const handleCreateUserFull = async (formData) => {
+    setIsCreating(true);
+    setCreateError('');
+    try {
+      await signupService(formData);
+      alert(`User ${formData.name || 'New User'} registered successfully!`);
+      setIsUserModalOpen(false);
+      // Re-fetch users to update dashboard
+      const newUsers = await getAllUsers();
+      setUsers(newUsers);
+    } catch (err) {
+      setCreateError(err.message || 'Registration failed.');
+    } finally {
+      setIsCreating(false);
+    }
   };
 
+  const totalUsers = users.length;
+  const activeSessions = users.filter(u => u.is_active).length;
+  const unreadNotifs = notifications.filter(n => !n.is_read && !n.read).length;
+  const systemErrors = auditLogs.filter(l => (l.status || '').toLowerCase() === 'error' || (l.status || '').toLowerCase() === 'danger').length;
+
   const stats = [
-    { label: 'Active Contracts', value: '1,245', icon: <Files size={24} />, color: 'var(--color-primary)', trend: '+12.5%', trendType: 'positive', subtext: 'vs last month' },
-    { label: 'Upcoming Renewals', value: '38', icon: <CalendarClock size={24} />, color: 'var(--color-warning)', trend: '4 critical', trendType: 'warning', subtext: 'needs attention' },
-    { label: 'Pending Obligations', value: '112', icon: <AlertTriangle size={24} />, color: 'var(--color-danger)', trend: '-5.2%', trendType: 'positive', subtext: 'vs last month' },
-    { label: 'Overall Compliant', value: '94%', icon: <CheckCircle size={24} />, color: 'var(--color-success)', trend: '+2.1%', trendType: 'positive', subtext: 'across portfolio' },
+    { label: 'Total Users', value: totalUsers.toString(), icon: <Users size={24} />, color: 'var(--color-primary)', trend: 'Live', trendType: 'positive', subtext: 'registered users' },
+    { label: 'Active Users', value: activeSessions.toString(), icon: <Activity size={24} />, color: 'var(--color-success)', trend: 'Live', trendType: 'neutral', subtext: 'currently active' },
+    { label: 'Unread Notifications', value: unreadNotifs.toString(), icon: <Bell size={24} />, color: 'var(--color-warning)', trend: 'Live', trendType: 'warning', subtext: 'needs attention' },
+    { label: 'System Errors', value: systemErrors.toString(), icon: <Server size={24} />, color: 'var(--color-danger)', trend: 'Live', trendType: 'positive', subtext: 'total errors logged' },
   ];
 
-  // Dummy logic to simulate data changes
   const multiplyData = (dataArray, factor) => dataArray.map(d => Math.round(d * factor));
   const filterFactor = timeFilter === '7D' ? 0.3 : timeFilter === '1Y' ? 3 : 1;
 
+  // Real User Growth
+  const currentYear = new Date().getFullYear();
+  const monthCounts = new Array(12).fill(0);
+  users.forEach(u => {
+    if (u.join_date || u.created_at) {
+      const d = new Date(u.join_date || u.created_at);
+      if (d.getFullYear() === currentYear) {
+        monthCounts[d.getMonth()] += 1;
+      }
+    }
+  });
+
   const lineChartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     datasets: [
       {
-        label: 'New Contracts',
-        data: multiplyData([65, 59, 80, 81, 56, 120], filterFactor),
+        label: 'New Users',
+        data: monthCounts,
         borderColor: '#6B8EB1',
         backgroundColor: 'rgba(107, 142, 177, 0.15)',
         fill: true,
@@ -112,31 +146,29 @@ const AdminDashboard = () => {
 
   const lineChartOptions = {
     maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#fff',
-        titleColor: '#444B53',
-        bodyColor: '#444B53',
-        borderColor: 'rgba(107, 142, 177, 0.2)',
-        borderWidth: 1,
-        padding: 12,
-        boxPadding: 4,
-        usePointStyle: true,
-      }
-    },
+    plugins: { legend: { display: false } },
     scales: {
       x: { grid: { display: false } },
-      y: { grid: { color: 'rgba(68, 75, 83, 0.05)', borderDash: [5, 5] }, beginAtZero: true }
+      y: { grid: { color: 'rgba(68, 75, 83, 0.05)', borderDash: [5, 5] }, beginAtZero: true, ticks: { precision: 0 } }
     }
   };
 
+  // Real Role Distribution
+  const roleCounts = users.reduce((acc, user) => {
+    const r = user.role || 'Unknown';
+    acc[r] = (acc[r] || 0) + 1;
+    return acc;
+  }, {});
+  
+  const roleLabels = Object.keys(roleCounts);
+  const roleData = Object.values(roleCounts);
+
   const doughnutData = {
-    labels: ['Compliant', 'Pending', 'Non-Compliant'],
+    labels: roleLabels.length ? roleLabels : ['No Data'],
     datasets: [
       {
-        data: multiplyData([300, 50, 20], filterFactor),
-        backgroundColor: ['#2ecc71', '#f1c40f', '#e74c3c'],
+        data: roleData.length ? roleData : [1],
+        backgroundColor: ['#3498db', '#f1c40f', '#2ecc71', '#9b59b6', '#e74c3c', '#34495e'],
         borderWidth: 0,
         hoverOffset: 4
       }
@@ -151,19 +183,40 @@ const AdminDashboard = () => {
     }
   };
 
+  // Real System Activity (last 7 days of audit logs)
+  const today = new Date();
+  const last7DaysLabels = [];
+  const activityCounts = [0, 0, 0, 0, 0, 0, 0];
+  
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    last7DaysLabels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+  }
+
+  auditLogs.forEach(log => {
+    if (log.created_at || log.timestamp) {
+      const logDate = new Date(log.created_at || log.timestamp);
+      // Reset hours to strictly compare dates
+      const logDayStart = new Date(logDate.getFullYear(), logDate.getMonth(), logDate.getDate());
+      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      
+      const diffTime = todayStart - logDayStart;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays >= 0 && diffDays < 7) {
+        activityCounts[6 - diffDays] += 1;
+      }
+    }
+  });
+
   const barChartData = {
-    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+    labels: last7DaysLabels,
     datasets: [
       {
-        label: 'Obligations Met',
-        data: multiplyData([120, 190, 150, 220], filterFactor),
+        label: 'Activities',
+        data: activityCounts,
         backgroundColor: '#2ecc71',
-        borderRadius: 4
-      },
-      {
-        label: 'Obligations Missed',
-        data: multiplyData([15, 25, 10, 30], filterFactor),
-        backgroundColor: '#e74c3c',
         borderRadius: 4
       }
     ]
@@ -171,23 +224,35 @@ const AdminDashboard = () => {
 
   const barChartOptions = {
     maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle' } }
-    },
+    plugins: { legend: { display: false } },
     scales: {
       x: { grid: { display: false } },
       y: { grid: { color: 'rgba(68, 75, 83, 0.05)', borderDash: [5, 5] }, beginAtZero: true }
     }
   };
 
-  const displayedActivities = showAllActivities ? activities : activities.slice(0, 4);
+  const dynamicActivities = auditLogs
+    .sort((a, b) => new Date(b.created_at || b.timestamp) - new Date(a.created_at || a.timestamp))
+    .slice(0, 10)
+    .map(log => ({
+      id: log.audit_id || log.id || Math.random(),
+      user: log.user_name || log.user || 'System',
+      avatar: (log.user_name || log.user || 'SY').substring(0, 2).toUpperCase(),
+      action: log.action || 'Performed action',
+      target: log.resource || log.module || '',
+      time: log.created_at || log.timestamp ? new Date(log.created_at || log.timestamp).toLocaleString() : 'Recently',
+      status: log.status || 'Success',
+      type: (log.status || '').toLowerCase().includes('error') ? 'danger' : (log.status || '').toLowerCase().includes('warning') ? 'warning' : 'success'
+    }));
+
+  const displayedActivities = dynamicActivities.slice(0, 4);
 
   return (
     <div className="dashboard-container fade-in">
       <div className="dashboard-header mb-2 stagger-1">
         <div>
           <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted mt-1">Welcome back, here is what's happening with your contracts today.</p>
+          <p className="text-muted mt-1">System overview, user management, and audit logs.</p>
         </div>
         <div className="dashboard-header-actions">
           <ButtonGroup className="time-filters">
@@ -196,11 +261,8 @@ const AdminDashboard = () => {
             <button className={`filter-btn ${timeFilter === '1Y' ? 'active' : ''}`} onClick={() => setTimeFilter('1Y')}>1Y</button>
           </ButtonGroup>
           <div className="header-buttons">
-            <Button variant="outline" icon={TrendingUp}>
-              Generate Report
-            </Button>
-            <Button variant="primary" icon={Plus} onClick={() => setIsUploadModalOpen(true)}>
-              New Contract
+            <Button variant="primary" icon={UserPlus} onClick={() => setIsUserModalOpen(true)}>
+              New User
             </Button>
           </div>
         </div>
@@ -230,8 +292,8 @@ const AdminDashboard = () => {
         <div className="dashboard-card main-chart-card">
           <div className="dashboard-card-header">
             <div>
-              <h3>Contract Growth</h3>
-              <p>Monthly contract additions and renewals</p>
+              <h3>User Growth</h3>
+              <p>Monthly new user registrations</p>
             </div>
           </div>
           <div className="chart-wrapper">
@@ -242,31 +304,31 @@ const AdminDashboard = () => {
         <div className="flex flex-col gap-6">
           <div className="dashboard-card quick-actions-card glow-card">
             <div className="dashboard-card-header">
-              <h3>Quick Actions</h3>
+              <h3>Admin Actions</h3>
             </div>
             <div className="quick-actions-grid">
-              <button className="quick-action-btn" onClick={() => setIsUploadModalOpen(true)}>
-                <div className="qa-icon" style={{ color: 'var(--color-primary)', backgroundColor: 'rgba(107, 142, 177, 0.15)' }}><Plus size={20}/></div>
-                <span>Create NDA</span>
+              <button className="quick-action-btn" onClick={() => setIsUserModalOpen(true)}>
+                <div className="qa-icon" style={{ color: 'var(--color-primary)', backgroundColor: 'rgba(107, 142, 177, 0.15)' }}><UserPlus size={20}/></div>
+                <span>Create User</span>
               </button>
-              <button className="quick-action-btn">
-                <div className="qa-icon" style={{ color: 'var(--color-warning)', backgroundColor: 'rgba(241, 196, 15, 0.15)' }}><Search size={20}/></div>
-                <span>Search Contracts</span>
+              <button className="quick-action-btn" onClick={() => navigate('/audit-logs')}>
+                <div className="qa-icon" style={{ color: 'var(--color-warning)', backgroundColor: 'rgba(241, 196, 15, 0.15)' }}><TerminalSquare size={20}/></div>
+                <span>Audit Logs</span>
               </button>
-              <button className="quick-action-btn">
-                <div className="qa-icon" style={{ color: 'var(--color-success)', backgroundColor: 'rgba(46, 204, 113, 0.15)' }}><FileSignature size={20}/></div>
-                <span>Review Approvals</span>
+              <button className="quick-action-btn" onClick={() => navigate('/notifications')}>
+                <div className="qa-icon" style={{ color: 'var(--color-success)', backgroundColor: 'rgba(46, 204, 113, 0.15)' }}><Bell size={20}/></div>
+                <span>Broadcast</span>
               </button>
-              <button className="quick-action-btn">
-                <div className="qa-icon" style={{ color: 'var(--color-danger)', backgroundColor: 'rgba(231, 76, 60, 0.15)' }}><FileWarning size={20}/></div>
-                <span>Check Obligations</span>
+              <button className="quick-action-btn" onClick={() => navigate('/settings')}>
+                <div className="qa-icon" style={{ color: 'var(--color-danger)', backgroundColor: 'rgba(231, 76, 60, 0.15)' }}><Settings size={20}/></div>
+                <span>System Config</span>
               </button>
             </div>
           </div>
           
           <div className="dashboard-card flex-1">
             <div className="dashboard-card-header">
-              <h3>Compliance Status</h3>
+              <h3>Role Distribution</h3>
             </div>
             <div className="chart-wrapper doughnut-wrapper">
               <Doughnut data={doughnutData} options={doughnutOptions} />
@@ -279,8 +341,8 @@ const AdminDashboard = () => {
         <div className="dashboard-card">
           <div className="dashboard-card-header">
             <div>
-              <h3>Obligations Performance</h3>
-              <p>Met vs Missed obligations over time</p>
+              <h3>System Activity</h3>
+              <p>User logins and sessions over the week</p>
             </div>
           </div>
           <div className="chart-wrapper">
@@ -291,11 +353,11 @@ const AdminDashboard = () => {
         <div className="dashboard-card activity-dashboard-card" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="dashboard-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <div className="flex items-center gap-2">
-              <Activity size={20} className="text-primary" />
-              <h3 style={{ margin: 0 }}>Recent Activities</h3>
+               <Activity size={20} className="text-primary" />
+              <h3 style={{ margin: 0 }}>Recent Audit Logs</h3>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowAllActivities(!showAllActivities)}>
-              {showAllActivities ? 'Show Less' : 'View All'}
+            <Button variant="outline" size="sm" onClick={() => navigate('/audit-logs')}>
+              View All
             </Button>
           </div>
           <div className="activity-table-wrapper" style={{ flex: 1 }}>
@@ -306,7 +368,6 @@ const AdminDashboard = () => {
                   <th>Action</th>
                   <th>Status</th>
                   <th>Time</th>
-                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -329,16 +390,6 @@ const AdminDashboard = () => {
                       <Badge variant={act.type}>{act.status}</Badge>
                     </td>
                     <td className="text-muted text-sm">{act.time}</td>
-                    <td>
-                      <Dropdown 
-                        label="Manage" 
-                        onSelect={(item) => alert(`${item.label} selected for activity ID: ${act.id} (User: ${act.user})`)}
-                        items={[
-                          { label: 'View User' },
-                          { label: 'Audit Trail' }
-                        ]}
-                      />
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -347,38 +398,19 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Upload Modal */}
       <Modal 
-        isOpen={isUploadModalOpen} 
-        onClose={() => setIsUploadModalOpen(false)}
-        title="Upload New Contract"
-        footer={
-          <>
-            <Button type="button" variant="outline" onClick={() => setIsUploadModalOpen(false)}>Cancel</Button>
-            <Button type="button" variant="primary" onClick={handleUploadContract}>Upload & Create Draft</Button>
-          </>
-        }
+        isOpen={isUserModalOpen} 
+        onClose={() => setIsUserModalOpen(false)}
+        title="Register New User"
       >
-        <form onSubmit={handleUploadContract} id="upload-contract-form">
-          <FormInput label="Contract Name" type="text" placeholder="e.g. Acme Corp NDA" required value={newContract.name} onChange={(e) => setNewContract({...newContract, name: e.target.value})} />
-          <FormInput label="Company/Entity Name" type="text" placeholder="e.g. Global Industries Ltd." required value={newContract.companyName} onChange={(e) => setNewContract({...newContract, companyName: e.target.value})} />
-          <FormSelect 
-            label="Category"
-            value={newContract.category}
-            onChange={(e) => setNewContract({...newContract, category: e.target.value})}
-            options={[
-              { value: 'Vendor Contract', label: 'Vendor Contract' },
-              { value: 'Employment Contract', label: 'Employment Contract' },
-              { value: 'Lease Agreement', label: 'Lease Agreement' },
-              { value: 'Service Agreement', label: 'Service Agreement' }
-            ]}
-          />
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <FormInput label="Value" type="text" placeholder="$0.00" value={newContract.value} onChange={(e) => setNewContract({...newContract, value: e.target.value})} />
-            <FormInput label="Expiry Date" type="date" required value={newContract.expiry} onChange={(e) => setNewContract({...newContract, expiry: e.target.value})} />
-          </div>
-          <FormInput label="Attach Document (PDF, DOCX)" type="file" required />
-        </form>
+        <div style={{ padding: '0.5rem 0' }}>
+          {createError && (
+            <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '0.75rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.85rem', textAlign: 'center', border: '1px solid #f87171' }}>
+              {createError}
+            </div>
+          )}
+          <SignupForm onSubmit={handleCreateUserFull} disabled={isCreating} />
+        </div>
       </Modal>
     </div>
   );

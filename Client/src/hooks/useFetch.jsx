@@ -7,7 +7,7 @@ export const useFetch = (url, options = {}) => {
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const fetchData = async () => {
       setLoading(true);
       try {

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Bell, 
   CheckCircle, 
@@ -9,82 +10,79 @@ import {
   Trash2, 
   Clock,
   Settings,
-  MoreVertical
+  MoreVertical,
+  Eye,
+  Globe
 } from 'lucide-react';
 import Button from '../../components/Buttons/Button';
+import Modal from '../../components/Modals/Modal';
+import { useAuth } from '../../context/AuthContext';
+import { getUserNotifications, getAdminNotifications, deleteNotification as deleteNotificationApi } from '../../features/notifications/services/notificationAPI';
 import './Notifications.css';
 
-const initialNotifications = [
-  {
-    id: 1,
-    type: 'alert',
-    title: 'Contract Expiring Soon',
-    message: 'The vendor agreement with TechCorp is expiring in 15 days. Action is required to avoid service interruption.',
-    time: '2 hours ago',
-    read: false,
-    icon: <AlertCircle size={22} className="notif-icon-danger" />
-  },
-  {
-    id: 2,
-    type: 'success',
-    title: 'Obligation Met',
-    message: 'Q3 Payment to Global Logistics has been successfully processed and recorded.',
-    time: '5 hours ago',
-    read: false,
-    icon: <CheckCircle size={22} className="notif-icon-success" />
-  },
-  {
-    id: 3,
-    type: 'info',
-    title: 'New Contract Added',
-    message: 'A new NDA contract for Project X has been uploaded by Sarah and is awaiting your review.',
-    time: 'Yesterday',
-    read: true,
-    icon: <FileText size={22} className="notif-icon-primary" />
-  },
-  {
-    id: 4,
-    type: 'warning',
-    title: 'Pending Approval',
-    message: 'Marketing Services Agreement requires your signature before end of week.',
-    time: '2 days ago',
-    read: true,
-    icon: <Info size={22} className="notif-icon-warning" />
-  },
-  {
-    id: 5,
-    type: 'system',
-    title: 'System Update',
-    message: 'Scheduled maintenance on Saturday 2AM - 4AM EST. The portal will be briefly unavailable.',
-    time: '1 week ago',
-    read: true,
-    icon: <Bell size={22} className="notif-icon-muted" />
-  }
-];
-
 const Notifications = () => {
-  const [notifications, setNotifications] = useState(initialNotifications);
-  const [activeTab, setActiveTab] = useState('all');
+  const navigate = useNavigate();
+  const { role } = useAuth();
+  const isAdmin = role === 'Admin' || role === 'Administrator';
 
+  const [notifications, setNotifications] = useState([]);
+  const [activeTab, setActiveTab] = useState('all'); // 'all', 'unread', 'system'
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [selectedNotif, setSelectedNotif] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const handleClickOutside = () => setOpenDropdownId(null);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [activeTab]);
+
+  const fetchNotifications = async () => {
+    setLoading(true);
+    try {
+      let data = [];
+      if (activeTab === 'system' && isAdmin) {
+        data = await getAdminNotifications();
+      } else {
+        data = await getUserNotifications();
+      }
+      setNotifications(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mock functions for missing backend features (like marking as read)
   const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+    setNotifications(notifications.map(n => ({ ...n, is_read: true })));
   };
 
   const markAsRead = (id) => {
     setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, read: true } : n
+      (n.notification_id || n.id) === id ? { ...n, is_read: true } : n
     ));
   };
 
-  const deleteNotification = (id) => {
-    setNotifications(notifications.filter(n => n.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await deleteNotificationApi(id);
+      setNotifications(notifications.filter(n => (n.notification_id || n.id) !== id));
+    } catch (err) {
+      alert(err.message || 'Failed to delete notification');
+    }
   };
 
   const filteredNotifications = notifications.filter(n => 
-    activeTab === 'unread' ? !n.read : true
+    activeTab === 'unread' ? !n.is_read : true
   );
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
     <div className="notif-dashboard fade-in">
@@ -102,7 +100,7 @@ const Notifications = () => {
               Mark all as read
             </Button>
           )}
-          <Button variant="outline" icon={Settings}>
+          <Button variant="outline" icon={Settings} onClick={() => navigate('/settings')}>
             Preferences
           </Button>
         </div>
@@ -114,7 +112,7 @@ const Notifications = () => {
             className={`notif-tab-btn ${activeTab === 'all' ? 'active' : ''}`}
             onClick={() => setActiveTab('all')}
           >
-            All Notifications
+            My Notifications
           </button>
           <button 
             className={`notif-tab-btn ${activeTab === 'unread' ? 'active' : ''}`}
@@ -122,10 +120,22 @@ const Notifications = () => {
           >
             Unread
           </button>
+          {isAdmin && (
+            <button 
+              className={`notif-tab-btn ${activeTab === 'system' ? 'active' : ''}`}
+              onClick={() => setActiveTab('system')}
+            >
+              System Wide (Admin)
+            </button>
+          )}
         </div>
 
         <div className="notif-list-container">
-          {filteredNotifications.length === 0 ? (
+          {loading ? (
+            <div className="notif-empty-state">
+              <p>Loading notifications...</p>
+            </div>
+          ) : filteredNotifications.length === 0 ? (
             <div className="notif-empty-state">
               <div className="empty-bell-wrapper">
                 <Bell size={48} className="empty-bell-icon" />
@@ -134,60 +144,143 @@ const Notifications = () => {
               <p>There are no {activeTab === 'unread' ? 'unread' : 'new'} alerts to review right now.</p>
             </div>
           ) : (
-            filteredNotifications.map((notif, index) => (
-              <div 
-                key={notif.id} 
-                className={`notif-item-card ${!notif.read ? 'is-unread' : ''}`}
-                style={{ animationDelay: `${index * 0.05}s` }}
-                onClick={() => markAsRead(notif.id)}
-              >
-                {!notif.read && <div className="unread-dot"></div>}
-                
-                <div className={`notif-avatar bg-tint-${notif.type}`}>
-                  {notif.icon}
-                </div>
-                
-                <div className="notif-content-block">
-                  <div className="notif-top-row">
-                    <h4 className="notif-item-title">{notif.title}</h4>
-                    <span className="notif-timestamp">
-                      <Clock size={12} /> {notif.time}
-                    </span>
-                  </div>
-                  <p className="notif-item-message">{notif.message}</p>
+            filteredNotifications.map((notif, index) => {
+              const notifId = notif.notification_id || notif.id;
+              const isRead = notif.is_read || false;
+              const timeStr = notif.created_at ? new Date(notif.created_at).toLocaleString() : (notif.time || 'Recently');
+              
+              return (
+                <div 
+                  key={notifId} 
+                  className={`notif-item-card ${!isRead ? 'is-unread' : ''}`}
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                  onClick={() => markAsRead(notifId)}
+                >
+                  {!isRead && <div className="unread-dot"></div>}
                   
-                  <div className="notif-hover-actions">
-                    {!notif.read && (
+                  <div className={`notif-avatar bg-tint-info`}>
+                    <Bell size={22} className="notif-icon-primary" />
+                  </div>
+                  
+                  <div className="notif-content-block">
+                    <div className="notif-top-row">
+                      <h4 className="notif-item-title">{notif.title || 'Notification'}</h4>
+                      <span className="notif-timestamp">
+                        <Clock size={12} /> {timeStr}
+                      </span>
+                    </div>
+                    <p className="notif-item-message">{notif.message}</p>
+                    
+                    <div className="notif-hover-actions">
+                      {!isRead && (
+                        <button 
+                          className="quick-action-btn action-read"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAsRead(notifId);
+                          }}
+                        >
+                          <Check size={14} /> Mark Read
+                        </button>
+                      )}
                       <button 
-                        className="quick-action-btn action-read"
+                        className="quick-action-btn action-delete"
                         onClick={(e) => {
                           e.stopPropagation();
-                          markAsRead(notif.id);
+                          handleDelete(notifId);
                         }}
                       >
-                        <Check size={14} /> Mark Read
+                        <Trash2 size={14} /> Delete
                       </button>
-                    )}
+                    </div>
+                  </div>
+                  
+                  <div style={{ position: 'relative' }}>
                     <button 
-                      className="quick-action-btn action-delete"
+                      className="notif-menu-btn"
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteNotification(notif.id);
+                        setOpenDropdownId(openDropdownId === notifId ? null : notifId);
                       }}
                     >
-                      <Trash2 size={14} /> Delete
+                      <MoreVertical size={18} />
                     </button>
+                    {openDropdownId === notifId && (
+                      <div 
+                        className="dropdown-menu" 
+                        style={{ position: 'absolute', right: 0, top: '100%', display: 'block', minWidth: '150px', zIndex: 10, animation: 'dropdownIn 0.15s ease' }}
+                      >
+                        <div 
+                          className="dropdown-item" 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setSelectedNotif(notif);
+                            if (!isRead) markAsRead(notifId);
+                            setOpenDropdownId(null); 
+                          }}
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        >
+                          <Eye size={14} /> View Details
+                        </div>
+                        {!isRead && (
+                          <div 
+                            className="dropdown-item" 
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              markAsRead(notifId); 
+                              setOpenDropdownId(null); 
+                            }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                          >
+                            <Check size={14} /> Mark Read
+                          </div>
+                        )}
+                        <div 
+                          className="dropdown-item" 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            handleDelete(notifId); 
+                            setOpenDropdownId(null); 
+                          }}
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-danger)' }}
+                        >
+                          <Trash2 size={14} /> Delete
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                
-                <button className="notif-menu-btn">
-                  <MoreVertical size={18} />
-                </button>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
+
+      {selectedNotif && (
+        <Modal 
+          isOpen={!!selectedNotif} 
+          onClose={() => setSelectedNotif(null)}
+          title="Notification Details"
+          footer={
+            <Button type="button" variant="primary" onClick={() => setSelectedNotif(null)}>Close</Button>
+          }
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div className={`notif-avatar bg-tint-info`}>
+              <Bell size={22} className="notif-icon-primary" />
+            </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--color-text-dark)' }}>{selectedNotif.title || 'Notification'}</h3>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <Clock size={12} /> {selectedNotif.created_at ? new Date(selectedNotif.created_at).toLocaleString() : (selectedNotif.time || 'Recently')}
+              </p>
+            </div>
+          </div>
+          <div style={{ backgroundColor: 'var(--color-bg)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+            <p style={{ margin: 0, lineHeight: 1.5 }}>{selectedNotif.message}</p>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
