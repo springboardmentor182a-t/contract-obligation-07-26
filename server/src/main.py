@@ -1,6 +1,10 @@
+# server/src/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .api import router as api_router
+from src.compliance.controller import router as compliance_router
+from src.database.core import engine, Base
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="ContractIQ API")
 
@@ -12,8 +16,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(api_router, prefix="/api/v1")
-
-@app.get("/")
-def health_check():
-    return {"status": "Backend is running"}
+app.include_router(compliance_router)
