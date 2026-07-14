@@ -1,23 +1,33 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Settings from './pages/Settings';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+
+import ContractRepository from "./pages/ContractRepository/ContractRepository";
+import ContractDetails from "./pages/ContractDetails/ContractDetails";
+import AddContract from "./pages/AddContract/AddContract";
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </div>
-    </Router>
+    <Routes>
+      <Route
+        path="/"
+        element={<ContractRepository />}
+      />
+
+      <Route
+        path="/contract-details/:id"
+        element={<ContractDetails />}
+      />
+
+      <Route
+        path="/add-contract"
+        element={<AddContract />}
+      />
+
+      <Route
+        path="/edit-contract/:id"
+        element={<AddContract />}
+      />
+    </Routes>
   );
 }
 
