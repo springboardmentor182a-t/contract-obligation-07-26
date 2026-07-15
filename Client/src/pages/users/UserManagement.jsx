@@ -21,14 +21,15 @@ import { getAllUsers } from '../../features/authentication/services/getAllUsers'
 import { deleteUser as deleteUserService } from '../../features/authentication/services/deleteUser';
 import { updateUser as updateUserService } from '../../features/authentication/services/updateUser';
 import { toggleUserStatus as toggleUserStatusService } from '../../features/authentication/services/toggleUserStatus';
+import { getOrganizations } from '../../features/organizations/services/organizationAPI';
 
 const mockUsers = [
-  { id: 1, name: 'Alice Smith', email: 'alice.smith@contractiq.com', role: 'Administrator', department: 'IT', status: 'Active' },
+  { id: 1, name: 'Alice Smith', email: 'alice.smith@contractiq.com', role: 'Admin', department: 'IT', status: 'Active' },
   { id: 2, name: 'Bob Jones', email: 'bob.jones@contractiq.com', role: 'Legal Manager', department: 'Legal', status: 'Active' },
   { id: 3, name: 'Charlie Davis', email: 'charlie.davis@contractiq.com', role: 'Compliance Officer', department: 'Compliance', status: 'Inactive' },
   { id: 4, name: 'Diana Prince', email: 'diana.prince@contractiq.com', role: 'Contract Manager', department: 'Operations', status: 'Active' },
-  { id: 5, name: 'Evan Wright', email: 'evan.wright@contractiq.com', role: 'Department Head', department: 'Sales', status: 'Active' },
-  { id: 6, name: 'Fiona Gallagher', email: 'fiona.g@contractiq.com', role: 'Employee', department: 'Marketing', status: 'Active' },
+  { id: 5, name: 'Evan Wright', email: 'evan.wright@contractiq.com', role: 'Admin', department: 'Sales', status: 'Active' },
+  { id: 6, name: 'Fiona Gallagher', email: 'fiona.g@contractiq.com', role: 'Contract Manager', department: 'Marketing', status: 'Active' },
 ];
 
 const UserManagement = () => {
@@ -39,10 +40,21 @@ const UserManagement = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState('');
   const [editingUser, setEditingUser] = useState(null);
+  const [organizations, setOrganizations] = useState([]);
 
   React.useEffect(() => {
     fetchUsers();
+    fetchOrganizations();
   }, []);
+
+  const fetchOrganizations = async () => {
+    try {
+      const data = await getOrganizations();
+      setOrganizations(data || []);
+    } catch (err) {
+      console.error("Failed to fetch organizations:", err);
+    }
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -278,7 +290,7 @@ const UserManagement = () => {
               {createError}
             </div>
           )}
-          <SignupForm onSubmit={handleCreateUserFull} disabled={isCreating} />
+          <SignupForm onSubmit={handleCreateUserFull} disabled={isCreating} hideAdminRole={true} />
         </div>
       </Modal>
 
@@ -328,27 +340,47 @@ const UserManagement = () => {
               />
               <FormSelect 
                 label="System Role"
-                value={editingUser.role || 'Employee'}
+                value={editingUser.role || 'Admin'}
                 onChange={(e) => setEditingUser({...editingUser, role: e.target.value})}
                 options={[
                   { value: 'Admin', label: 'Admin' },
                   { value: 'Legal Manager', label: 'Legal Manager' },
                   { value: 'Compliance Officer', label: 'Compliance Officer' },
-                  { value: 'Contract Manager', label: 'Contract Manager' },
-                  { value: 'Employee', label: 'Employee' }
+                  { value: 'Contract Manager', label: 'Contract Manager' }
                 ]}
               />
-              <FormInput 
-                label="Company Name" 
-                type="text" 
-                value={editingUser.company_name || ''} 
-                onChange={(e) => setEditingUser({...editingUser, company_name: e.target.value})} 
+              <FormSelect 
+                label="Organization"
+                value={editingUser.organization_id || ''}
+                onChange={(e) => {
+                  const selectedOrg = organizations.find(org => org.organization_id.toString() === e.target.value);
+                  setEditingUser({
+                    ...editingUser, 
+                    organization_id: e.target.value,
+                    company_name: selectedOrg ? selectedOrg.company_name : ''
+                  });
+                }}
+                options={organizations.map(org => ({
+                  value: org.organization_id.toString(),
+                  label: org.company_name
+                }))}
               />
-              <FormInput 
+              <FormSelect 
                 label="Department" 
-                type="text" 
                 value={editingUser.department || ''} 
-                onChange={(e) => setEditingUser({...editingUser, department: e.target.value})} 
+                onChange={(e) => setEditingUser({...editingUser, department: e.target.value})}
+                options={[
+                  { value: 'Administration', label: 'Administration' },
+                  { value: 'Legal', label: 'Legal' },
+                  { value: 'Compliance', label: 'Compliance' },
+                  { value: 'Contracts', label: 'Contracts' },
+                  { value: 'IT', label: 'IT' },
+                  { value: 'HR', label: 'HR' },
+                  { value: 'Finance', label: 'Finance' },
+                  { value: 'Operations', label: 'Operations' },
+                  { value: 'Sales', label: 'Sales' },
+                  { value: 'Marketing', label: 'Marketing' }
+                ]}
               />
               <FormInput 
                 label="Designation" 

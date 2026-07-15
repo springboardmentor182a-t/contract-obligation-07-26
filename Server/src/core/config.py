@@ -27,8 +27,15 @@ class Setting(BaseSettings):
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def parse_allowed_origins(cls, v):
+        import json
         if isinstance(v, str):
-            return [i.strip() for i in v.split(",")]
+            v = v.strip()
+            if v.startswith("["):
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            return [i.strip().strip('"').strip("'") for i in v.split(",")]
         return v
 
     model_config = SettingsConfigDict(

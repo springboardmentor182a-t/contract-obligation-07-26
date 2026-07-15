@@ -4,8 +4,6 @@ import AdminDashboard from './AdminDashboard';
 import LegalManagerDashboard from './LegalManagerDashboard';
 import ComplianceOfficerDashboard from './ComplianceOfficerDashboard';
 import ContractManagerDashboard from './ContractManagerDashboard';
-import DepartmentHeadDashboard from './DepartmentHeadDashboard';
-import EmployeeDashboard from './EmployeeDashboard';
 
 const DashboardRouter = () => {
   const { role, loading } = useAuth();
@@ -16,18 +14,16 @@ const DashboardRouter = () => {
 
   const normalizedRole = role ? role.toLowerCase().trim() : '';
 
-  if (normalizedRole === 'admin' || normalizedRole === 'administrator') {
+  if (normalizedRole === 'admin') {
     return <AdminDashboard />;
-  } else if (normalizedRole === 'legal manager' || normalizedRole === 'legal') {
+  } else if (normalizedRole === 'legal manager') {
     return <LegalManagerDashboard />;
-  } else if (normalizedRole === 'compliance officer' || normalizedRole === 'compliance') {
+  } else if (normalizedRole === 'compliance officer') {
     return <ComplianceOfficerDashboard />;
-  } else if (normalizedRole === 'contract manager' || normalizedRole === 'contract') {
+  } else if (normalizedRole === 'contract manager') {
     return <ContractManagerDashboard />;
-  } else if (normalizedRole === 'department head') {
-    return <DepartmentHeadDashboard />;
   } else {
-    return <EmployeeDashboard />;
+    return <div className="dashboard-container fade-in"><p>No Dashboard available for this role.</p></div>;
   }
 };
 

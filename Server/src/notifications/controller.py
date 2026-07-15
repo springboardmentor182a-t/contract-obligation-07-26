@@ -10,7 +10,7 @@ from notifications.models import NotificationResponse
 
 router = APIRouter(
     prefix="/notification",
-    tags=["auth"],
+    tags=["Notifications"],
 )
 
 
@@ -25,9 +25,6 @@ def get_notifications(
     notifications = (
         db.query(Notification).filter(Notification.user_id == user.user_id).all()
     )
-
-    if not notifications:
-        raise HTTPException(status_code=404, detail="No notifications found!")
     return notifications
 
 
@@ -37,10 +34,6 @@ def get_admin_notifications(
     db: Session = Depends(get_db),
 ):
     notifications = db.query(Notification).all()
-
-    if not notifications:
-        raise HTTPException(status_code=404, detail="No notifications found!")
-
     return notifications
 
 
@@ -68,5 +61,4 @@ def delete_notification(
 
     db.delete(notification)
     db.commit()
-
     return {"message": "Notification deleted successfully"}

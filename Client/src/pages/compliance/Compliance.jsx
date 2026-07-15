@@ -8,6 +8,7 @@ import FormInput from '../../components/Form/FormInput';
 import FormSelect from '../../components/Form/FormSelect';
 import Button from '../../components/Buttons/Button';
 import Badge from '../../components/DataDisplay/Badge';
+import Modal from '../../components/Modals/Modal';
 import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import { Doughnut, Line } from 'react-chartjs-2';
 import '../contracts/Contracts.css';
@@ -18,6 +19,8 @@ ChartJS.register(ArcElement, CategoryScale, LinearScale, PointElement, LineEleme
 const Compliance = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Overview');
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const complianceItems = [
     { id: 'CMP-001', requirement: 'GDPR Data Processing', category: 'Data Privacy', entity: 'TechCorp Solutions', status: 'Compliant', risk: 'High', lastAudit: '2023-10-01', score: 98 },
@@ -107,7 +110,7 @@ const Compliance = () => {
         </div>
         <div className="comp-header-actions">
           <Button variant="outline" icon={FileText}>Export Report</Button>
-          <Button variant="primary" icon={ShieldAlert}>Initiate Audit</Button>
+          <Button variant="primary" icon={ShieldAlert} onClick={() => alert('Initiating audit across all entities...')}>Initiate Audit</Button>
         </div>
       </div>
 
@@ -242,7 +245,15 @@ const Compliance = () => {
                     </td>
                     <td>{getStatusBadge(item.status)}</td>
                     <td className="action-cell">
-                      <button className="comp-action-btn"><ChevronRight size={20} /></button>
+                      <button 
+                        className="comp-action-btn"
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        <ChevronRight size={20} />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -251,6 +262,74 @@ const Compliance = () => {
           </div>
         </div>
       </div>
+
+      {/* Compliance Details Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Compliance Details"
+        footer={
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', width: '100%' }}>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
+            <Button 
+              variant="primary" 
+              onClick={() => {
+                alert(`Action initiated for requirement: ${selectedItem?.requirement}`);
+                setIsModalOpen(false);
+              }}
+            >
+              Initiate Action
+            </Button>
+          </div>
+        }
+      >
+        {selectedItem && (
+          <div className="compliance-details-modal">
+            <div className="detail-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+              <div>
+                <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '0.25rem' }}>Requirement</p>
+                <h3 style={{ margin: 0, color: 'var(--color-text-main)' }}>{selectedItem.requirement}</h3>
+                <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>ID: {selectedItem.id} • Category: {selectedItem.category}</p>
+              </div>
+              <div>
+                {getStatusBadge(selectedItem.status)}
+              </div>
+            </div>
+
+            <div className="detail-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem', padding: '1rem', backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+              <div>
+                <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '0.25rem' }}>Entity</p>
+                <p style={{ fontWeight: '500' }}>{selectedItem.entity}</p>
+              </div>
+              <div>
+                <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '0.25rem' }}>Risk Level</p>
+                {getRiskLevel(selectedItem.risk)}
+              </div>
+              <div>
+                <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '0.25rem' }}>Last Audit</p>
+                <p style={{ fontWeight: '500' }}>{selectedItem.lastAudit}</p>
+              </div>
+              <div>
+                <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '0.25rem' }}>Health Score</p>
+                <div className="health-score-cell" style={{ justifyContent: 'flex-start' }}>
+                  <span className={`score-text ${selectedItem.score < 50 ? 'text-danger' : selectedItem.score < 80 ? 'text-warning' : 'text-success'}`}>{selectedItem.score}/100</span>
+                  <div className="mini-progress-bg" style={{ width: '80px', marginLeft: '0.75rem' }}>
+                    <div className={`mini-progress-fill ${selectedItem.score < 50 ? 'bg-danger' : selectedItem.score < 80 ? 'bg-warning' : 'bg-success'}`} style={{ width: `${selectedItem.score}%` }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+               <h4 style={{ marginBottom: '0.75rem', color: 'var(--color-text-main)' }}>Audit Notes</h4>
+               <p className="text-muted" style={{ lineHeight: '1.5', fontSize: '0.9rem' }}>
+                 The current compliance status is based on the latest automated check and manual audit findings.
+                 Please review the risk factors associated with this entity. Further documentation might be required to fulfill the <strong>{selectedItem.requirement}</strong> requirements.
+               </p>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

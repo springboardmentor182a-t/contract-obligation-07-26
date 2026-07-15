@@ -6,12 +6,10 @@ import { Mail, Lock, User, Briefcase, BadgeCheck, Building, Users } from 'lucide
 import { Link } from 'react-router-dom';
 
 const rolesList = [
-  { id: 'Administrator', title: 'Admin', icon: <User size={16} /> },
-  { id: 'Legal Manager', title: 'Legal', icon: <Briefcase size={16} /> },
-  { id: 'Compliance Officer', title: 'Compliance', icon: <BadgeCheck size={16} /> },
-  { id: 'Contract Manager', title: 'Contracts', icon: <Building size={16} /> },
-  { id: 'Department Head', title: 'Dept Head', icon: <Users size={16} /> },
-  { id: 'Employee', title: 'Employee', icon: <User size={16} /> },
+  { id: 'Admin', title: 'Admin', icon: <User size={16} /> },
+  { id: 'Legal Manager', title: 'Legal Manager', icon: <Briefcase size={16} /> },
+  { id: 'Compliance Officer', title: 'Compliance Officer', icon: <BadgeCheck size={16} /> },
+  { id: 'Contract Manager', title: 'Contract Manager', icon: <Building size={16} /> },
 ];
 
 const LoginForm = ({ onSubmit }) => {
