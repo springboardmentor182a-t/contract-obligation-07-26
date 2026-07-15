@@ -7,6 +7,7 @@ import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import DashboardRouter from './pages/dashboards/DashboardRouter';
 import UserManagement from './pages/users/UserManagement';
+import OrganizationManagement from './pages/organizations/OrganizationManagement';
 import ContractRepository from './pages/contracts/ContractRepository';
 import ContractDetails from './pages/contracts/ContractDetails';
 import ArchivedContracts from './pages/contracts/ArchivedContracts';
@@ -51,6 +52,7 @@ const RoleProtectedRoute = ({ module, children }) => {
       'Notifications': { admin: true, legal: true, compliance: true, contract: true, default: true },
       'Audit Logs': { admin: true, legal: false, compliance: false, contract: false, default: false },
       'User Management': { admin: true, legal: true, compliance: false, contract: false, default: false },
+      'Organization Management': { admin: true, legal: false, compliance: false, contract: false, default: false },
       'Settings': { admin: true, legal: true, compliance: true, contract: true, default: true }
     };
 
@@ -127,6 +129,7 @@ function App() {
 
             {/* Role-Specific New Routes (Placeholders except users) */}
             <Route path="users" element={<RoleProtectedRoute module="User Management"><UserManagement /></RoleProtectedRoute>} />
+            <Route path="organizations" element={<RoleProtectedRoute module="Organization Management"><OrganizationManagement /></RoleProtectedRoute>} />
             <Route path="audit-logs" element={<RoleProtectedRoute module="Audit Logs"><AuditLogs /></RoleProtectedRoute>} />
             <Route path="approvals" element={<PlaceholderPage title="Contract Approvals" />} />
             <Route path="my-contracts" element={<PlaceholderPage title="My Contracts" />} />

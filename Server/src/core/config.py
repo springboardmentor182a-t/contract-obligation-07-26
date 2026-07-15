@@ -1,10 +1,6 @@
 from typing import List
-from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
-ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 
 class Setting(BaseSettings):
@@ -43,7 +39,7 @@ class Setting(BaseSettings):
         return v
 
     model_config = SettingsConfigDict(
-        env_file=ENV_FILE,
+        env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=True,
     )

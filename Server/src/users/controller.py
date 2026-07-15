@@ -28,7 +28,6 @@ def get_users(
     current_user: User = Depends(admin_required), db: Session = Depends(get_db)
 ):
     users = db.query(User).all()
-
     return users
 
 
@@ -62,7 +61,6 @@ def update_user(
         module="Users",
         description="User update successfully.by admin",
     )
-
     return user
 
 
@@ -89,7 +87,6 @@ def deactivate_user(
         module="Users",
         description=f"deactivate_user : {user.is_active} .by admin",
     )
-
     return user
 
 
@@ -115,5 +112,4 @@ def delete_user(
         module="Users",
         description="User deleted successfully.by admin",
     )
-
     return {"message": "User deleted successfully"}
