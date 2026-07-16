@@ -12,6 +12,7 @@ def admin_required(
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.email == payload["sub"]).first()
+
     if not user:
         raise HTTPException(404, "User not exist!!")
 
@@ -20,4 +21,5 @@ def admin_required(
         UserRole.LEGAL_MANAGER,
     ]:
         raise HTTPException(403, "Access denied!!")
+
     return user
