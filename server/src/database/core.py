@@ -1,46 +1,66 @@
 import os
+from pathlib import Path
+
 from dotenv import load_dotenv
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-load_dotenv()
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql+asyncpg://postgres:postgres@localhost:5432/contractiq"
-)
+SERVER_DIR = Path(__file__).resolve().parents[2]
+ENV_FILE = SERVER_DIR / ".env"
 
-# Force using asyncpg if postgresql url doesn't have it
-if DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace(
-        "postgresql://",
-        "postgresql+asyncpg://"
-    )
-
-engine = create_async_engine(
-    DATABASE_URL,
-    echo=False,
-    pool_pre_ping=True
-)
-
-async_session = sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-    autocommit=False,
-    autoflush=False
-)
+# Local development lo server/.env unte load chestundi.
+# GitHub Actions lo workflow environment variables use avutayi.
+if ENV_FILE.exists():
+    load_dotenv(ENV_FILE, override=False)
 
 Base = declarative_base()
 
+engine = None
+SessionLocal = None
 
-async def get_db():
-    async with async_session() as session:
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+
+def initialize_database():
+    """Create the database engine and session factory when required."""
+    global engine, SessionLocal
+
+    if engine is not None:
+        return
+
+    database_url = os.getenv("DATABASE_URL")
+
+    # If DATABASE_URL isn't provided in dev, fall back to a local SQLite file
+    # so the app can run without external DB configuration.
+    if not database_url:
+        fallback = SERVER_DIR / "dev.db"
+        database_url = f"sqlite:///{fallback}"
+        print("WARNING: DATABASE_URL not set — falling back to local SQLite:", database_url)
+
+    engine = create_engine(
+        database_url,
+        pool_pre_ping=True,
+    )
+
+    # Create missing tables automatically (convenience for local development).
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as exc:
+        print("ERROR creating database tables:", exc)
+
+    SessionLocal = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+    )
+
+
+def get_db():
+    """Provide a database session for FastAPI dependencies."""
+    initialize_database()
+
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()
