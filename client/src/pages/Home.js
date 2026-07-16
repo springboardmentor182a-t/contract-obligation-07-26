@@ -4,6 +4,8 @@ import ContractStatusChart from '../components/Charts/ContractStatusChart';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { API_BASE_URL } from '../data/constants';
+import Navbar from '../layout/Navbar';
+import NewContractModal from '../components/Modals/NewContractModal';
 
 const Home = () => {
   const [dashboardData, setDashboardData] = useState({
@@ -14,29 +16,80 @@ const Home = () => {
     activities: []
   });
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/dashboard`);
+      if (response.ok) {
+        const data = await response.json();
+        setDashboardData(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/dashboard`);
-        if (response.ok) {
-          const data = await response.json();
-          setDashboardData(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboardData();
   }, []);
+
+  // --- NEW: Action Button Handlers ---
+  const handleDeleteContract = async (contractId) => {
+    if (!window.confirm("Are you sure you want to delete this contract?")) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/contracts/${contractId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        fetchDashboardData(); 
+      } else {
+        alert("Failed to delete the contract.");
+      }
+    } catch (error) {
+      console.error("Error deleting contract:", error);
+    }
+  };
+
+  const handleViewDetails = (contractName) => {
+    alert(`Loading full details for: ${contractName}`);
+  };
+
+  const handleEdit = (contractName) => {
+    alert(`Opening edit window for: ${contractName}`);
+  };
+
+  const handleDownload = (contractName) => {
+    alert(`Downloading document for: ${contractName}`);
+  };
+
+  const filteredContracts = dashboardData.contracts.filter(contract => 
+    contract.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    contract.party.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) return <PageContainer><div>Loading...</div></PageContainer>;
 
   return (
     <PageContainer>
+      <Navbar 
+        onNewContract={() => setIsModalOpen(true)} 
+        notifications={dashboardData.deadlines}
+        onSearch={setSearchTerm}
+      />
+
+      <NewContractModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSaveSuccess={fetchDashboardData} 
+      />
+
       <div className="dashboard-grid">
         <div className="kpi-cards">
           <div className="card">Total Contracts: {dashboardData.kpi.total}</div>
@@ -92,7 +145,7 @@ const Home = () => {
                 </tr>
               </thead>
               <tbody>
-                {dashboardData.contracts.length > 0 ? dashboardData.contracts.map((contract, idx) => (
+                {filteredContracts.length > 0 ? filteredContracts.map((contract, idx) => (
                   <tr key={idx}>
                     <td>{contract.name}</td>
                     <td>{contract.party}</td>
@@ -100,9 +153,25 @@ const Home = () => {
                     <td>{contract.startDate}</td>
                     <td>{contract.endDate}</td>
                     <td>{contract.value}</td>
-                    <td>...</td>
+                    {/* --- NEW: Interactive Action Buttons --- */}
+                    <td>
+                      <div style={{ display: 'flex', gap: '10px', border: 'none' }}>
+                        <button onClick={() => handleViewDetails(contract.name)} title="View Details" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+                          👁️
+                        </button>
+                        <button onClick={() => handleEdit(contract.name)} title="Edit" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+                          ✏️
+                        </button>
+                        <button onClick={() => handleDownload(contract.name)} title="Download" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+                          📥
+                        </button>
+                        <button onClick={() => handleDeleteContract(contract.id)} title="Delete" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: '#e74c3c' }}>
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                )) : <tr><td colSpan="7">No recent contracts</td></tr>}
+                )) : <tr><td colSpan="7">No matching contracts found</td></tr>}
               </tbody>
             </table>
           </div>

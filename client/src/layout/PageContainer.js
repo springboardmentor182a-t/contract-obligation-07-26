@@ -8,7 +8,6 @@ const PageContainer = ({ children }) => {
     <div className="page-container">
       <Sidebar />
       <div className="main-wrapper">
-        <Navbar />
         <main className="main-content">
           {children}
         </main>
