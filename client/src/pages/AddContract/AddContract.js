@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
 import BASE_URL from "../../config/api";
-import "../../styles/addContract.css";
+import "../../styles/AddContract.css";
 
 function AddContract() {
   const navigate = useNavigate();
@@ -16,24 +16,53 @@ function AddContract() {
 const [saving, setSaving] = useState(false);   // Saving the form
 
   const [contract, setContract] = useState({
-    company: "",
-    contract: "",
-    category: "",
-    owner: "",
-    value: "",
-    status: "Draft",
-    priority: "Medium",
-    start_date: "",
-    end_date: "",
-    description: "",
+  id: "",
+  company: "",
+  contract: "",
+  category: "",
+  value: "",
+  owner: "",
+  status: "Draft",
+  compliance: 0,
+  renewal: "",
+  start_date: "",
+  end_date: "",
+  days_remaining: 0,
+  priority: "Medium",
+  description: "",
+  paid_amount: "",
+  outstanding: "",
+  currency: "USD",
+  payment_progress: 0,
+  renewal_type: "",
+  notice_period: "",
+  auto_renewal: "",
+  created_on: "",
+  effective_date: "",
+  expiry_date: "",
+  renewal_reminder: "",
+  documents: 0,
+  obligations: 0,
+  tasks: 0,
 });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
+    const numberFields = [
+      "compliance",
+      "days_remaining",
+      "payment_progress",
+      "documents",
+      "obligations",
+      "tasks",
+    ];
+
     setContract((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: numberFields.includes(name)
+        ? Number(value)
+        : value,
     }));
   };
 
@@ -95,8 +124,10 @@ const [saving, setSaving] = useState(false);   // Saving the form
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save contract");
-      }
+        const error = await response.text();
+        console.error(error);
+        throw new Error(`Failed to save contract (${response.status})`);
+}
       const result = await response.json();
       console.log(result);
 
@@ -157,6 +188,16 @@ const [saving, setSaving] = useState(false);   // Saving the form
                         required
                     />
                     </div>
+                    <div className="form-group">
+                      <label>Contract ID</label>
+                      <input
+                        type="text"
+                        name="id"
+                        value={contract.id}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
 
                     <div className="form-group">
                     <label>Company</label>
@@ -198,6 +239,35 @@ const [saving, setSaving] = useState(false);   // Saving the form
                         onChange={handleChange}
                     />
                     </div>
+                    <div className="form-group">
+                      <label>Paid Amount</label>
+                      <input
+                        type="text"
+                        name="paid_amount"
+                        value={contract.paid_amount}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Outstanding Amount</label>
+                      <input
+                        type="text"
+                        name="outstanding"
+                        value={contract.outstanding}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Currency</label>
+                      <input
+                        type="text"
+                        name="currency"
+                        value={contract.currency}
+                        onChange={handleChange}
+                      />
+                    </div>
 
                     <div className="form-group">
                         <label>Status</label>
@@ -212,6 +282,15 @@ const [saving, setSaving] = useState(false);   // Saving the form
                          <option value="Review">Review</option>
                          <option value="Expired">Expired</option>
                         </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Compliance (%)</label>
+                      <input
+                        type="number"
+                        name="compliance"
+                        value={contract.compliance}
+                        onChange={handleChange}
+                      />
                     </div>
 
                     <div className="form-group">
@@ -248,6 +327,138 @@ const [saving, setSaving] = useState(false);   // Saving the form
                             value={contract.end_date}
                             onChange={handleChange}
                     />
+                    </div>
+                    <div className="form-group">
+                      <label>Renewal Date</label>
+                      <input
+                        type="date"
+                        name="renewal"
+                        value={contract.renewal}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Days Remaining</label>
+                      <input
+                        type="number"
+                        name="days_remaining"
+                        value={contract.days_remaining}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Payment Progress (%)</label>
+                      <input
+                        type="number"
+                        name="payment_progress"
+                        value={contract.payment_progress}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Renewal Type</label>
+                      <input
+                        type="text"
+                        name="renewal_type"
+                        value={contract.renewal_type}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Notice Period</label>
+                      <input
+                        type="text"
+                        name="notice_period"
+                        value={contract.notice_period}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Auto Renewal</label>
+                      <select
+                        name="auto_renewal"
+                        value={contract.auto_renewal}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select</option>
+                        <option value="Enabled">Enabled</option>
+                        <option value="Disabled">Disabled</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Created On</label>
+                      <input
+                        type="date"
+                        name="created_on"
+                        value={contract.created_on}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Effective Date</label>
+                      <input
+                        type="date"
+                        name="effective_date"
+                        value={contract.effective_date}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Expiry Date</label>
+                      <input
+                        type="date"
+                        name="expiry_date"
+                        value={contract.expiry_date}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Renewal Reminder</label>
+                      <input
+                        type="date"
+                        name="renewal_reminder"
+                        value={contract.renewal_reminder}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Documents</label>
+                      <input
+                        type="number"
+                        name="documents"
+                        value={contract.documents}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Obligations</label>
+                      <input
+                        type="number"
+                        name="obligations"
+                        value={contract.obligations}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Tasks</label>
+                      <input
+                        type="number"
+                        name="tasks"
+                        value={contract.tasks}
+                        onChange={handleChange}
+                      />
                     </div>
 
                     <div className="form-group full-width">
