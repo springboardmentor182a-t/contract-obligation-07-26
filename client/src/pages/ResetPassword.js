@@ -1,60 +1,21 @@
 import React, { useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import {
   ArrowLeft,
-  BarChart2,
   CheckCircle,
   Eye,
   EyeOff,
   KeyRound,
   Lock,
   ShieldCheck,
-  Sparkles,
-  TrendingUp,
-  Users,
-  Zap,
 } from "lucide-react";
 
+import AuthLeftPanel from "../components/AuthLeftPanel";
 import "../styles/Auth.css";
-
-const FEATURES = [
-  {
-    icon: <Sparkles size={18} />,
-    title: "AI Contract Analysis",
-    description: "AI-powered clause detection",
-    className: "feature-purple",
-  },
-  {
-    icon: <ShieldCheck size={18} />,
-    title: "Compliance Monitoring",
-    description: "Real-time obligation tracking",
-    className: "feature-green",
-  },
-  {
-    icon: <Zap size={18} />,
-    title: "Automated Approvals",
-    description: "Workflow automation engine",
-    className: "feature-yellow",
-  },
-  {
-    icon: <Lock size={18} />,
-    title: "Enterprise Security",
-    description: "Secure role-based access",
-    className: "feature-blue",
-  },
-  {
-    icon: <Users size={18} />,
-    title: "Team Collaboration",
-    description: "Department-based workflows",
-    className: "feature-teal",
-  },
-  {
-    icon: <BarChart2 size={18} />,
-    title: "Risk Intelligence",
-    description: "Predictive risk scoring",
-    className: "feature-red",
-  },
-];
 
 function ResetPassword() {
   const navigate = useNavigate();
@@ -112,19 +73,16 @@ function ResetPassword() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "/auth/reset-password",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email.trim(),
-            new_password: newPassword,
-          }),
-        }
-      );
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          new_password: newPassword,
+        }),
+      });
 
       let data = {};
 
@@ -166,88 +124,8 @@ function ResetPassword() {
 
   return (
     <main className="premium-login-page">
-      {/* LEFT COMMON PANEL */}
-      <section className="premium-login-left">
-        <div className="login-background-pattern" />
-        <div className="login-background-glow" />
+      <AuthLeftPanel />
 
-        <header className="premium-brand">
-          <div className="premium-brand-icon">
-            <ShieldCheck size={21} />
-          </div>
-
-          <div>
-            <h1>ContractIQ</h1>
-            <p>AI-powered contract platform</p>
-          </div>
-        </header>
-
-        <div className="premium-left-content">
-          <div className="premium-feature-grid">
-            {FEATURES.map((feature) => (
-              <article
-                className={`premium-feature-card ${feature.className}`}
-                key={feature.title}
-              >
-                <div className="premium-feature-icon">
-                  {feature.icon}
-                </div>
-
-                <div>
-                  <h3>{feature.title}</h3>
-                  <p>{feature.description}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <section className="compliance-card">
-            <div className="compliance-header">
-              <div className="compliance-live">
-                <span className="live-dot" />
-                <span>Live Compliance Score</span>
-              </div>
-
-              <div className="ai-monitored-badge">
-                <Sparkles size={11} />
-                <span>AI Monitored</span>
-              </div>
-            </div>
-
-            <div className="compliance-value-row">
-              <strong>84%</strong>
-
-              <span className="compliance-trend">
-                <TrendingUp size={15} />
-                +2% this month
-              </span>
-            </div>
-
-            <div className="compliance-progress">
-              <div className="compliance-progress-value" />
-            </div>
-
-            <div className="compliance-details">
-              <span>61 of 72 obligations met</span>
-              <span>Updated 5 min ago</span>
-            </div>
-          </section>
-        </div>
-
-        <footer className="premium-left-footer">
-          <blockquote>
-            “Strong compliance builds stronger organizations.”
-          </blockquote>
-
-          <p>
-            Manage contracts securely, automate approvals, monitor
-            compliance, and reduce organizational risks using AI-powered
-            workflows.
-          </p>
-        </footer>
-      </section>
-
-      {/* RIGHT RESET PASSWORD PANEL */}
       <section className="premium-login-right">
         <div className="premium-login-wrapper">
           <div className="premium-login-card">
@@ -405,6 +283,7 @@ function ResetPassword() {
 
                   <div className="password-requirements">
                     <p>Password should contain:</p>
+
                     <ul>
                       <li>At least 8 characters</li>
                       <li>Uppercase and lowercase letters</li>

@@ -29,15 +29,23 @@ def initialize_database():
 
     database_url = os.getenv("DATABASE_URL")
 
+    # If DATABASE_URL isn't provided in dev, fall back to a local SQLite file
+    # so the app can run without external DB configuration.
     if not database_url:
-        raise RuntimeError(
-            "DATABASE_URL environment variable is not configured."
-        )
+        fallback = SERVER_DIR / "dev.db"
+        database_url = f"sqlite:///{fallback}"
+        print("WARNING: DATABASE_URL not set — falling back to local SQLite:", database_url)
 
     engine = create_engine(
         database_url,
         pool_pre_ping=True,
     )
+
+    # Create missing tables automatically (convenience for local development).
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as exc:
+        print("ERROR creating database tables:", exc)
 
     SessionLocal = sessionmaker(
         autocommit=False,
