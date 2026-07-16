@@ -1,0 +1,15 @@
+{
+  "appConfig": {
+    "name": "ContractIQ",
+    "version": "1.0.0",
+    "defaultLanguage": "en",
+    "timezone": "UTC",
+    "notificationsEnabled": true,
+    "maxUploadSizeMB": 25
+  },
+  "uiConfig": {
+    "theme": "light",
+    "sidebarCollapsed": false,
+    "itemsPerPage": 10
+  }
+}
