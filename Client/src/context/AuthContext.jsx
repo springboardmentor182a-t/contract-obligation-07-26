@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getUsers } from '../features/authentication/services/getUsers';
+import { getUserSettings } from '../features/settings/services/userSettings';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [themePreference, setThemePreference] = useState(null);
 
   const fetchProfile = async () => {
     try {
@@ -13,6 +15,15 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         const data = await getUsers();
         setUserProfile(data);
+        
+        try {
+          const settings = await getUserSettings();
+          if (settings && settings.theme) {
+            setThemePreference(settings.theme);
+          }
+        } catch (err) {
+          console.error("Could not apply theme:", err);
+        }
       } else {
         setUserProfile(null);
       }
@@ -31,6 +42,31 @@ export const AuthProvider = ({ children }) => {
     fetchProfile();
   }, []);
 
+  useEffect(() => {
+    if (!themePreference) return;
+    
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const applyTheme = () => {
+      if (themePreference === 'system') {
+        document.documentElement.setAttribute('data-theme', mediaQuery.matches ? 'dark' : 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', themePreference);
+      }
+    };
+    
+    applyTheme();
+    
+    const handleChange = () => {
+      if (themePreference === 'system') {
+        applyTheme();
+      }
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [themePreference]);
+
   const login = (data) => {
     setUserProfile(data);
   };
@@ -39,11 +75,17 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user_id');
     setUserProfile(null);
+    setThemePreference(null);
+    document.documentElement.removeAttribute('data-theme');
     window.location.href = '/login';
   };
 
+  const updateGlobalTheme = (newTheme) => {
+    setThemePreference(newTheme);
+  };
+
   return (
-    <AuthContext.Provider value={{ userProfile, role: userProfile?.role, loading, login, logout, refreshProfile: fetchProfile }}>
+    <AuthContext.Provider value={{ userProfile, role: userProfile?.role, loading, login, logout, refreshProfile: fetchProfile, updateGlobalTheme }}>
       {children}
     </AuthContext.Provider>
   );

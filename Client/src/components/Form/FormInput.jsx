@@ -1,8 +1,8 @@
 import React from 'react';
 
-const FormInput = ({ label, type = 'text', name, value, onChange, placeholder, error, ...props }) => {
+const FormInput = ({ label, type = 'text', name, value, onChange, placeholder, error, className, ...props }) => {
   return (
-    <div className="form-group">
+    <div className={`form-group ${className || ''}`}>
       {label && <label htmlFor={name} className="form-label">{label}</label>}
       <input
         type={type}
