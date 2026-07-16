@@ -40,4 +40,5 @@ class User(Base):
     join_date = Column(DateTime(timezone=True), server_default=func.now())
 
     notifications = relationship("Notification", back_populates="user")
+    settings = relationship("UserSettings", uselist=False, back_populates="user")
     is_active = Column(Boolean, default=True)

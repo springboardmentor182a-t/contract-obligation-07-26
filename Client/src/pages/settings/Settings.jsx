@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { User, Bell, Shield, Palette, Save, Upload, Trash2, Loader2 } from 'lucide-react';
+import { User, Bell, Shield, Palette, Save, Loader2 } from 'lucide-react';
 import Button from '../../components/Buttons/Button';
 import FormInput from '../../components/Form/FormInput';
 import FormSelect from '../../components/Form/FormSelect';
 import { getUsers } from '../../features/authentication/services/getUsers';
 import { changePassword } from '../../features/authentication/services/changePassword';
 import { updateUser } from '../../features/authentication/services/updateUser';
+import { getUserSettings, updateUserSettings } from '../../features/settings/services/userSettings';
+import { useAuth } from '../../context/AuthContext';
 import './Settings.css';
 
 const Settings = () => {
+  const { refreshProfile, updateGlobalTheme } = useAuth();
   const [activeTab, setActiveTab] = useState('account');
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,11 +27,14 @@ const Settings = () => {
   const [profileStatus, setProfileStatus] = useState({ type: '', message: '' });
   const [loadingProfile, setLoadingProfile] = useState(false);
   
-  const [notifications, setNotifications] = useState({
-    emailAlerts: true,
-    pushNotifications: false,
-    contractExpiry: true,
-    weeklyReports: false
+  const [userSettings, setUserSettings] = useState({
+    email_alerts: true,
+    push_notifications: false,
+    contract_expiry: true,
+    weekly_reports: false,
+    theme: 'light',
+    compact_mode: false,
+    timezone: 'Asia/Kolkata'
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -38,6 +44,12 @@ const Settings = () => {
   });
   const [passwordStatus, setPasswordStatus] = useState({ type: '', message: '' });
   const [loadingPassword, setLoadingPassword] = useState(false);
+
+  const [notificationStatus, setNotificationStatus] = useState({ type: '', message: '' });
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+
+  const [appearanceStatus, setAppearanceStatus] = useState({ type: '', message: '' });
+  const [loadingAppearance, setLoadingAppearance] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -65,10 +77,39 @@ const Settings = () => {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    const fetchSettingsData = async () => {
+      try {
+        const data = await getUserSettings();
+        if (data) {
+          setUserSettings({
+            email_alerts: data.email_alerts ?? true,
+            push_notifications: data.push_notifications ?? false,
+            contract_expiry: data.contract_expiry ?? true,
+            weekly_reports: data.weekly_reports ?? false,
+            theme: data.theme || 'light',
+            compact_mode: data.compact_mode ?? false,
+            timezone: data.timezone || 'Asia/Kolkata'
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load settings:", err);
+      }
+    };
+    fetchSettingsData();
+  }, []);
+
   const handleToggle = (key) => {
-    setNotifications(prev => ({
+    setUserSettings(prev => ({
       ...prev,
       [key]: !prev[key]
+    }));
+  };
+
+  const handleSettingChange = (e, key) => {
+    setUserSettings(prev => ({
+      ...prev,
+      [key]: e.target.value === 'on' ? true : e.target.value === 'off' ? false : e.target.value
     }));
   };
 
@@ -92,12 +133,16 @@ const Settings = () => {
         name: profileData.name,
         email: profileData.email,
         phone: profileData.phone,
-        employeeId: profileData.employeeId,
-        companyName: userProfile?.company_name || "",
+        employee_id: profileData.employeeId,
+        company_name: userProfile?.company_name || "",
         department: profileData.department,
         designation: profileData.designation,
-        officeLocation: profileData.officeLocation
+        location: profileData.officeLocation
       });
+      await updateUserSettings(userSettings);
+      if (refreshProfile) {
+        await refreshProfile();
+      }
       setProfileStatus({ type: 'success', message: 'Profile updated successfully!' });
     } catch (err) {
       setProfileStatus({ type: 'error', message: err.message || 'Failed to update profile' });
@@ -131,6 +176,38 @@ const Settings = () => {
     }
   };
 
+  const handleSaveNotifications = async () => {
+    setLoadingNotifications(true);
+    setNotificationStatus({ type: '', message: '' });
+    try {
+      await updateUserSettings(userSettings);
+      setNotificationStatus({ type: 'success', message: 'Notification preferences saved!' });
+    } catch (err) {
+      setNotificationStatus({ type: 'error', message: err.message || 'Failed to save notifications' });
+    } finally {
+      setLoadingNotifications(false);
+      setTimeout(() => setNotificationStatus({ type: '', message: '' }), 3000);
+    }
+  };
+
+  const handleSaveAppearance = async () => {
+    setLoadingAppearance(true);
+    setAppearanceStatus({ type: '', message: '' });
+    try {
+      await updateUserSettings(userSettings);
+      setAppearanceStatus({ type: 'success', message: 'Appearance settings applied!' });
+      
+      if (updateGlobalTheme) {
+        updateGlobalTheme(userSettings.theme);
+      }
+    } catch (err) {
+      setAppearanceStatus({ type: 'error', message: err.message || 'Failed to save appearance' });
+    } finally {
+      setLoadingAppearance(false);
+      setTimeout(() => setAppearanceStatus({ type: '', message: '' }), 3000);
+    }
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'account':
@@ -147,14 +224,6 @@ const Settings = () => {
               </div>
             ) : (
               <>
-                <div className="profile-photo-section">
-                  <div className="profile-avatar">{userProfile?.full_name ? userProfile.full_name.substring(0, 2).toUpperCase() : 'AD'}</div>
-                  <div className="profile-photo-actions">
-                    <Button variant="outline" icon={Upload}>Upload Photo</Button>
-                    <Button variant="icon" title="Remove Photo"><Trash2 size={18} className="text-danger" /></Button>
-                  </div>
-                </div>
-
                 <form className="settings-form-grid" onSubmit={handleProfileSave}>
                   <FormInput label="Full Name" name="name" type="text" value={profileData.name} onChange={handleProfileInputChange} />
                   <FormInput label="Employee ID" name="employeeId" type="text" value={profileData.employeeId} onChange={handleProfileInputChange} />
@@ -167,8 +236,9 @@ const Settings = () => {
                   
                   <FormSelect 
                     label="Timezone" 
-                    options={[{value: 'UTC', label: 'UTC (GMT+0)'}, {value: 'EST', label: 'EST (GMT-5)'}, {value: 'IST', label: 'IST (GMT+5:30)'}]} 
-                    defaultValue="UTC"
+                    options={[{value: 'UTC', label: 'UTC (GMT+0)'}, {value: 'EST', label: 'EST (GMT-5)'}, {value: 'Asia/Kolkata', label: 'IST (GMT+5:30)'}]} 
+                    value={userSettings.timezone}
+                    onChange={(e) => handleSettingChange(e, 'timezone')}
                     className="settings-form-group full-width"
                   />
                 </form>
@@ -204,7 +274,7 @@ const Settings = () => {
                   <p>Receive email updates for important contract changes</p>
                 </div>
                 <label className="switch">
-                  <input type="checkbox" checked={notifications.emailAlerts} onChange={() => handleToggle('emailAlerts')} />
+                  <input type="checkbox" checked={userSettings.email_alerts} onChange={() => handleToggle('email_alerts')} />
                   <span className="slider"></span>
                 </label>
               </div>
@@ -215,7 +285,7 @@ const Settings = () => {
                   <p>Show desktop notifications when app is open</p>
                 </div>
                 <label className="switch">
-                  <input type="checkbox" checked={notifications.pushNotifications} onChange={() => handleToggle('pushNotifications')} />
+                  <input type="checkbox" checked={userSettings.push_notifications} onChange={() => handleToggle('push_notifications')} />
                   <span className="slider"></span>
                 </label>
               </div>
@@ -226,7 +296,7 @@ const Settings = () => {
                   <p>Alert me 30, 60, and 90 days before expirations</p>
                 </div>
                 <label className="switch">
-                  <input type="checkbox" checked={notifications.contractExpiry} onChange={() => handleToggle('contractExpiry')} />
+                  <input type="checkbox" checked={userSettings.contract_expiry} onChange={() => handleToggle('contract_expiry')} />
                   <span className="slider"></span>
                 </label>
               </div>
@@ -237,14 +307,21 @@ const Settings = () => {
                   <p>Receive a weekly digest of portfolio performance</p>
                 </div>
                 <label className="switch">
-                  <input type="checkbox" checked={notifications.weeklyReports} onChange={() => handleToggle('weeklyReports')} />
+                  <input type="checkbox" checked={userSettings.weekly_reports} onChange={() => handleToggle('weekly_reports')} />
                   <span className="slider"></span>
                 </label>
               </div>
             </div>
             
             <div className="settings-footer">
-              <Button variant="primary" icon={Save}>Save Preferences</Button>
+              {notificationStatus.message && (
+                <div style={{ marginRight: 'auto', color: notificationStatus.type === 'error' ? 'var(--color-danger)' : 'var(--color-success)', fontSize: '0.9rem', alignSelf: 'center' }}>
+                  {notificationStatus.message}
+                </div>
+              )}
+              <Button variant="primary" icon={Save} onClick={handleSaveNotifications} disabled={loadingNotifications}>
+                {loadingNotifications ? 'Saving...' : 'Save Preferences'}
+              </Button>
             </div>
           </div>
         );
@@ -315,7 +392,8 @@ const Settings = () => {
                   {value: 'dark', label: 'Dark Mode'}, 
                   {value: 'system', label: 'System Default'}
                 ]} 
-                defaultValue="light"
+                value={userSettings.theme}
+                onChange={(e) => handleSettingChange(e, 'theme')}
                 className="settings-form-group full-width"
               />
               <FormSelect 
@@ -324,13 +402,21 @@ const Settings = () => {
                   {value: 'off', label: 'Off (Spacious)'}, 
                   {value: 'on', label: 'On (Compact Tables & Lists)'}
                 ]} 
-                defaultValue="off"
+                value={userSettings.compact_mode ? 'on' : 'off'}
+                onChange={(e) => handleSettingChange(e, 'compact_mode')}
                 className="settings-form-group full-width"
               />
             </div>
             
             <div className="settings-footer">
-              <Button variant="primary" icon={Save}>Apply Changes</Button>
+              {appearanceStatus.message && (
+                <div style={{ marginRight: 'auto', color: appearanceStatus.type === 'error' ? 'var(--color-danger)' : 'var(--color-success)', fontSize: '0.9rem', alignSelf: 'center' }}>
+                  {appearanceStatus.message}
+                </div>
+              )}
+              <Button variant="primary" icon={Save} onClick={handleSaveAppearance} disabled={loadingAppearance}>
+                {loadingAppearance ? 'Applying...' : 'Apply Changes'}
+              </Button>
             </div>
           </div>
         );
