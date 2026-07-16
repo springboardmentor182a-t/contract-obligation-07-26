@@ -1,8 +1,8 @@
 import React from 'react';
 
-const FormSelect = ({ label, name, value, onChange, options = [], error, ...props }) => {
+const FormSelect = ({ label, name, value, onChange, options = [], error, className, ...props }) => {
   return (
-    <div className="form-group">
+    <div className={`form-group ${className || ''}`}>
       {label && <label htmlFor={name} className="form-label">{label}</label>}
       <select
         id={name}
