@@ -3,7 +3,7 @@ import {
   FiRotateCcw,
 } from "react-icons/fi";
 
-import "../../styles/searchbar.css";
+import "../../styles/Searchbar.css";
 
 function SearchBar({
   searchTerm,
