@@ -7,6 +7,7 @@ from core.config import settings
 from database.core import create_tables
 from api import router
 
+
 create_tables()
 
 
