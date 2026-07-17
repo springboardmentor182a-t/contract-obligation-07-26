@@ -3,11 +3,8 @@ const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
 export const signupService = async (userData) => {
   try {
-    // Map frontend roles to backend UserRole Enum
+    // Frontend roles now exactly match backend UserRole Enum
     let mappedRole = userData.role;
-    if (userData.role === 'Administrator') mappedRole = 'Admin';
-    if (userData.role === 'Contract Manager') mappedRole = 'Procurement Manager';
-    if (userData.role === 'Department Head' || userData.role === 'Employee') mappedRole = 'Business User';
 
     // Map frontend variable names to backend SQLAlchemy model fields
     const payload = {
@@ -17,6 +14,7 @@ export const signupService = async (userData) => {
       phone: userData.phone,
       password: userData.password,
       employee_id: userData.employeeId,
+      organization_id: userData.organization_id ? parseInt(userData.organization_id) : null,
       company_name: userData.companyName || "",
       department: userData.department,
       designation: userData.designation,

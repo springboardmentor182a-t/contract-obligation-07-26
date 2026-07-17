@@ -2,12 +2,14 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 import random
+from sqlalchemy.exc import IntegrityError
 
 
 from database.core import get_db
 from entities.user import User
 from entities.otp import OTP
 from audit_logs.service import create_audit_log
+from auth.mail import send_otp
 from auth.mail import send_otp
 from auth.service import (
     hash_password,
@@ -28,35 +30,37 @@ from auth.models import (
 
 router = APIRouter(
     prefix="/auth",
-    tags=["auth"],
+    tags=["Authentication"],
 )
 
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register")
 def register_user(
     user_data: UserCreate,
     response: Response,
     db: Session = Depends(get_db),
 ):
+    user = User(
+        role=user_data.role,
+        full_name=user_data.full_name,
+        email=user_data.email,
+        phone=user_data.phone,
+        password=hash_password(user_data.password),
+        employee_id=user_data.employee_id,
+        organization_id=user_data.organization_id,
+        company_name=user_data.company_name,
+        department=user_data.department,
+        designation=user_data.designation,
+        location=user_data.location,
+    )
+
     try:
-        user = User(
-            role=user_data.role,
-            full_name=user_data.full_name,
-            email=user_data.email,
-            phone=user_data.phone,
-            password=hash_password(user_data.password),
-            employee_id=user_data.employee_id,
-            company_name=user_data.company_name,
-            department=user_data.department,
-            designation=user_data.designation,
-            location=user_data.location,
-        )
         db.add(user)
         db.commit()
         db.refresh(user)
-        
     except Exception as e:
-        raise HTTPException(status_code=404, detail="User allready exist!!")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
     create_audit_log(
         db=db,

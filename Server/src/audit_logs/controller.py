@@ -8,7 +8,7 @@ from users.service import admin_required
 
 router = APIRouter(
     prefix="/audit_logs",
-    tags=["audit_logs"],
+    tags=["Audit Logs"],
 )
 
 

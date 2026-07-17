@@ -115,6 +115,16 @@
   gap: 0.25rem;
 }
 
+.logout-btn {
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+
 .nav-item-danger {
   color: #f87171;
 }

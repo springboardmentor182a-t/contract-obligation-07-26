@@ -409,7 +409,7 @@ const AdminDashboard = () => {
               {createError}
             </div>
           )}
-          <SignupForm onSubmit={handleCreateUserFull} disabled={isCreating} />
+          <SignupForm onSubmit={handleCreateUserFull} disabled={isCreating} hideAdminRole={true} />
         </div>
       </Modal>
     </div>
