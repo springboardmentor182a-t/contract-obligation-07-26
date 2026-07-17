@@ -1,254 +1,36 @@
-import React, { useState } from 'react';
-import { 
-  Activity, 
-  Search, 
-  Download, 
-  Filter, 
-  Shield,
-  User,
-  Settings,
-  FileText,
-  Clock
-} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Activity, Download, FileCheck2, FileText, History, Search, Settings, Shield, ShieldAlert, ShieldCheck, SlidersHorizontal, User } from 'lucide-react';
 import Button from '../../components/Buttons/Button';
-import FormInput from '../../components/Form/FormInput';
 import FormSelect from '../../components/Form/FormSelect';
-import Badge from '../../components/DataDisplay/Badge';
 import Modal from '../../components/Modals/Modal';
+import { exportAuditReport, getAuditLogs, getAuditSummary } from '../../features/auditLogs/services/getAuditLogs';
 import './AuditLogs.css';
 
-import { getAuditLogs } from '../../features/auditLogs/services/getAuditLogs';
+const categories = ['Activity', 'Contract', 'Approval', 'Security', 'Change'];
+const badgeClass = (category) => `audit-category audit-${category.toLowerCase()}`;
+const formatDate = (value) => value ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) : '—';
+const parseValue = (value) => { try { return value ? JSON.stringify(JSON.parse(value), null, 2) : 'No value recorded'; } catch { return value || 'No value recorded'; } };
+const moduleIcon = (module) => ({ Authentication: Shield, Users: User, Settings, Contracts: FileText, Renewals: History, Compliance: ShieldCheck, Obligations: FileCheck2 }[module] || Activity);
+const statusClass = (status) => `audit-status audit-status-${(status || 'success').toLowerCase()}`;
 
-const getModuleIcon = (module) => {
-  switch (module) {
-    case 'Authentication': return <Shield size={16} />;
-    case 'Users': return <User size={16} />;
-    case 'Settings': return <Settings size={16} />;
-    case 'Contracts': return <FileText size={16} />;
-    case 'System': return <Activity size={16} />;
-    default: return <FileText size={16} />;
-  }
-};
+export default function AuditLogs() {
+  const [logs, setLogs] = useState([]); const [summary, setSummary] = useState({ total: 0, categories: {} });
+  const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [selected, setSelected] = useState(null);
+  const [filters, setFilters] = useState({ search: '', category: 'All', entity_type: 'All', status: 'All', start_date: '', end_date: '' });
 
-const getStatusVariant = (status) => {
-  switch (status) {
-    case 'Success': return 'success';
-    case 'Warning': return 'warning';
-    case 'Error': return 'danger';
-    default: return 'primary';
-  }
-};
+  const load = async () => { setLoading(true); setError(''); try { const [list, counts] = await Promise.all([getAuditLogs(filters), getAuditSummary()]); setLogs(list); setSummary(counts); } catch (err) { setError(err.message); } finally { setLoading(false); } };
+  useEffect(() => { const timer = setTimeout(load, 250); return () => clearTimeout(timer); }, [filters.search, filters.category, filters.entity_type, filters.status, filters.start_date, filters.end_date]);
+  const update = (key, value) => setFilters((current) => ({ ...current, [key]: value }));
+  const handleExport = async (format) => { try { const blob = await exportAuditReport(filters, format); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `contractiq-audit-report.${format}`; link.click(); URL.revokeObjectURL(url); } catch (err) { setError(err.message); } };
+  const cards = [{ label: 'All audit events', value: summary.total, icon: Activity }, ...categories.slice(0, 4).map((category, index) => ({ label: `${category} logs`, value: summary.categories?.[category] || 0, icon: [History, FileCheck2, ShieldCheck, ShieldAlert][index] }))];
 
-const formatDate = (isoString) => {
-  if (!isoString) return 'Unknown Date';
-  const date = new Date(isoString);
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
-  }).format(date);
-};
-
-const AuditLogs = () => {
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterModule, setFilterModule] = useState('All');
-  const [filterStatus, setFilterStatus] = useState('All');
-  const [selectedLog, setSelectedLog] = useState(null);
-
-  React.useEffect(() => {
-    fetchLogs();
-  }, []);
-
-  const fetchLogs = async () => {
-    setLoading(true);
-    try {
-      const data = await getAuditLogs();
-      const mappedLogs = data.map(log => ({
-        id: `AL-${log.audit_id || log.id || Math.floor(Math.random()*1000)}`,
-        timestamp: log.created_at || log.timestamp || new Date().toISOString(),
-        user: log.user_name || log.user || 'System',
-        avatar: (log.user_name || log.user || 'SY').substring(0,2).toUpperCase(),
-        action: log.action || 'Unknown Action',
-        module: log.module || 'System',
-        ipAddress: log.ip_address || log.ipAddress || '127.0.0.1',
-        status: log.status || 'Success',
-        details: {
-          resource: log.resource || 'N/A',
-          description: log.description || 'No description provided.'
-        }
-      }));
-      setLogs(mappedLogs);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredLogs = logs.filter(log => {
-    const matchesSearch = log.user.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          String(log.id).toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesModule = filterModule === 'All' || log.module === filterModule;
-    const matchesStatus = filterStatus === 'All' || log.status === filterStatus;
-    
-    return matchesSearch && matchesModule && matchesStatus;
-  });
-
-  const handleExport = () => {
-    alert("Exporting audit logs to CSV...");
-  };
-
-  return (
-    <div className="dashboard-container fade-in">
-      <div className="audit-logs-header mb-2">
-        <div>
-          <h1 className="text-2xl font-bold">System Audit Logs</h1>
-          <p className="text-muted mt-1">Review system events, user actions, and security alerts.</p>
-        </div>
-        <div className="header-actions">
-          <Button variant="outline" icon={Download} onClick={handleExport}>
-            Export CSV
-          </Button>
-        </div>
-      </div>
-
-      <div className="audit-filters-bar mb-2 stagger-1">
-        <div className="audit-search">
-          <FormInput 
-            type="text" 
-            placeholder="Search by ID, User, or Action..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ marginBottom: 0 }}
-          />
-        </div>
-        
-        <div className="audit-filter-group">
-          <Filter size={18} className="text-muted" />
-          <FormSelect 
-            value={filterModule}
-            onChange={(e) => setFilterModule(e.target.value)}
-            options={[
-              { value: 'All', label: 'All Modules' },
-              { value: 'Authentication', label: 'Authentication' },
-              { value: 'Users', label: 'Users' },
-              { value: 'Contracts', label: 'Contracts' },
-              { value: 'Settings', label: 'Settings' },
-              { value: 'System', label: 'System' }
-            ]}
-            style={{ marginBottom: 0, minWidth: '150px' }}
-          />
-          <FormSelect 
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            options={[
-              { value: 'All', label: 'All Statuses' },
-              { value: 'Success', label: 'Success' },
-              { value: 'Warning', label: 'Warning' },
-              { value: 'Error', label: 'Error' }
-            ]}
-            style={{ marginBottom: 0, minWidth: '140px' }}
-          />
-        </div>
-      </div>
-
-      <div className="audit-table-wrapper stagger-2">
-        <table className="audit-table">
-          <thead>
-            <tr>
-              <th>Log ID</th>
-              <th>Timestamp</th>
-              <th>User</th>
-              <th>Action</th>
-              <th>Module</th>
-              <th>IP Address</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredLogs.length === 0 ? (
-              <tr>
-                <td colSpan="7">
-                  <div className="audit-empty-state">
-                    <p>No audit logs match your search filters.</p>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              filteredLogs.map(log => (
-                <tr key={log.id} onClick={() => setSelectedLog(log)}>
-                  <td className="font-semibold text-muted">{log.id}</td>
-                  <td className="text-sm">{formatDate(log.timestamp)}</td>
-                  <td>
-                    <div className="audit-user-cell">
-                      <div className="audit-avatar">{log.avatar}</div>
-                      <span className="font-semibold">{log.user}</span>
-                    </div>
-                  </td>
-                  <td className="audit-action-cell" title={log.action}>{log.action}</td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--color-text-muted)' }}>
-                      {getModuleIcon(log.module)} {log.module}
-                    </div>
-                  </td>
-                  <td className="text-sm text-muted">{log.ipAddress}</td>
-                  <td>
-                    <Badge variant={getStatusVariant(log.status)}>{log.status}</Badge>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {selectedLog && (
-        <Modal
-          isOpen={!!selectedLog}
-          onClose={() => setSelectedLog(null)}
-          title={`Log Details: ${selectedLog.id}`}
-          footer={
-            <Button type="button" variant="primary" onClick={() => setSelectedLog(null)}>Close</Button>
-          }
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
-              <div>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', color: 'var(--color-text-dark)' }}>{selectedLog.action}</h3>
-                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Clock size={14} /> {formatDate(selectedLog.timestamp)}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>{getModuleIcon(selectedLog.module)} {selectedLog.module}</span>
-                </div>
-              </div>
-              <Badge variant={getStatusVariant(selectedLog.status)}>{selectedLog.status}</Badge>
-            </div>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <p className="text-muted" style={{ fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Actor</p>
-                <div className="audit-user-cell">
-                  <div className="audit-avatar" style={{ width: '24px', height: '24px', fontSize: '0.7rem' }}>{selectedLog.avatar}</div>
-                  <span className="font-semibold">{selectedLog.user}</span>
-                </div>
-              </div>
-              <div>
-                <p className="text-muted" style={{ fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.25rem' }}>IP Address</p>
-                <p className="font-semibold">{selectedLog.ipAddress}</p>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-muted" style={{ fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Technical Details</p>
-              <div className="audit-details-code">
-                {JSON.stringify(selectedLog.details, null, 2)}
-              </div>
-            </div>
-          </div>
-        </Modal>
-      )}
-    </div>
-  );
-};
-
-export default AuditLogs;
+  return <div className="audit-dashboard fade-in">
+    <div className="audit-page-header"><div><h1>Audit & Activity Management</h1><p>Track system activity, approvals, security events, and change history.</p></div><div className="audit-header-actions"><Button variant="outline" icon={Download} onClick={() => handleExport('csv')}>Export CSV</Button><Button variant="primary" icon={Download} onClick={() => handleExport('pdf')}>Export report</Button></div></div>
+    <div className="audit-summary-grid">{cards.map(({ label, value, icon: Icon }) => <div className="audit-summary-card" key={label}><div className="audit-card-icon"><Icon size={21} /></div><div><span>{label}</span><strong>{value}</strong></div></div>)}</div>
+    <section className="audit-content-card"><div className="audit-toolbar"><div className="audit-search-box"><Search size={18} /><input value={filters.search} onChange={(event) => update('search', event.target.value)} placeholder="Search user, event, or reference..." /></div><div className="audit-filter-controls"><SlidersHorizontal size={17} /><FormSelect value={filters.category} onChange={(event) => update('category', event.target.value)} options={[{ value: 'All', label: 'All categories' }, ...categories.map((value) => ({ value, label: value }))]} /><FormSelect value={filters.entity_type} onChange={(event) => update('entity_type', event.target.value)} options={['All', 'Contract', 'Obligation', 'Renewal', 'User', 'Compliance'].map((value) => ({ value, label: value === 'All' ? 'All entities' : value }))} /><FormSelect value={filters.status} onChange={(event) => update('status', event.target.value)} options={['All', 'Success', 'Warning', 'Error'].map((value) => ({ value, label: value === 'All' ? 'All statuses' : value }))} /><input aria-label="Start date" type="date" value={filters.start_date} onChange={(event) => update('start_date', event.target.value)} /><input aria-label="End date" type="date" value={filters.end_date} onChange={(event) => update('end_date', event.target.value)} /></div></div>
+      {error && <div className="audit-message error">{error}</div>}
+      <div className="audit-table-scroll"><table className="audit-log-table"><thead><tr><th>Timestamp</th><th>User</th><th>Category</th><th>Entity</th><th>Activity</th><th>Module</th><th>IP address</th><th>Status</th><th></th></tr></thead><tbody>{loading ? <tr><td colSpan="9" className="audit-message">Loading audit activity…</td></tr> : logs.length === 0 ? <tr><td colSpan="9" className="audit-message">No audit events match these filters.</td></tr> : logs.map((log) => { const Icon = moduleIcon(log.module); return <tr key={log.audit_id}><td>{formatDate(log.created_at)}</td><td><div className="audit-user"><span>{log.user_name?.slice(0, 2).toUpperCase()}</span>{log.user_name}</div></td><td><span className={badgeClass(log.category)}>{log.category}</span></td><td><strong>{log.entity_type || log.module}</strong><small>{log.entity_id || '—'}</small></td><td><strong>{log.action}</strong><small>{log.description}</small></td><td><span className="audit-module"><Icon size={16} />{log.module}</span></td><td>{log.ip_address || '—'}</td><td><span className={statusClass(log.status)}>{log.status || 'Success'}</span></td><td><button className="audit-detail-button" onClick={() => setSelected(log)}>View details</button></td></tr>})}</tbody></table></div>
+    </section>
+    {selected && <Modal isOpen onClose={() => setSelected(null)} title={`Audit event #${selected.audit_id}`} footer={<Button variant="primary" onClick={() => setSelected(null)}>Close</Button>}><div className="audit-detail"><p><b>{selected.description}</b></p><div className="audit-detail-grid"><span>Actor <b>{selected.user_name}</b></span><span>Entity <b>{selected.entity_type} · {selected.entity_id || '—'}</b></span><span>Severity <b>{selected.severity}</b></span><span>Time <b>{formatDate(selected.created_at)}</b></span></div><div className="audit-diff"><div><label>Before</label><pre>{parseValue(selected.old_value)}</pre></div><div><label>After</label><pre>{parseValue(selected.new_value)}</pre></div></div></div></Modal>}
+  </div>;
+}

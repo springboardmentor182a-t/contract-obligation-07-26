@@ -2,11 +2,11 @@ from fastapi import APIRouter
 
 from auth import controller as auth_controller
 from users import controller as user_controller
-from notifications import controller as notification_controller
 from audit_logs import controller as audit_logs_controller
 from reports_analytics import controller as report_analytics_controller
 from compliance import controller as compliance_controller
 from user_setting import controller as user_setting_contraller
+from notifications import controller as notification_controller
 
 router = APIRouter()
 
