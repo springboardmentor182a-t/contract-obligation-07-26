@@ -8,6 +8,7 @@ ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 
 class Setting(BaseSettings):
+    
     API_PREFIX: str = "/api"
     DEBUG: bool = False
 
@@ -19,6 +20,7 @@ class Setting(BaseSettings):
     SECRET_KEY: str = ""
     ALGORITHM: str = ""
     ACCESS_TOKEN_EXPIRE_MINUTES: int = ""
+
 
     # Send Mail
     EMAIL_BACKEND: str = ""

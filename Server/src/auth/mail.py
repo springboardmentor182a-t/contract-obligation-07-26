@@ -2,6 +2,7 @@ from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
 
 from core.config import settings
 
+
 conf = ConnectionConfig(
     MAIL_USERNAME=settings.EMAIL_HOST_USER,
     MAIL_PASSWORD=settings.EMAIL_HOST_PASSWORD,
@@ -22,11 +23,10 @@ async def send_otp(full_name: str, user_email: str, otp: str):
         Dear {full_name},
 
         We received a request to reset your password.
-
+        
         OTP: {otp}
-
+        
         This OTP is valid for the next 15 minutes.
-
         Regards,
         QUICK HIRE
         """,

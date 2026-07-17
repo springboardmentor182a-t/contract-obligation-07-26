@@ -17,6 +17,7 @@ from database.seed import seed_db
 from entities.compliance import Compliance
 from api import router
 
+
 create_tables()
 
 app = FastAPI(
@@ -51,7 +52,5 @@ except Exception as e:
 
 app.include_router(router, prefix=settings.API_PREFIX)
 app.include_router(renewals_controller.router, prefix=settings.API_PREFIX)
-
-
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

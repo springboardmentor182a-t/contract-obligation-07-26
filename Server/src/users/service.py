@@ -13,6 +13,7 @@ def admin_required(
 ):
     user = db.query(User).filter(User.email == payload["sub"]).first()
 
+
     if not user:
         raise HTTPException(404, "User not exist!!")
 
