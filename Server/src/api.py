@@ -12,7 +12,6 @@ router.include_router(notification_controller.router, tags=["Notifications"])
 from fastapi import APIRouter
 
 from auth import controller as auth_controller
-from users import controller as user_controller
 from notifications import controller as notification_controller
 from audit_logs import controller as audit_logs_controller
 from reports_analytics import controller as report_analytics_controller
