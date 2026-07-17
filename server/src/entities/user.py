@@ -48,3 +48,10 @@ class User(Base):
     notifications = relationship("Notification", back_populates="user")
     settings = relationship("UserSettings", back_populates="user", uselist=False)
     is_active = Column(Boolean, default=True)
+
+    
+class User:
+    """Pure domain entity for a User. No external dependencies."""
+    def __init__(self, id: int, email: str):
+        self.id = id
+        self.email = email

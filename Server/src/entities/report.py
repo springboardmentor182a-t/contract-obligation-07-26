@@ -1,4 +1,5 @@
 from sqlalchemy import (
+
     Column,
     Integer,
     String,
@@ -8,10 +9,12 @@ from sqlalchemy import (
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
+
 from database.core import Base
 
 
 class Report(Base):
+
     __tablename__ = "reports"
 
     report_id = Column(Integer, primary_key=True)
@@ -21,3 +24,5 @@ class Report(Base):
     file_path = Column(String(500))
     format = Column(String(20))
     create_at = Column(DateTime(timezone=True), server_default=func.now())
+
+

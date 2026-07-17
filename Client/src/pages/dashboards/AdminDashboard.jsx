@@ -1,27 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Users, 
-  Activity, 
-  Bell, 
-  Settings,
-  UserPlus,
-  ShieldAlert,
-  Server,
-  TerminalSquare
-} from 'lucide-react';
-import ButtonGroup from '../../components/Buttons/ButtonGroup';
-import Dropdown from '../../components/Buttons/Dropdown';
-import Button from '../../components/Buttons/Button';
-import Badge from '../../components/DataDisplay/Badge';
-import Modal from '../../components/Modals/Modal';
-import FormInput from '../../components/Form/FormInput';
-import FormSelect from '../../components/Form/FormSelect';
-import SignupForm from '../../features/authentication/components/SignupForm';
-import { signupService } from '../../features/authentication/services/signup';
-import { getAllUsers } from '../../features/authentication/services/getAllUsers';
-import { getAuditLogs } from '../../features/auditLogs/services/getAuditLogs';
-import { getUserNotifications } from '../../features/notifications/services/notificationAPI';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -34,6 +12,33 @@ import {
   Legend,
   ArcElement
 } from 'chart.js';
+
+
+import {
+  Users,
+  Activity,
+  Bell,
+  Settings,
+  UserPlus,
+  ShieldAlert,
+  Server,
+  TerminalSquare
+} from 'lucide-react';
+
+
+import ButtonGroup from '../../components/Buttons/ButtonGroup';
+import Dropdown from '../../components/Buttons/Dropdown';
+import Button from '../../components/Buttons/Button';
+import Badge from '../../components/DataDisplay/Badge';
+import Modal from '../../components/Modals/Modal';
+import FormInput from '../../components/Form/FormInput';
+import FormSelect from '../../components/Form/FormSelect';
+import SignupForm from '../../features/authentication/components/SignupForm';
+import { signupService } from '../../features/authentication/services/signup';
+import { getAllUsers } from '../../features/authentication/services/getAllUsers';
+import { getAuditLogs } from '../../features/auditLogs/services/getAuditLogs';
+import { getUserNotifications } from '../../features/notifications/services/notificationAPI';
+
 import { Line, Doughnut, Bar } from 'react-chartjs-2';
 import './Dashboard.css';
 
@@ -50,6 +55,7 @@ ChartJS.register(
 );
 
 const AdminDashboard = () => {
+
   const navigate = useNavigate();
   const [timeFilter, setTimeFilter] = useState('30D');
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -63,9 +69,12 @@ const AdminDashboard = () => {
   const [createError, setCreateError] = useState('');
 
   React.useEffect(() => {
+
     const fetchData = async () => {
       setLoading(true);
       try {
+
+
         const [usersData, logsData, notifsData] = await Promise.all([
           getAllUsers().catch(() => []),
           getAuditLogs().catch(() => []),
@@ -84,9 +93,11 @@ const AdminDashboard = () => {
   }, []);
 
   const handleCreateUserFull = async (formData) => {
+
     setIsCreating(true);
     setCreateError('');
     try {
+
       await signupService(formData);
       alert(`User ${formData.name || 'New User'} registered successfully!`);
       setIsUserModalOpen(false);
@@ -99,6 +110,7 @@ const AdminDashboard = () => {
       setIsCreating(false);
     }
   };
+
 
   const totalUsers = users.length;
   const activeSessions = users.filter(u => u.is_active).length;
@@ -120,14 +132,17 @@ const AdminDashboard = () => {
   const monthCounts = new Array(12).fill(0);
   users.forEach(u => {
     if (u.join_date || u.created_at) {
+
       const d = new Date(u.join_date || u.created_at);
       if (d.getFullYear() === currentYear) {
+
         monthCounts[d.getMonth()] += 1;
       }
     }
   });
 
   const lineChartData = {
+
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     datasets: [
       {
@@ -145,6 +160,7 @@ const AdminDashboard = () => {
   };
 
   const lineChartOptions = {
+
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
@@ -155,15 +171,17 @@ const AdminDashboard = () => {
 
   // Real Role Distribution
   const roleCounts = users.reduce((acc, user) => {
+
     const r = user.role || 'Unknown';
     acc[r] = (acc[r] || 0) + 1;
     return acc;
   }, {});
-  
+
   const roleLabels = Object.keys(roleCounts);
   const roleData = Object.values(roleCounts);
 
   const doughnutData = {
+
     labels: roleLabels.length ? roleLabels : ['No Data'],
     datasets: [
       {
@@ -176,6 +194,7 @@ const AdminDashboard = () => {
   };
 
   const doughnutOptions = {
+
     maintainAspectRatio: false,
     cutout: '75%',
     plugins: {
@@ -187,7 +206,7 @@ const AdminDashboard = () => {
   const today = new Date();
   const last7DaysLabels = [];
   const activityCounts = [0, 0, 0, 0, 0, 0, 0];
-  
+
   for (let i = 6; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
@@ -196,21 +215,24 @@ const AdminDashboard = () => {
 
   auditLogs.forEach(log => {
     if (log.created_at || log.timestamp) {
+
       const logDate = new Date(log.created_at || log.timestamp);
       // Reset hours to strictly compare dates
       const logDayStart = new Date(logDate.getFullYear(), logDate.getMonth(), logDate.getDate());
       const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      
+
       const diffTime = todayStart - logDayStart;
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays >= 0 && diffDays < 7) {
+
         activityCounts[6 - diffDays] += 1;
       }
     }
   });
 
   const barChartData = {
+
     labels: last7DaysLabels,
     datasets: [
       {
@@ -223,6 +245,7 @@ const AdminDashboard = () => {
   };
 
   const barChartOptions = {
+
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
@@ -248,18 +271,22 @@ const AdminDashboard = () => {
   const displayedActivities = dynamicActivities.slice(0, 4);
 
   return (
+
     <div className="dashboard-container fade-in">
+
       <div className="dashboard-header mb-2 stagger-1">
         <div>
           <h1 className="text-2xl font-bold">Admin Dashboard</h1>
           <p className="text-muted mt-1">System overview, user management, and audit logs.</p>
         </div>
+
         <div className="dashboard-header-actions">
           <ButtonGroup className="time-filters">
             <button className={`filter-btn ${timeFilter === '7D' ? 'active' : ''}`} onClick={() => setTimeFilter('7D')}>7D</button>
             <button className={`filter-btn ${timeFilter === '30D' ? 'active' : ''}`} onClick={() => setTimeFilter('30D')}>30D</button>
             <button className={`filter-btn ${timeFilter === '1Y' ? 'active' : ''}`} onClick={() => setTimeFilter('1Y')}>1Y</button>
           </ButtonGroup>
+
           <div className="header-buttons">
             <Button variant="primary" icon={UserPlus} onClick={() => setIsUserModalOpen(true)}>
               New User
@@ -269,7 +296,9 @@ const AdminDashboard = () => {
       </div>
 
       <div className="stats-grid stagger-1">
+
         {stats.map((stat, idx) => (
+
           <div key={idx} className="stat-card">
             <div className="stat-card-header">
               <p className="stat-label">{stat.label}</p>
@@ -277,6 +306,7 @@ const AdminDashboard = () => {
                 {stat.icon}
               </div>
             </div>
+
             <div className="stat-content">
               <h3>{stat.value}</h3>
               <div className="stat-footer">
@@ -289,43 +319,51 @@ const AdminDashboard = () => {
       </div>
 
       <div className="dashboard-middle-grid stagger-2">
+
         <div className="dashboard-card main-chart-card">
           <div className="dashboard-card-header">
+
             <div>
               <h3>User Growth</h3>
               <p>Monthly new user registrations</p>
             </div>
+
           </div>
+
           <div className="chart-wrapper">
             <Line data={lineChartData} options={lineChartOptions} />
           </div>
         </div>
 
         <div className="flex flex-col gap-6">
+
           <div className="dashboard-card quick-actions-card glow-card">
             <div className="dashboard-card-header">
               <h3>Admin Actions</h3>
             </div>
+
             <div className="quick-actions-grid">
               <button className="quick-action-btn" onClick={() => setIsUserModalOpen(true)}>
-                <div className="qa-icon" style={{ color: 'var(--color-primary)', backgroundColor: 'rgba(107, 142, 177, 0.15)' }}><UserPlus size={20}/></div>
+                <div className="qa-icon" style={{ color: 'var(--color-primary)', backgroundColor: 'rgba(107, 142, 177, 0.15)' }}><UserPlus size={20} /></div>
                 <span>Create User</span>
               </button>
+
               <button className="quick-action-btn" onClick={() => navigate('/audit-logs')}>
-                <div className="qa-icon" style={{ color: 'var(--color-warning)', backgroundColor: 'rgba(241, 196, 15, 0.15)' }}><TerminalSquare size={20}/></div>
+                <div className="qa-icon" style={{ color: 'var(--color-warning)', backgroundColor: 'rgba(241, 196, 15, 0.15)' }}><TerminalSquare size={20} /></div>
                 <span>Audit Logs</span>
               </button>
               <button className="quick-action-btn" onClick={() => navigate('/notifications')}>
-                <div className="qa-icon" style={{ color: 'var(--color-success)', backgroundColor: 'rgba(46, 204, 113, 0.15)' }}><Bell size={20}/></div>
+                <div className="qa-icon" style={{ color: 'var(--color-success)', backgroundColor: 'rgba(46, 204, 113, 0.15)' }}><Bell size={20} /></div>
                 <span>Broadcast</span>
               </button>
+
               <button className="quick-action-btn" onClick={() => navigate('/settings')}>
-                <div className="qa-icon" style={{ color: 'var(--color-danger)', backgroundColor: 'rgba(231, 76, 60, 0.15)' }}><Settings size={20}/></div>
+                <div className="qa-icon" style={{ color: 'var(--color-danger)', backgroundColor: 'rgba(231, 76, 60, 0.15)' }}><Settings size={20} /></div>
                 <span>System Config</span>
               </button>
             </div>
           </div>
-          
+
           <div className="dashboard-card flex-1">
             <div className="dashboard-card-header">
               <h3>Role Distribution</h3>
@@ -349,17 +387,19 @@ const AdminDashboard = () => {
             <Bar data={barChartData} options={barChartOptions} />
           </div>
         </div>
-        
+
         <div className="dashboard-card activity-dashboard-card" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="dashboard-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <div className="flex items-center gap-2">
-               <Activity size={20} className="text-primary" />
+              <Activity size={20} className="text-primary" />
               <h3 style={{ margin: 0 }}>Recent Audit Logs</h3>
             </div>
+
             <Button variant="outline" size="sm" onClick={() => navigate('/audit-logs')}>
               View All
             </Button>
           </div>
+
           <div className="activity-table-wrapper" style={{ flex: 1 }}>
             <table className="activity-table">
               <thead>
@@ -398,8 +438,8 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <Modal 
-        isOpen={isUserModalOpen} 
+      <Modal
+        isOpen={isUserModalOpen}
         onClose={() => setIsUserModalOpen(false)}
         title="Register New User"
       >
