@@ -23,14 +23,6 @@ def admin_required(
         raise HTTPException(403, "Access denied!!")
 
     return user
-from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
-
-from entities.user import UserRole
-from database.core import get_db
-from entities.user import User
-from auth.service import verify_token
-
 
 def admin_required(
     payload: dict = Depends(verify_token),
