@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database.core import get_db
 from entities.notification import Notification
 from entities.user import User
-from users.utils import admin_required
+from users.service import admin_required
 from auth.service import verify_token
 from notifications.models import NotificationResponse
 

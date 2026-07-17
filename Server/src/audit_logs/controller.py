@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database.core import get_db
 from entities.audit_logs import AuditLog
 from entities.user import User
-from users.utils import admin_required
+from users.service import admin_required
 
 router = APIRouter(
     prefix="/audit_logs",

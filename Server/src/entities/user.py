@@ -1,3 +1,6 @@
+from sqlalchemy.sql import func
+from enum import Enum
+from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Column,
     Integer,
@@ -6,11 +9,10 @@ from sqlalchemy import (
     Boolean,
     Enum as SQLEnum,
 )
-from sqlalchemy.sql import func
-from enum import Enum
-from sqlalchemy.orm import relationship
+
 
 from database.core import Base
+
 
 
 class UserRole(str, Enum):
@@ -44,4 +46,5 @@ class User(Base):
         "Notification",
         back_populates="user"
     )
+    
     is_active = Column(Boolean, default=True)

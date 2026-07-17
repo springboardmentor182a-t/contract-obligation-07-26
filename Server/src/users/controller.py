@@ -1,13 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from entities.user import UserRole
+
+
 from database.core import get_db
 from entities.user import User
 from audit_logs.service import create_audit_log
-from auth.service import verify_token
 from auth.models import UserResponse, UserUpdate
-from users.utils import admin_required
+from users.service import admin_required
+
 
 router = APIRouter(
     prefix="/user",
@@ -20,6 +21,7 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not exist!!")
+    
     return user
 
 
@@ -39,6 +41,7 @@ def update_user(
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.email == user_data.email).first()
+    
     if not user:
         raise HTTPException(status_code=404, detail="User not exist!!")
 
@@ -62,7 +65,6 @@ def update_user(
         module="Users",
         description="User update successfully.by admin",
     )
-
     return user
 
 
@@ -72,7 +74,9 @@ def deactivate_user(
     current_user: User = Depends(admin_required),
     db: Session = Depends(get_db),
 ):
+    
     user = db.query(User).filter(User.user_id == user_id).first()
+    
     if not user:
         raise HTTPException(status_code=404, detail="User not exist!!")
 
@@ -80,6 +84,7 @@ def deactivate_user(
 
     db.commit()
     db.refresh(user)
+    
     create_audit_log(
         db=db,
         user_id=user.user_id,
@@ -89,7 +94,6 @@ def deactivate_user(
         module="Users",
         description=f"deactivate_user : {user.is_active} .by admin",
     )
-
     return user
 
 
@@ -100,6 +104,7 @@ def delete_user(
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.user_id == user_id).first()
+    
     if not user:
         raise HTTPException(status_code=404, detail="User not exist!!")
 
@@ -115,5 +120,6 @@ def delete_user(
         module="Users",
         description="User deleted successfully.by admin",
     )
+
 
     return {"message": "User deleted successfully"}

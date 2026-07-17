@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, UserPlus } from 'lucide-react';
+
+
 import SignupForm from '../features/authentication/components/SignupForm';
 import { signupService } from '../features/authentication/services/signup';
 
+
+
 const Signup = () => {
+
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,6 +22,7 @@ const Signup = () => {
   }, [navigate]);
 
   const handleSignupSubmit = async (details) => {
+
     setError('');
     setLoading(true);
     try {
@@ -32,6 +38,7 @@ const Signup = () => {
 
   return (
     <div className="auth-container fade-in">
+
       <div className="auth-card-wide" style={{ margin: '0 auto', padding: 0, overflow: 'hidden', display: 'flex', boxShadow: 'var(--shadow-lg)', width: '100%', maxWidth: '900px', backgroundColor: 'var(--color-surface)', borderRadius: 'var(--radius-lg)' }}>
 
         {/* Card Left - Graphic Area */}
@@ -49,18 +56,22 @@ const Signup = () => {
         }}>
           <ShieldCheck size={250} style={{ position: 'absolute', opacity: 0.05, transform: 'rotate(-20deg)', top: '10%', left: '-10%' }} />
           <div style={{ position: 'relative', zIndex: 1 }}>
+
             <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)', marginBottom: '1rem', backdropFilter: 'blur(10px)' }}>
               <UserPlus size={32} color="white" />
             </div>
+
             <h2 style={{ fontSize: '1.75rem', fontWeight: 'bold', marginBottom: '0.75rem', letterSpacing: '-0.5px' }}>Join ContractIQ</h2>
             <p style={{ opacity: 0.85, fontSize: '1rem', lineHeight: 1.5, maxWidth: '280px', margin: '0 auto' }}>
               Create an account to streamline your contract management and compliance tracking.
             </p>
           </div>
+
         </div>
 
         {/* Card Right - Form Area */}
         <div className="auth-form-area">
+
           <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
             <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-text)', marginBottom: '0.25rem' }}>Create Account</h1>
             <p className="text-muted" style={{ fontSize: '0.85rem' }}>Fill in the details below to get started</p>
@@ -79,6 +90,7 @@ const Signup = () => {
               Already have an account? <Link to="/login" style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none' }}>Sign In</Link>
             </p>
           </div>
+          
         </div>
 
       </div>
