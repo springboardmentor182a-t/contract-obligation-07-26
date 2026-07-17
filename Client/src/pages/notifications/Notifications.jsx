@@ -1,26 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Bell, 
-  CheckCircle, 
-  AlertCircle, 
-  Info, 
-  FileText, 
-  Check, 
-  Trash2, 
+import {
+  Bell,
+  CheckCircle,
+  AlertCircle,
+  Info,
+  FileText,
+  Check,
+  Trash2,
   Clock,
   Settings,
   MoreVertical,
   Eye,
   Globe
 } from 'lucide-react';
+
+
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modals/Modal';
 import { useAuth } from '../../context/AuthContext';
-import { getUserNotifications, getAdminNotifications, deleteNotification as deleteNotificationApi } from '../../features/notifications/services/notificationAPI';
 import './Notifications.css';
+import { getUserNotifications, getAdminNotifications, deleteNotification as deleteNotificationApi } from '../../features/notifications/services/notificationAPI';
 
 const Notifications = () => {
+
   const navigate = useNavigate();
   const { role } = useAuth();
   const isAdmin = role === 'Admin' || role === 'Administrator';
@@ -60,25 +63,29 @@ const Notifications = () => {
 
   // Mock functions for missing backend features (like marking as read)
   const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+    setNotifications(notifications.map(n => (
+      { ...n, is_read: true }
+    )));
   };
 
   const markAsRead = (id) => {
-    setNotifications(notifications.map(n => 
-      (n.notification_id || n.id) === id ? { ...n, is_read: true } : n
+    setNotifications(notifications.map(n =>
+      (n.notification_id || n.id) === id ? 
+      { ...n, is_read: true } : n
     ));
   };
 
   const handleDelete = async (id) => {
     try {
       await deleteNotificationApi(id);
-      setNotifications(notifications.filter(n => (n.notification_id || n.id) !== id));
+      setNotifications(notifications.filter(n =>
+         (n.notification_id || n.id) !== id));
     } catch (err) {
       alert(err.message || 'Failed to delete notification');
     }
   };
 
-  const filteredNotifications = notifications.filter(n => 
+  const filteredNotifications = notifications.filter(n =>
     activeTab === 'unread' ? !n.is_read : true
   );
 
@@ -108,20 +115,22 @@ const Notifications = () => {
 
       <div className="notif-main-area animate-slide-up" style={{ animationDelay: '0.1s' }}>
         <div className="notif-tabs">
-          <button 
+          <button
             className={`notif-tab-btn ${activeTab === 'all' ? 'active' : ''}`}
             onClick={() => setActiveTab('all')}
           >
             My Notifications
           </button>
-          <button 
+
+          <button
             className={`notif-tab-btn ${activeTab === 'unread' ? 'active' : ''}`}
             onClick={() => setActiveTab('unread')}
           >
             Unread
           </button>
+
           {isAdmin && (
-            <button 
+            <button
               className={`notif-tab-btn ${activeTab === 'system' ? 'active' : ''}`}
               onClick={() => setActiveTab('system')}
             >
@@ -131,11 +140,13 @@ const Notifications = () => {
         </div>
 
         <div className="notif-list-container">
+
           {loading ? (
             <div className="notif-empty-state">
               <p>Loading notifications...</p>
             </div>
           ) : filteredNotifications.length === 0 ? (
+
             <div className="notif-empty-state">
               <div className="empty-bell-wrapper">
                 <Bell size={48} className="empty-bell-icon" />
@@ -147,33 +158,35 @@ const Notifications = () => {
             filteredNotifications.map((notif, index) => {
               const notifId = notif.notification_id || notif.id;
               const isRead = notif.is_read || false;
-              const timeStr = notif.created_at ? new Date(notif.created_at).toLocaleString() : (notif.time || 'Recently');
-              
+              const timeStr = notif.date ? new Date(notif.date).toLocaleString() : (notif.created_at ? new Date(notif.created_at).toLocaleString() : (notif.time || 'Recently'));
+
               return (
-                <div 
-                  key={notifId} 
+                <div
+                  key={notifId}
                   className={`notif-item-card ${!isRead ? 'is-unread' : ''}`}
                   style={{ animationDelay: `${index * 0.05}s` }}
                   onClick={() => markAsRead(notifId)}
                 >
                   {!isRead && <div className="unread-dot"></div>}
-                  
+
                   <div className={`notif-avatar bg-tint-info`}>
                     <Bell size={22} className="notif-icon-primary" />
                   </div>
-                  
+
                   <div className="notif-content-block">
+
                     <div className="notif-top-row">
                       <h4 className="notif-item-title">{notif.title || 'Notification'}</h4>
                       <span className="notif-timestamp">
                         <Clock size={12} /> {timeStr}
                       </span>
                     </div>
+
                     <p className="notif-item-message">{notif.message}</p>
-                    
+
                     <div className="notif-hover-actions">
                       {!isRead && (
-                        <button 
+                        <button
                           className="quick-action-btn action-read"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -183,7 +196,8 @@ const Notifications = () => {
                           <Check size={14} /> Mark Read
                         </button>
                       )}
-                      <button 
+
+                      <button
                         className="quick-action-btn action-delete"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -194,9 +208,9 @@ const Notifications = () => {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div style={{ position: 'relative' }}>
-                    <button 
+                    <button
                       className="notif-menu-btn"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -206,46 +220,47 @@ const Notifications = () => {
                       <MoreVertical size={18} />
                     </button>
                     {openDropdownId === notifId && (
-                      <div 
-                        className="dropdown-menu" 
+                      <div
+                        className="dropdown-menu"
                         style={{ position: 'absolute', right: 0, top: '100%', display: 'block', minWidth: '150px', zIndex: 10, animation: 'dropdownIn 0.15s ease' }}
                       >
-                        <div 
-                          className="dropdown-item" 
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
+                        <div
+                          className="dropdown-item"
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setSelectedNotif(notif);
                             if (!isRead) markAsRead(notifId);
-                            setOpenDropdownId(null); 
+                            setOpenDropdownId(null);
                           }}
                           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                         >
                           <Eye size={14} /> View Details
                         </div>
                         {!isRead && (
-                          <div 
-                            className="dropdown-item" 
-                            onClick={(e) => { 
-                              e.stopPropagation(); 
-                              markAsRead(notifId); 
-                              setOpenDropdownId(null); 
+                          <div
+                            className="dropdown-item"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markAsRead(notifId);
+                              setOpenDropdownId(null);
                             }}
                             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                           >
                             <Check size={14} /> Mark Read
                           </div>
                         )}
-                        <div 
-                          className="dropdown-item" 
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            handleDelete(notifId); 
-                            setOpenDropdownId(null); 
+                        <div
+                          className="dropdown-item"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(notifId);
+                            setOpenDropdownId(null);
                           }}
                           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-danger)' }}
                         >
                           <Trash2 size={14} /> Delete
                         </div>
+
                       </div>
                     )}
                   </div>
@@ -257,8 +272,8 @@ const Notifications = () => {
       </div>
 
       {selectedNotif && (
-        <Modal 
-          isOpen={!!selectedNotif} 
+        <Modal
+          isOpen={!!selectedNotif}
           onClose={() => setSelectedNotif(null)}
           title="Notification Details"
           footer={
@@ -269,19 +284,23 @@ const Notifications = () => {
             <div className={`notif-avatar bg-tint-info`}>
               <Bell size={22} className="notif-icon-primary" />
             </div>
+
             <div>
               <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--color-text-dark)' }}>{selectedNotif.title || 'Notification'}</h3>
               <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                <Clock size={12} /> {selectedNotif.created_at ? new Date(selectedNotif.created_at).toLocaleString() : (selectedNotif.time || 'Recently')}
+                <Clock size={12} /> {selectedNotif.date ? new Date(selectedNotif.date).toLocaleString() : (selectedNotif.created_at ? new Date(selectedNotif.created_at).toLocaleString() : (selectedNotif.time || 'Recently'))}
               </p>
             </div>
+
           </div>
           <div style={{ backgroundColor: 'var(--color-bg)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
             <p style={{ margin: 0, lineHeight: 1.5 }}>{selectedNotif.message}</p>
           </div>
+
         </Modal>
       )}
     </div>
+    
   );
 };
 
