@@ -36,8 +36,8 @@ class UserResponse(BaseModel):
 
 @router.get("", response_model=List[UserResponse])
 async def list_users(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).order_by(User.id.asc()))
-    users = result.scalars().all()
+    result = db.execute(select(User).where(User.id == 1))
+    user = result.scalar_one_or_none()
     
     return [
         UserResponse(
