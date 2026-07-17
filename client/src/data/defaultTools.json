@@ -1,1 +1,17 @@
-{}
+[
+  {
+    "id": "tool-1",
+    "name": "PDF Exporter",
+    "enabled": true
+  },
+  {
+    "id": "tool-2",
+    "name": "OCR Scanner",
+    "enabled": false
+  },
+  {
+    "id": "tool-3",
+    "name": "DocuSign Integration",
+    "enabled": true
+  }
+]

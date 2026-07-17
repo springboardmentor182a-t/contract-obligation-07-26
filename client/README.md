@@ -1,14 +1,37 @@
-# Client
+# React + Vite
 
-React frontend for the project. Install dependencies and start the app with:
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
-```
-npm install
-npm start
-```
+Currently, two official plugins are available:
 
-Build for production with:
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-```
-npm run build
-```
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the Oxlint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+
+
+
+## 🎨 UI/UX Design
+
+The complete UI/UX wireframes and prototype for the **ContractIQ** project are available on Figma.
+
+🔗 **Figma Design:**
+https://www.figma.com/design/ijFi89rf2f2GV8GSv5g6HW/ContractIQ---UI-wireframes?node-id=36-2&p=f&t=J4PEbfrKvLjg6LZt-0
+
+🔗 **Figma Design Public:**
+https://pivot-jury-03978791.figma.site/
+
+> The design includes:
+> - Admin Dashboard
+> - Contract Repository
+> - Contract Details
+> - Document Upload
+> - Search & Filters
+> - Archive Management
+> - Responsive UI Wireframes

@@ -10,6 +10,7 @@ from entities.renewal import (
     RenewalStatus,
     ApprovalStatus,
 )
+from audit_logs.service import create_audit_log
 
 
 def get_dashboard_summary(db: Session):
@@ -201,6 +202,7 @@ def update_renewal_status(db: Session, renewal_id: int, new_status: str, perform
         details=f"Renewal status updated by {performed_by}",
     )
     db.add(history)
+    create_audit_log(db, user_name=performed_by, action="updated renewal status", module="Renewals", category="Change", entity_type="Renewal", entity_id=renewal_id, description=f"Changed renewal status from {old_status} to {new_status}", old_value={"status": old_status}, new_value={"status": new_status})
     db.commit()
     db.refresh(renewal)
 
@@ -247,6 +249,7 @@ def submit_approval(db: Session, renewal_id: int, step_name: str, action: str, a
         details=comments or f"Step {step_name} marked as {action}",
     )
     db.add(history)
+    create_audit_log(db, user_name=approver, action=action.lower() + " renewal", module="Renewals", category="Approval", entity_type="Renewal", entity_id=renewal_id, description=f"{step_name} {action.lower()} by {approver}", new_value={"approval_status": action, "comments": comments})
 
     # If approved at final step, update status to Renewed
     if action == "Approved":

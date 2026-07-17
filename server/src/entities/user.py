@@ -1,5 +1,50 @@
-class User:
-    """Pure domain entity for a User. No external dependencies."""
-    def __init__(self, id: int, email: str):
-        self.id = id
-        self.email = email
+from sqlalchemy.sql import func
+from enum import Enum
+from sqlalchemy.orm import relationship
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Boolean,
+    ForeignKey,
+    Enum as SQLEnum,
+)
+
+
+from database.core import Base
+from entities.organization import Organization
+
+
+class UserRole(str, Enum):
+    ADMIN = "Admin"
+    LEGAL_MANAGER = "Legal Manager"
+    COMPLIANCE_OFFICER = "Compliance Officer"
+    CONTRACT_MANAGER = "Contract Manager"
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    # Basic Information
+    user_id = Column(Integer, primary_key=True, index=True)
+    role = Column(SQLEnum(UserRole), nullable=False)
+    full_name = Column(String(200), nullable=False)
+    email = Column(String(255), unique=True, index=True)
+    phone = Column(String(15), nullable=False)
+    password = Column(String(255), nullable=False)
+
+    # Organization Details
+    employee_id = Column(String(20), nullable=False)
+    organization_id = Column(
+        Integer, ForeignKey("organization.organization_id"), nullable=True
+    )
+    company_name = Column(String(255), nullable=True)
+    department = Column(String(255), nullable=False)
+    designation = Column(String(255), nullable=False)
+    location = Column(String(255), nullable=False)
+    join_date = Column(DateTime(timezone=True), server_default=func.now())
+
+    notifications = relationship("Notification", back_populates="user")
+    settings = relationship("UserSettings", back_populates="user", uselist=False)
+    is_active = Column(Boolean, default=True)

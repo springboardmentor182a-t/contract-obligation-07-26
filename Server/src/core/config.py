@@ -3,6 +3,7 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Setting(BaseSettings):
+    
     API_PREFIX: str = "/api"
     DEBUG: bool = False
 
@@ -14,6 +15,7 @@ class Setting(BaseSettings):
     SECRET_KEY: str = ""
     ALGORITHM: str = ""
     ACCESS_TOKEN_EXPIRE_MINUTES: int = ""
+
 
     # Send Mail
     EMAIL_BACKEND: str = ""

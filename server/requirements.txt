@@ -1,3 +1,14 @@
 fastapi
-uvicorn[standard]
+uvicorn
+sqlalchemy
 pydantic
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+pydantic-settings
+pwdlib[argon2]
+email-validator
+python-multipart
+reportlab
+fastapi-mail
+

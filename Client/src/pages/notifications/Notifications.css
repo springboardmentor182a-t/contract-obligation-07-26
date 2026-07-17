@@ -210,16 +210,10 @@
   margin-bottom: 0.75rem;
 }
 
-/* Hover Actions */
+/* Hover Actions (Now always visible) */
 .notif-hover-actions {
   display: flex;
   gap: 0.75rem;
-  opacity: 0;
-  transform: translateY(5px);
-  transition: all 0.2s ease;
-}
-
-.notif-item-card:hover .notif-hover-actions {
   opacity: 1;
   transform: translateY(0);
 }

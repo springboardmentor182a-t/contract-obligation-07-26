@@ -1,10 +1,27 @@
 from fastapi import APIRouter
 
-from src.auth.controller import router as auth_router
-from src.todos.controller import router as todos_router
-from src.users.controller import router as users_router
 
-api_router = APIRouter()
-api_router.include_router(auth_router)
-api_router.include_router(todos_router)
-api_router.include_router(users_router)
+from auth import controller as auth_controller
+from users import controller as user_controller
+from audit_logs import controller as audit_logs_controller
+from reports_analytics import controller as report_analytics_controller
+from organization import controller as organization_controller
+from user_setting import controller as user_setting_contraller
+from notifications import controller as notification_controller
+
+router = APIRouter()
+
+router.include_router(auth_controller.router, tags=["Authentication"])
+router.include_router(user_controller.router, tags=["Users"])
+router.include_router(notification_controller.router, tags=["Notifications"])
+from fastapi import APIRouter
+
+router = APIRouter()
+
+router.include_router(auth_controller.router, tags=["Authentication"])
+router.include_router(user_controller.router, tags=["Users"])
+router.include_router(organization_controller.router, tags=["Organization"])
+router.include_router(user_setting_contraller.router, tags=["User Setting"])
+router.include_router(audit_logs_controller.router, tags=["Audit Logs"])
+router.include_router(report_analytics_controller.router, tags=["Reports"])
+router.include_router(notification_controller.router, tags=["Notifications"])

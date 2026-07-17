@@ -1,16 +1,49 @@
+import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from src.api import api_router
-from src.logging import configure_logging
-from src.rate_limiter import init_rate_limiter
-
-configure_logging()
-
-app = FastAPI(title="Server")
-app = init_rate_limiter(app)
-app.include_router(api_router)
+from core.config import settings
+from database.core import create_tables
+from api import router
 
 
-@app.get("/")
-def root():
-    return {"status": "ok"}
+create_tables()
+
+
+# Auto-seed renewals when the table is empty
+def _auto_seed_renewals():
+    from database.core import SessionLocal
+    from renewals.service import seed_renewals
+    from entities.renewal import Renewal
+
+    db = SessionLocal()
+    try:
+        if db.query(Renewal).count() == 0:
+            seed_renewals(db)
+            print("Auto-seeded renewal data.")
+    finally:
+        db.close()
+
+
+_auto_seed_renewals()
+
+app = FastAPI(
+    title="Choose your Own Adventure Game API",
+    description="api to generate cool stoties",
+    version="0.1.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=".*",
+    allow_credentials=True,
+    allow_methods=["*"],  # GET, POST, PUT, DELETE
+    allow_headers=["*"],
+)
+
+app.include_router(router, prefix=settings.API_PREFIX)
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
