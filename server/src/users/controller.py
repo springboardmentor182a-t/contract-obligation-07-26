@@ -1,14 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
-# from sqlalchemy.ext.asyncio import AsyncSession
-# from sqlalchemy.future import select
-# from pydantic import BaseModel, ConfigDict, EmailStr
-# from typing import Optional, List
-# from src.database.core import get_db
-# from pydantic import ConfigDict
-from datetime import datetime
 from typing import List
+import secrets
 
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.future import select
 
 from src.database.core import get_db
@@ -20,130 +13,114 @@ from .schemas import (
     UserUpdateRequest,
 )
 
-
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-
-# class UserResponse(BaseModel):
-#         ...
-#     model_config = ConfigDict(from_attributes=True)
-
 @router.get("", response_model=List[UserResponse])
-async def list_users(db: AsyncSession = Depends(get_db)):
-    result = db.execute(select(User).where(User.id == 1))
-    user = result.scalar_one_or_none()
-    
+def list_users(db=Depends(get_db)):
+    result = db.execute(select(User))
+    users = result.scalars().all()
+
     return [
         UserResponse(
-        id=u.id,
-        full_name=u.full_name,
-        email=u.email,
-        role=u.role,
-        department=u.department or "",
-        status=u.status,
-        lastActive="Just now",
-    )
+            id=u.id,
+            full_name=u.full_name,
+            email=u.email,
+            role=u.role,
+            department=u.department or "",
+            status=u.status,
+            lastActive="Just now",
+        )
         for u in users
     ]
 
+
 @router.post("/invite", response_model=UserInviteResponse)
-async def invite_user(
+def invite_user(
     payload: UserInviteRequest,
-    db: AsyncSession = Depends(get_db),
+    db=Depends(get_db),
 ):
+    # Check if user already exists
+    result = db.execute(
+        select(User).where(User.email == payload.email)
+    )
+    existing_user = result.scalar_one_or_none()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="User already exists",
+        )
+
     # Create invitation
     new_invitation = UserInvitation(
         email=payload.email,
         role=payload.role,
         department=payload.department,
         message=payload.message,
-        status="Pending",
+        status="Active",
     )
 
     db.add(new_invitation)
 
-    # Check if user already exists
-    result = await db.execute(
-        select(User).where(User.email == payload.email)
-    )
-    existing_user = result.scalar_one_or_none()
+    # Create user so it appears immediately in the User Table
+    temp_password = secrets.token_hex(16)
 
-    # Create user only if it doesn't exist
-    if not existing_user:
-        new_user = User(
+    new_user = User(
+        name=payload.full_name,
         full_name=payload.full_name,
         email=payload.email,
+        password=temp_password,
         role=payload.role,
         department=payload.department,
         status="Active",
+        is_active=True,
     )
-        db.add(new_user)
 
-    await db.commit()
-    await db.refresh(new_invitation)
+    db.add(new_user)
+
+    db.commit()
+
+    db.refresh(new_invitation)
+    db.refresh(new_user)
 
     return UserInviteResponse(
         id=new_invitation.id,
         email=new_invitation.email,
         role=new_invitation.role,
-        department=new_invitation.department or "N/A",
+        department=new_invitation.department or "",
         status=new_invitation.status,
         invitedAt=new_invitation.created_at.isoformat(),
     )
+
+
 @router.get("/invitations", response_model=List[UserInviteResponse])
-async def list_invitations(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(UserInvitation).order_by(UserInvitation.created_at.desc()))
+def list_invitations(db=Depends(get_db)):
+    result = db.execute(
+        select(UserInvitation).order_by(UserInvitation.created_at.desc())
+    )
     invitations = result.scalars().all()
-    
+
     return [
         UserInviteResponse(
             id=inv.id,
             email=inv.email,
             role=inv.role,
-            department=inv.department or "N/A",
+            department=inv.department or "",
             status=inv.status,
-            invitedAt=inv.created_at.isoformat()
+            invitedAt=inv.created_at.isoformat(),
         )
         for inv in invitations
     ]
+
+
 @router.put("/{user_id}", response_model=UserResponse)
-async def update_user(
+def update_user(
     user_id: int,
     payload: UserUpdateRequest,
-    db: AsyncSession = Depends(get_db),
+    db=Depends(get_db),
 ):
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
-
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    user.full_name = payload.full_name
-    user.email = payload.email
-    user.role = payload.role
-    user.department = payload.department
-    user.status = payload.status
-
-    await db.commit()
-    await db.refresh(user)
-
-    return UserResponse(
-        id=user.id,
-        full_name=user.full_name,
-        email=user.email,
-        role=user.role,
-        department=user.department,
-        status=user.status,
-        lastActive="Just now",
-    )
-
-@router.delete("/{user_id}")
-async def delete_user(
-    user_id: int,
-    db: AsyncSession = Depends(get_db),
-):
-    result = await db.execute(
+    result = db.execute(
         select(User).where(User.id == user_id)
     )
     user = result.scalar_one_or_none()
@@ -151,10 +128,49 @@ async def delete_user(
     if not user:
         raise HTTPException(
             status_code=404,
-            detail="User not found"
+            detail="User not found",
         )
 
-    await db.delete(user)
-    await db.commit()
+    user.full_name = payload.full_name
+    user.name = payload.full_name
+    user.email = payload.email
+    user.role = payload.role
+    user.department = payload.department
+    user.status = payload.status
 
-    return {"message": "User deleted successfully"}
+    db.commit()
+    db.refresh(user)
+
+    return UserResponse(
+        id=user.id,
+        full_name=user.full_name,
+        email=user.email,
+        role=user.role,
+        department=user.department or "",
+        status=user.status,
+        lastActive="Just now",
+    )
+
+
+@router.delete("/{user_id}")
+def delete_user(
+    user_id: int,
+    db=Depends(get_db),
+):
+    result = db.execute(
+        select(User).where(User.id == user_id)
+    )
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
+    db.delete(user)
+    db.commit()
+
+    return {
+        "message": "User deleted successfully"
+    }
