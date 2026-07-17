@@ -1,5 +1,4 @@
 import React from "react";
-<<<<<<< HEAD
 import Sidebar from "./layout/Sidebar";
 import Navbar from "./layout/Navbar";
 import PageContainer from "./layout/PageContainer";
@@ -21,7 +20,6 @@ function App() {
 }
 
 export default App;
-=======
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import ContractDetails from "./pages/ContractDetails";
@@ -38,4 +36,3 @@ function App() {
 }
 
 export default App;
->>>>>>> e4b4e4e0c29f6c8156d879c7524be11fe270caa9
