@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Node
 node_modules/
 build/
@@ -14,3 +15,7 @@ venv/
 # Editors
 .vscode/
 .idea/
+=======
+node_modules/
+client/node_modules/
+>>>>>>> e4b4e4e0c29f6c8156d879c7524be11fe270caa9
