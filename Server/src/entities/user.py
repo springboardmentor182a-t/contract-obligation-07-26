@@ -19,8 +19,6 @@ class UserRole(str, Enum):
     ADMIN = "Admin"
     LEGAL_MANAGER = "Legal Manager"
     COMPLIANCE_OFFICER = "Compliance Officer"
-    PROCUREMENT_MANAGER = "Procurement Manager"
-    BUSINESS_USER = "Business User"
     CONTRACT_MANAGER = "Contract Manager"
 
 
