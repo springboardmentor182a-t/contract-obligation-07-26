@@ -18,6 +18,7 @@ import Reports from "./pages/Reports";
 import QuickActions from "./pages/QuickActions";
 import Calendar from "./pages/Calendar";
 import RenewalDashboard from "./pages/RenewalDashboard";
+import Audit from "./pages/Audit";
 
 function App() {
   return (
@@ -101,6 +102,14 @@ function App() {
             element={
               <PageContainer>
                 <QuickActions />
+              </PageContainer>
+            }
+          />
+          <Route
+            path="/audit"
+            element={
+              <PageContainer>
+                <Audit />
               </PageContainer>
             }
           />
