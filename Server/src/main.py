@@ -20,9 +20,11 @@ def _auto_seed_renewals():
     db = SessionLocal()
     
     try:
+        
         if db.query(Renewal).count() == 0:
             seed_renewals(db)
             print("Auto-seeded renewal data.")
+            
     finally:
         db.close()
 
