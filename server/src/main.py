@@ -12,7 +12,6 @@ from src.database.core import Base, engine
 
 configure_logging()
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
@@ -39,7 +38,6 @@ app.add_middleware(
 
 app = init_rate_limiter(app)
 app.include_router(api_router)
-
 
 @app.get("/")
 def root():

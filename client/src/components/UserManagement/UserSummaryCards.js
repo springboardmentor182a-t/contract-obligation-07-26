@@ -6,34 +6,48 @@ import {
   Building2,
 } from "lucide-react";
 
-const cards = [
-  {
-    title: "TOTAL USERS",
-    value: 7,
-    icon: Users,
-    iconClass: "users-icon",
-  },
-  {
-    title: "ACTIVE",
-    value: 6,
-    icon: UserCheck,
-    iconClass: "active-icon",
-  },
-  {
-    title: "INACTIVE",
-    value: 1,
-    icon: UserX,
-    iconClass: "inactive-icon",
-  },
-  {
-    title: "DEPARTMENTS",
-    value: 6,
-    icon: Building2,
-    iconClass: "department-icon",
-  },
-];
+function UserSummaryCards({ users }) {
+  const totalUsers = users.length;
 
-function UserSummaryCards() {
+  const activeUsers = users.filter(
+    (user) => user.status === "Active"
+  ).length;
+
+  const inactiveUsers = users.filter(
+    (user) => user.status === "Inactive"
+  ).length;
+
+  const departments = new Set(
+    users.map((user) => user.department)
+  ).size;
+
+  const cards = [
+    {
+      title: "Total Users",
+      value: totalUsers,
+      icon: Users,
+      iconClass: "blue",
+    },
+    {
+      title: "Active Users",
+      value: activeUsers,
+      icon: UserCheck,
+      iconClass: "green",
+    },
+    {
+      title: "Inactive Users",
+      value: inactiveUsers,
+      icon: UserX,
+      iconClass: "red",
+    },
+    {
+      title: "Departments",
+      value: departments,
+      icon: Building2,
+      iconClass: "purple",
+    },
+  ];
+
   return (
     <div className="summary-cards">
       {cards.map((card) => {

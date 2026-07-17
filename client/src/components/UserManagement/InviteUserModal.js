@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 function InviteUserModal({open,onClose,users,setUsers,}) {
   const [formData, setFormData] = useState({
@@ -17,8 +18,7 @@ function InviteUserModal({open,onClose,users,setUsers,}) {
     });
   };
 
-  const handleSubmit = () => {
-  // Basic validation
+ const handleSubmit = async () => {
   if (
     !formData.name ||
     !formData.email ||
@@ -29,25 +29,41 @@ function InviteUserModal({open,onClose,users,setUsers,}) {
     return;
   }
 
-  const newUser = {
-    id: users.length + 1,
-    ...formData,
-    status: "Active",
-    lastActive: "Just now",
-  };
+  try {
+    // Send data to backend
+    await axios.post("http://127.0.0.1:8000/api/users/invite", {
+      full_name: formData.name,
+      email: formData.email,
+      role: formData.role,
+      department: formData.department,
+      message: `Invitation sent to ${formData.name}`,
+    });
 
-  setUsers([...users, newUser]);
+    // Refresh users from backend
+    const response = await axios.get("http://127.0.0.1:8000/api/users");
+    setUsers(response.data);
 
-  // Clear the form
-  setFormData({
-    name: "",
-    email: "",
-    role: "",
-    department: "",
-  });
+    // Clear form
+    setFormData({
+      name: "",
+      email: "",
+      role: "",
+      department: "",
+    });
 
-  onClose();
-    };
+    onClose();
+  } catch (error) {
+  console.error("Error:", error);
+
+  if (error.response) {
+    console.log("Status:", error.response.status);
+    console.log("Data:", error.response.data);
+    alert(JSON.stringify(error.response.data));
+  } else {
+    alert(error.message);
+  }
+}
+};
 
   return (
     <div className="modal-overlay">

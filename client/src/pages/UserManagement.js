@@ -1,127 +1,112 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import UserSummaryCards from "../components/UserManagement/UserSummaryCards";
 import SearchBar from "../components/UserManagement/SearchBar";
 import InviteUserButton from "../components/UserManagement/InviteUserButton";
 import UserTable from "../components/UserManagement/UserTable";
-import "../styles/user-management.css";
-import { useState } from "react";
 import InviteUserModal from "../components/UserManagement/InviteUserModal";
-
+import "../styles/user-management.css";
+import EditUserModal from "../components/UserManagement/EditUserModal";
+import { getUsers, deleteUser } from "../services/userAPI";
 function UserManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Edit Modal states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [users, setUsers] = useState([
-  {
-    id: 1,
-    name: "Arjun Mehta",
-    email: "arjun.mehta@contractiq.com",
-    role: "Administrator",
-    department: "IT",
-    status: "Active",
-    lastActive: "2 mins ago",
-  },
-  {
-    id: 2,
-    name: "Sarah Lin",
-    email: "sarah.lin@contractiq.com",
-    role: "Legal Manager",
-    department: "Legal",
-    status: "Active",
-    lastActive: "1 hour ago",
-  },
-  {
-    id: 3,
-    name: "Deepa Nair",
-    email: "deepa.nair@contractiq.com",
-    role: "Compliance Officer",
-    department: "Compliance",
-    status: "Active",
-    lastActive: "3 hours ago",
-  },
-  {
-    id: 4,
-    name: "Rahul Singh",
-    email: "rahul.singh@contractiq.com",
-    role: "Contract Manager",
-    department: "Procurement",
-    status: "Active",
-    lastActive: "Yesterday",
-  },
-  {
-    id: 5,
-    name: "Priya Kapoor",
-    email: "priya.kapoor@contractiq.com",
-    role: "Department Head",
-    department: "Marketing",
-    status: "Active",
-    lastActive: "2 days ago",
-  },
-  {
-    id: 6,
-    name: "James Wilson",
-    email: "james.wilson@contractiq.com",
-    role: "Employee",
-    department: "Finance",
-    status: "Inactive",
-    lastActive: "1 week ago",
-  },
-  {
-    id: 7,
-    name: "Meera Pillai",
-    email: "meera.pillai@contractiq.com",
-    role: "Employee",
-    department: "HR",
-    status: "Active",
-    lastActive: "4 hours ago",
-  },
-]);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const data = await getUsers();
+      setUsers(data);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    }
+  };
+
+  const handleEdit = (user) => {
+    setSelectedUser(user);
+    setIsEditModalOpen(true);
+  };
+const handleDelete = async (id) => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this user?"
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+    await deleteUser(id);
+
+    setUsers((prevUsers) =>
+      prevUsers.filter((user) => user.id !== id)
+    );
+  } catch (error) {
+    console.error("Delete failed:", error);
+    alert("Failed to delete user.");
+  }
+};
 
   return (
     <div className="user-management-page">
 
-      {/* Header */}
       <div className="user-management-hero">
         <div className="user-management-header">
-            <div>
+          <div>
             <p className="hero-label">USER ADMINISTRATION</p>
+
             <h1>User Management</h1>
+
             <p className="hero-description">
-                Manage users, roles, permissions and department access across the
-                ContractIQ platform.
+              Manage users, roles, permissions and department access across the
+              ContractIQ platform.
             </p>
-            </div>
+          </div>
 
-            <InviteUserButton onClick={() => setIsModalOpen(true)} />
-            <InviteUserModal
-                open={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                users={users}
-                setUsers={setUsers}
-            />
+          <InviteUserButton onClick={() => setIsModalOpen(true)} />
+
+          <InviteUserModal
+            open={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            users={users}
+            setUsers={setUsers}
+          />
         </div>
-        </div>
+      </div>
 
-      {/* Summary Cards */}
-        <UserSummaryCards users={users} />
+      <UserSummaryCards users={users} />
 
-      {/* Search */}
       <div className="user-management-search">
-        <SearchBar 
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
+        <SearchBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
         />
       </div>
 
-      {/* Users Table */}
       <UserTable
         users={users}
         searchTerm={searchTerm}
-    />
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
+      {/* EditUserModal will be added here next */}
+      <EditUserModal
+        open={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        selectedUser={selectedUser}
+        users={users}
+        setUsers={setUsers}
+      />
 
     </div>
   );
 }
-
 
 export default UserManagement;

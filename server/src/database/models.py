@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey, DateTime, func
+from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 from src.database.core import Base
 
@@ -13,6 +14,7 @@ class User(Base):
     job_title = Column(String(255))
     phone = Column(String(50))
     bio = Column(Text)
+    status = Column(String, default="Active")
     avatar_url = Column(String(1024))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

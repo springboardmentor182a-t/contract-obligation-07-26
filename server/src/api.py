@@ -12,7 +12,7 @@ from src.analytics.controller import router as analytics_router
 from src.support.controller import router as support_router
 from src.quick_actions.controller import router as quick_actions_router
 from src.health.controller import router as health_router
-
+from src.users.controller import router as users_router
 api_router = APIRouter(prefix="/api")
 
 api_router.include_router(auth_router)
@@ -28,3 +28,4 @@ api_router.include_router(analytics_router)
 api_router.include_router(support_router)
 api_router.include_router(quick_actions_router)
 api_router.include_router(health_router)
+api_router.include_router(users_router)
