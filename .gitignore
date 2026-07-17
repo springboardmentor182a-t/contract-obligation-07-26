@@ -7,15 +7,16 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+node_modules/
 dist
 dist-ssr
 *.local
+build/
 
 # Editor directories and files
-.vscode/*
+.vscode/
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
@@ -26,4 +27,10 @@ dist-ssr
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
+*$py.class
+*.pyc
+.venv/
+venv/
+
+# Env
+.env
