@@ -1,4 +1,5 @@
-from passlib.context import CryptContext
+from pwdlib import PasswordHash
+from pwdlib.hashers.bcrypt import BcryptHasher
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from fastapi import HTTPException, Depends
@@ -8,7 +9,7 @@ from core.config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = PasswordHash((BcryptHasher(),))
 
 
 def hash_password(password):

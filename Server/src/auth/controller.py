@@ -1,10 +1,13 @@
+import uuid
+import random
+from typing import Optional
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Cookie, Response
 from sqlalchemy.orm import Session
 import random
 from sqlalchemy.exc import IntegrityError
 
-from database.core import get_db, SessionLocal
+from database.core import get_db
 from entities.user import User
 from entities.otp import OTP
 from core.config import settings
@@ -53,6 +56,7 @@ def register_user(
     )
 
     try:
+
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -64,8 +68,12 @@ def register_user(
         )
 
     except Exception as e:
+        from sqlalchemy.exc import IntegrityError
+        if isinstance(e, IntegrityError):
+            db.rollback()
+            raise HTTPException(status_code=400, detail="User already exists or missing fields!!")
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
     create_audit_log(
         db=db,
@@ -215,7 +223,7 @@ def change_password(
 
 
 @router.post("/forget_password")
-async def change_password(
+async def forget_password(
     email: str,
     db: Session = Depends(get_db),
 ):
@@ -269,7 +277,7 @@ def verify_otp(request: VerifyOTPRequest, db: Session = Depends(get_db)):
 
 
 @router.put("/new_password", response_model=UserResponse)
-def change_password(
+def new_password(
     request: NewPassword,
     db: Session = Depends(get_db),
 ):
