@@ -1,0 +1,36 @@
+.modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.4);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.modal{
+    width:450px;
+    background:#fff;
+    border-radius:12px;
+    padding:25px;
+}
+
+.modal h2{
+    margin-bottom:20px;
+}
+
+.modal-body p{
+    margin:12px 0;
+    font-size:16px;
+}
+
+.close-btn{
+    margin-top:20px;
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    background:#6C63FF;
+    color:white;
+    cursor:pointer;
+}

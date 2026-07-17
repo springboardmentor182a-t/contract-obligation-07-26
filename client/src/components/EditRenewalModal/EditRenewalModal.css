@@ -1,0 +1,65 @@
+.modal-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.4);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+.modal{
+
+    width:420px;
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:12px;
+
+}
+
+.modal form{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:15px;
+
+}
+
+.modal input,
+
+.modal select{
+
+    padding:10px;
+
+    border:1px solid #ddd;
+
+    border-radius:8px;
+
+}
+
+.modal button{
+
+    background:#6C63FF;
+
+    color:white;
+
+    border:none;
+
+    padding:12px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+}
