@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from src.database.core import get_db
 from src.database.models import Contract, Activity, Deadline, ComplianceItem
+from src.users.controller import router as users_router
 from pydantic import BaseModel
 from datetime import date, datetime, timedelta 
 
@@ -17,6 +18,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+app.include_router(
+    users_router,
+    prefix="/users",
+    tags=["Users"]
 )
 
 class ContractCreate(BaseModel):
