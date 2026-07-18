@@ -9,8 +9,9 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [liveNotifications, setLiveNotifications] = useState([]);
 
+  // Dynamically grab user info from local storage
   const storedUser = JSON.parse(localStorage.getItem('user'));
-  const displayName = user?.name || storedUser?.name || 'User';
+  const displayName = user?.name || storedUser?.name || 'Guest User';
   const displayRole = user?.role || storedUser?.role || 'Member';
 
   // Check if we are on the main dashboard
@@ -26,19 +27,29 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
     const fetchNotifications = async () => {
       try {
         if (location.pathname === '/compliance') {
-          // If on Compliance page, fetch upcoming reviews
+          // Fetch upcoming reviews for Compliance page
           const response = await fetch(`${API_BASE_URL}/compliance`);
           if (response.ok) {
             const data = await response.json();
-            // Map the upcoming reviews into the {title, date} format expected by the bell
             const complianceNotifs = (data.upcomingReviews || []).map(review => ({
               title: `Review: ${review.itemName}`,
               date: `${review.date} (${review.daysLeft} days left)`
             }));
             setLiveNotifications(complianceNotifs);
           }
+        } else if (location.pathname === '/reports') {
+          // --- NEW: Fetch Report Insights for the Reports page ---
+          const response = await fetch(`${API_BASE_URL}/reports`);
+          if (response.ok) {
+            const data = await response.json();
+            const reportNotifs = (data.insights || []).map(insight => ({
+              title: insight.title,
+              date: insight.subtext
+            }));
+            setLiveNotifications(reportNotifs);
+          }
         } else {
-          // If on Dashboard (or any other page), fetch general deadlines
+          // Fetch general deadlines for Dashboard/other pages
           const response = await fetch(`${API_BASE_URL}/dashboard`);
           if (response.ok) {
             const data = await response.json();
@@ -51,7 +62,7 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
     };
     
     fetchNotifications();
-  }, [location.pathname]); // The array tells React to re-run this anytime the URL changes!
+  }, [location.pathname]); // Re-runs anytime the URL changes
 
   return (
     <header className="navbar">
@@ -93,7 +104,9 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
               position: 'absolute', top: '120%', right: '-50px', background: 'white', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '10px 0', minWidth: '250px', zIndex: 1000
             }}>
               <div style={{ padding: '10px 20px', borderBottom: '1px solid #eee', fontWeight: 'bold', color: 'black' }}>
-                {location.pathname === '/compliance' ? 'Upcoming Reviews' : 'Deadlines'}
+                {/* --- NEW: Dynamic Header based on route --- */}
+                {location.pathname === '/compliance' ? 'Upcoming Reviews' : 
+                 location.pathname === '/reports' ? 'Report Alerts' : 'Deadlines'}
               </div>
               
               {/* Mapping over context-aware live data */}
