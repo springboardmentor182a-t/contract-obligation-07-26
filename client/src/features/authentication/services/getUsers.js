@@ -3,7 +3,7 @@ const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 export const getUsers = async () => {
   try {
     const token = localStorage.getItem("access_token");
-    const response = await fetch(`${BASE_URL}/auth/profile`, {
+    const response = await fetch(`${BASE_URL}/user/users`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

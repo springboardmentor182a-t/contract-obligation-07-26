@@ -126,7 +126,13 @@ def login_user(request: UserLogin, response: Response, db: Session = Depends(get
     token = create_access_token(
         {"sub": user.email, "user_id": user.user_id, "role": user.role}
     )
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user_id": user.user_id,
+        "role": user.role,
+        "email": user.email
+    }
 
 
 @router.get("/profile", response_model=UserResponse)
