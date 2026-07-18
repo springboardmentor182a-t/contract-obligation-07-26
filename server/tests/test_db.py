@@ -1,11 +1,6 @@
-
-
 from src.database.core import get_connection
 
-try:
+def test_database_connection():
     conn = get_connection()
-    print("PostgreSQL Connected Successfully")
+    assert conn is not None
     conn.close()
-except Exception as e:
-    print("Connection Failed")
-    print(e)
