@@ -55,3 +55,5 @@ class User:
     def __init__(self, id: int, email: str):
         self.id = id
         self.email = email
+
+# Test comment to verify GitHub push visibility
