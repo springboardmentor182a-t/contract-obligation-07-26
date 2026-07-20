@@ -11,15 +11,9 @@ from renewals import controller as renewal_controller
 from user_setting import controller as user_setting_contraller
 from notifications import controller as notification_controller
 
-router = APIRouter()
-
-
-router.include_router(auth_controller.router, tags=["Authentication"])
-router.include_router(user_controller.router, tags=["Users"])
-router.include_router(notification_controller.router, tags=["Notifications"])
-from fastapi import APIRouter
 
 router = APIRouter()
+
 
 router.include_router(auth_controller.router, tags=["Authentication"])
 router.include_router(user_controller.router, tags=["Users"])
