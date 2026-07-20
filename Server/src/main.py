@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+
 from core.config import settings
 from database.core import create_tables, SessionLocal
 from auth import controller
@@ -20,6 +21,24 @@ from api import router
 
 create_tables()
 
+# Auto-seed renewals when the table is empty
+def _auto_seed_renewals():
+    from database.core import SessionLocal
+    from renewals.service import seed_renewals
+    from entities.renewal import Renewal
+
+    db = SessionLocal()
+    
+    try:
+        if db.query(Renewal).count() == 0:
+            seed_renewals(db)
+            print("Auto-seeded renewal data.")
+            
+    finally:
+        db.close()
+
+
+_auto_seed_renewals()
 app = FastAPI(
     title="Choose your Own Adventure Game API",
     description="api to generate cool stoties",

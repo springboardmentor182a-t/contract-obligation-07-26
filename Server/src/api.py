@@ -14,7 +14,6 @@ router = APIRouter()
 router.include_router(auth_controller.router, tags=["Authentication"])
 router.include_router(user_controller.router, tags=["Users"])
 router.include_router(notification_controller.router, tags=["Notifications"])
-
 router.include_router(user_setting_contraller.router, tags=["User Setting"])
 router.include_router(audit_logs_controller.router, tags=["Audit Logs"])
 router.include_router(report_analytics_controller.router, tags=["Reports"])
