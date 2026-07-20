@@ -1,18 +1,51 @@
+<<<<<<< HEAD
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from src.database.core import get_db
+from src.database.core import Base, engine
 from src.database.models import Contract, Activity, Deadline, ComplianceItem, ReportHistory, Document, AppNotification, User
 from src.users.controller import router as users_router
 from src.contracts.controller import router as contracts_router
 from src.calendar.controller import router as calendar_router
+from src.auth.controller import router as auth_router
+from src.documents.controller import router as documents_router
 
 from pydantic import BaseModel
 from datetime import date, datetime, timedelta 
 from typing import Optional 
+=======
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from src.database.core import Base, engine
 
+from src.auth.controller import router as auth_router
+from src.contracts.controller import router as contracts_router
+from src.documents.controller import router as documents_router
+
+'''# Create all database tables
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="ContractIQ API")
+
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Temporary for testing
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Register Routers
+app.include_router(auth_router)
+app.include_router(contracts_router)
+app.include_router(documents_router)'''
+>>>>>>> e029252 (Implemented Contract CRUD and Document Management)
+
+
+<<<<<<< HEAD
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -63,6 +96,8 @@ app.include_router(
     prefix="/api/v1",
     tags=["Calendar"]
 )
+app.include_router(auth_router)
+app.include_router(documents_router)
 
 >>>>>>> 62bf7858f9a3264555a383f4eaa304140997c303
 
@@ -97,10 +132,10 @@ def get_dashboard_data(db: Session = Depends(get_db)):
             "party": c.company,
 
             # Additional keys
-            "company": c.company,
-            "contract": c.contract,
+            #"company": c.company,
+            #"contract": c.contract,
             "category": c.category,
-            "owner": c.owner,
+            #"owner": c.owner,
 
             "status": c.status,
             "startDate": c.start_date,
@@ -367,3 +402,17 @@ def add_document(doc: DocumentCreate, db: Session = Depends(get_db)):
 def get_notifications(db: Session = Depends(get_db)):
     notifs = db.query(AppNotification).order_by(AppNotification.id.desc()).limit(5).all()
     return [{"id": n.id, "message": n.message, "time": n.time, "isRead": n.is_read} for n in notifs]
+=======
+'''@app.get("/")
+def root():
+    return {
+        "message": "Backend is running!"
+    }
+
+
+@app.get("/test")
+def test():
+    return {
+        "status": "working"
+    }'''
+>>>>>>> e029252 (Implemented Contract CRUD and Document Management)
