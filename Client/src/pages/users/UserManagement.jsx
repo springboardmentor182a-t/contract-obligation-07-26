@@ -86,6 +86,11 @@ const UserManagement = () => {
     setCreateError('');
     try {
       await signupService(formData);
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'User Created', message: `User ${formData.name || 'New User'} was registered.` });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
       alert(`User ${formData.name || 'New User'} registered successfully!`);
       fetchUsers();
       setIsAddUserModalOpen(false);
@@ -100,6 +105,11 @@ const UserManagement = () => {
     e.preventDefault();
     try {
       await updateUserService(editingUser);
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'User Updated', message: `User ${editingUser.full_name || 'User'} was updated.` });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
       alert('User updated successfully!');
       fetchUsers();
       setEditingUser(null);
@@ -111,6 +121,11 @@ const UserManagement = () => {
   const handleToggleUserStatus = async (user) => {
     try {
       await toggleUserStatusService(user.user_id);
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'User Status Toggled', message: `User ${user.full_name || 'User'}'s status was toggled.` });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
       fetchUsers();
     } catch (err) {
       alert(err.message || 'Failed to change user status');
@@ -121,6 +136,11 @@ const UserManagement = () => {
     if (window.confirm("Are you sure you want to remove this user?")) {
       try {
         await deleteUserService(user_id);
+        try {
+          const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+          await createNotification({ title: 'User Deleted', message: `User ${user_id} was deleted.` });
+          window.dispatchEvent(new Event('notification-created'));
+        } catch (err) { console.error(err); }
         fetchUsers();
       } catch (err) {
         alert(err.message || 'Failed to delete user');

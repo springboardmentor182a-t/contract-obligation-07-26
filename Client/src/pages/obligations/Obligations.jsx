@@ -145,11 +145,32 @@ const Obligations = () => {
   const handleAddObligation = async (e) => {
     e.preventDefault();
 
-    const id = `OBL-${Math.floor(Math.random() * 900) + 100}`;
+    const isEdit = !!selectedObligation;
+    const id = isEdit ? selectedObligation.id : `OBL-${Math.floor(Math.random() * 900) + 100}`;
 
-    setObligations([{ id, ...newObligation }, ...obligations]);
+    if (isEdit) {
+      setObligations(obligations.map(o => o.id === id ? { ...newObligation, id } : o));
+    } else {
+      setObligations([{ id, ...newObligation }, ...obligations]);
+    }
 
     setIsAddModalOpen(false);
+    
+    try {
+      if (!isEdit) {
+        await createNotification({ title: 'Obligation Created', message: `Obligation ${id} has been added to ${newObligation.contractId}.` });
+      }
+      
+      if (newObligation.assignedTo && (!isEdit || selectedObligation.assignedTo !== newObligation.assignedTo)) {
+        await createNotification({ title: 'Obligation Assigned', message: `Obligation ${id} has been assigned to ${newObligation.assignedTo}.` });
+      }
+      
+      window.dispatchEvent(new Event('notification-created'));
+    } catch (err) {
+      console.error(err);
+    }
+    
+    setSelectedObligation(null);
     setNewObligation({
       description: '',
       contractId: '',
@@ -161,15 +182,8 @@ const Obligations = () => {
       obligationType: 'Payment Obligation',
     });
 
-    try {
-      await createNotification({ title: 'Obligation Created', message: `Obligation ${id} has been added to ${newObligation.contractId}.` });
-      window.dispatchEvent(new Event('notification-created'));
-    } catch (err) {
-      console.error(err);
-    }
-
     // Success message
-    alert("✅ Obligation added successfully!");
+    alert(`✅ Obligation ${isEdit ? 'updated' : 'added'} successfully!`);
   };
 
   const handleStatusChange = (e, id, newStatus) => {

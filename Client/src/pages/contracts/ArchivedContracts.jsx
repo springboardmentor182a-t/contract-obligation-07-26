@@ -33,8 +33,13 @@ const ArchivedContracts = () => {
     setRestoreModalOpen(true);
   };
 
-  const confirmRestore = () => {
+  const confirmRestore = async () => {
     setContracts(contracts.filter(c => c.id !== contractToRestore));
+    try {
+      const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+      await createNotification({ title: 'Contract Restored', message: `Contract ${contractToRestore} was restored from archive.` });
+      window.dispatchEvent(new Event('notification-created'));
+    } catch (err) { console.error(err); }
     setRestoreModalOpen(false);
     setContractToRestore(null);
   };

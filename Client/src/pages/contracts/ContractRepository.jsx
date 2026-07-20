@@ -75,9 +75,15 @@ const ContractRepository = () => {
     setNewContract({ name: '', companyName: '', vendorName: '', category: 'Vendor Contract', value: '', expiry: '' });
   };
 
-  const handleArchive = (e, id) => {
+  const handleArchive = async (e, id) => {
     e.stopPropagation();
     setContracts(contracts.map(c => c.id === id ? { ...c, status: 'Archived' } : c));
+    try {
+      await createNotification({ title: 'Contract Archived', message: `Contract ${id} has been archived.` });
+      window.dispatchEvent(new Event('notification-created'));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const filteredContracts = contracts.filter(c => {

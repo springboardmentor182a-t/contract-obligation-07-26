@@ -273,7 +273,12 @@ const Compliance = () => {
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
             <Button 
               variant="primary" 
-              onClick={() => {
+              onClick={async () => {
+                try {
+                  const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+                  await createNotification({ title: 'Compliance Action', message: `Action initiated for requirement: ${selectedItem?.requirement}.` });
+                  window.dispatchEvent(new Event('notification-created'));
+                } catch (err) { console.error(err); }
                 alert(`Action initiated for requirement: ${selectedItem?.requirement}`);
                 setIsModalOpen(false);
               }}

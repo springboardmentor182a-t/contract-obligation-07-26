@@ -86,6 +86,13 @@ const Reports = () => {
       // Refresh saved reports
       const reports = await getSavedReports();
       setSavedReports(reports);
+      
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Report Ready', message: `Your ${reportForm.type} report "${reportForm.report_name}" is ready to view.` });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error('Failed to notify report ready:', err); }
+      
       alert("Report generated successfully!");
     } catch (error) {
       console.error(error);

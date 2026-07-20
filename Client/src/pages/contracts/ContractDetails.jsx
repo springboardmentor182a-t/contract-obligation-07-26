@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, FileText, CheckCircle, Clock, FileSignature, X, Upload, Edit, Send } from 'lucide-react';
 import './Contracts.css';
+import { createNotification } from '../../features/notifications/services/notificationAPI';
 
 const ContractDetails = () => {
   const { id } = useParams();
@@ -10,6 +11,7 @@ const ContractDetails = () => {
   const [contractStatus, setContractStatus] = useState('Draft');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+  const [commentText, setCommentText] = useState('');
 
   const [timeline, setTimeline] = useState([
     { id: 1, date: 'Oct 12, 2023 - 10:00 AM', title: 'Draft Created', desc: 'by John Smith', status: 'completed' }
@@ -24,28 +26,60 @@ const ContractDetails = () => {
       case 'Draft': return 'badge-primary';
       case 'Under Review': return 'badge-warning';
       case 'Approved': return 'badge-success';
+      case 'Rejected': return 'badge-danger';
       case 'Active': return 'badge-success';
       default: return '';
     }
   };
 
-  const handleSendForReview = () => {
+  const handleSendForReview = async () => {
     setContractStatus('Under Review');
     setTimeline([...timeline, { id: 2, date: new Date().toLocaleString(), title: 'Sent for Internal Review', desc: 'to Legal Department', status: 'completed' }]);
+    try {
+      await createNotification({ title: 'Approval Requested', message: `Approval requested for Contract ${id}.` });
+      window.dispatchEvent(new Event('notification-created'));
+    } catch (err) { console.error(err); }
   };
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     setContractStatus('Approved');
     setTimeline([...timeline, { id: 3, date: new Date().toLocaleString(), title: 'Final Approval', desc: 'by Jane Doe', status: 'completed' }]);
+    try {
+      await createNotification({ title: 'Contract Approved', message: `Contract ${id} has been approved.` });
+      window.dispatchEvent(new Event('notification-created'));
+    } catch (err) { console.error(err); }
+  };
+  
+  const handleReject = async () => {
+    setContractStatus('Rejected');
+    setTimeline([...timeline, { id: 4, date: new Date().toLocaleString(), title: 'Rejected', desc: 'by Jane Doe', status: 'completed' }]);
+    try {
+      await createNotification({ title: 'Contract Rejected', message: `Contract ${id} has been rejected.` });
+      window.dispatchEvent(new Event('notification-created'));
+    } catch (err) { console.error(err); }
   };
 
-  const handleUploadVersion = (e) => {
+  const handleUploadVersion = async (e) => {
     e.preventDefault();
     const newV = `v${versions.length + 1}.0`;
     const newVersions = versions.map(v => ({ ...v, current: false }));
     setVersions([{ id: newV, date: new Date().toLocaleDateString(), current: true }, ...newVersions]);
     setIsVersionModalOpen(false);
     setTimeline([...timeline, { id: Date.now(), date: new Date().toLocaleString(), title: `Version ${newV} Uploaded`, desc: 'by John Smith', status: 'completed' }]);
+    try {
+      await createNotification({ title: 'New Contract Version Uploaded', message: `Version ${newV} uploaded for Contract ${id}.` });
+      window.dispatchEvent(new Event('notification-created'));
+    } catch (err) { console.error(err); }
+  };
+  
+  const handlePostComment = async () => {
+    if (!commentText.trim()) return;
+    setTimeline([...timeline, { id: Date.now(), date: new Date().toLocaleString(), title: 'New Comment', desc: commentText, status: 'completed' }]);
+    try {
+      await createNotification({ title: 'New Comment / @Mention', message: `New comment on Contract ${id}: "${commentText.substring(0, 30)}..."` });
+      window.dispatchEvent(new Event('notification-created'));
+    } catch (err) { console.error(err); }
+    setCommentText('');
   };
 
   return (
@@ -78,9 +112,14 @@ const ContractDetails = () => {
           )}
 
           {contractStatus === 'Under Review' && (
-            <button className="btn btn-success" style={{ backgroundColor: 'var(--color-success)', color: 'white' }} onClick={handleApprove}>
-              <CheckCircle size={18} /> Approve Contract
-            </button>
+            <div className="flex gap-2">
+              <button className="btn btn-success" style={{ backgroundColor: 'var(--color-success)', color: 'white' }} onClick={handleApprove}>
+                <CheckCircle size={18} /> Approve Contract
+              </button>
+              <button className="btn btn-outline" style={{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }} onClick={handleReject}>
+                <X size={18} /> Reject
+              </button>
+            </div>
           )}
 
           <button className="btn btn-outline">
@@ -186,6 +225,19 @@ const ContractDetails = () => {
                 </div>
               )}
             </div>
+            <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-bg)', paddingTop: '1rem' }}>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="Type a comment or @mention someone..." 
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handlePostComment()}
+                />
+                <button className="btn btn-primary" onClick={handlePostComment}>Post</button>
+              </div>
+            </div>
           </div>
 
           <div className="card mt-4">
@@ -234,12 +286,18 @@ const ContractDetails = () => {
                 <input type="text" className="input-field" defaultValue="Vendor Contract" />
               </div>
               <div className="input-group">
-                <label className="input-label">Value</label>
-                <input type="text" className="input-field" defaultValue="$120,000 USD" />
+                <label className="input-label">Responsible Person (Assignee)</label>
+                <input type="text" className="input-field" defaultValue="Jane Doe (Legal Mgr)" id="edit-assignee" />
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-outline" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Changes</button>
+                <button type="button" className="btn btn-primary" onClick={async () => {
+                  setIsEditModalOpen(false);
+                  try {
+                    await createNotification({ title: 'Contract Assigned', message: `Contract ${id} has been assigned/updated.` });
+                    window.dispatchEvent(new Event('notification-created'));
+                  } catch (err) { console.error(err); }
+                }}>Save Changes</button>
               </div>
             </form>
           </div>

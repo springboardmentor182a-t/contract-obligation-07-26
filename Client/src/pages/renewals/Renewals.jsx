@@ -141,6 +141,11 @@ const Renewals = () => {
         body: JSON.stringify({ status: 'In Progress', performed_by: 'Current User' }),
       });
       if (res.ok) {
+        try {
+          const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+          await createNotification({ title: 'Renewal Started', message: `Renewal process started for ID: ${renewalId}.` });
+          window.dispatchEvent(new Event('notification-created'));
+        } catch (err) { console.error(err); }
         await fetchRenewals();
         await fetchSummary();
       }
@@ -167,6 +172,11 @@ const Renewals = () => {
         }),
       });
       if (res.ok) {
+        try {
+          const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+          await createNotification({ title: 'Renewal Reminder Sent', message: `Reminder scheduled for Renewal ID: ${renewalId}.` });
+          window.dispatchEvent(new Event('notification-created'));
+        } catch (err) { console.error(err); }
         alert('Reminder scheduled successfully!');
         await fetchRenewals();
       }
