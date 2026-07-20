@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import {
   FiHome,
@@ -18,7 +19,7 @@ import "../../styles/sidebar.css";
 
 const menuItems = [
   { icon: <FiHome size={18} />, text: "Dashboard" },
-  { icon: <FiFileText size={18} />, text: "Contracts", active: true },
+  { icon: <FiFileText size={18} />, text: "Contracts" },
   { icon: <FiCheckCircle size={18} />, text: "Obligations" },
   { icon: <FiShield size={18} />, text: "Compliance" },
   { icon: <FiCalendar size={18} />, text: "Calendar" },
@@ -31,6 +32,8 @@ const menuItems = [
 ];
 
 function Sidebar() {
+  const navigate = useNavigate();
+  const location = useLocation();
   return (
     <aside className="sidebar">
 
@@ -58,7 +61,26 @@ function Sidebar() {
 
             <div
               key={item.text}
-              className={`menu-item ${item.active ? "active" : ""}`}
+              className={`menu-item ${
+                (item.text === "Contracts" &&
+                  location.pathname.startsWith("/contracts")) ||
+                (item.text === "Users" &&
+                  location.pathname.startsWith("/users")) ||
+                (item.text === "Dashboard" &&
+                  (location.pathname === "/" ||
+                   location.pathname === "/dashboard")) ||
+                (item.text === "Compliance" &&
+                  location.pathname.startsWith("/compliance"))
+                  ? "active"
+                  : ""
+              }`}
+              onClick={() => {
+                if (item.text === "Dashboard") navigate("/dashboard");
+                else if (item.text === "Contracts") navigate("/contracts");
+                else if (item.text === "Compliance") navigate("/compliance");
+                else if (item.text === "Users") navigate("/users");
+              }}
+              style={{ cursor: "pointer" }}
             >
 
               <span className="menu-icon">
