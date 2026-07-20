@@ -20,6 +20,8 @@ import FormInput from '../../components/Form/FormInput';
 import FormSelect from '../../components/Form/FormSelect';
 import './Contracts.css';
 
+import { createNotification } from '../../features/notifications/services/notificationAPI';
+
 const ContractRepository = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,11 +59,19 @@ const ContractRepository = () => {
     navigate(`/contracts/${id}`);
   };
 
-  const handleUploadContract = (e) => {
+  const handleUploadContract = async (e) => {
     e.preventDefault();
     const id = `CON-2023-${Math.floor(Math.random() * 900) + 100}`;
     setContracts([{ id, name: newContract.name, entity: newContract.vendorName || newContract.companyName, category: newContract.category, value: newContract.value, expiry: newContract.expiry, status: 'Draft' }, ...contracts]);
     setIsUploadModalOpen(false);
+    
+    try {
+      await createNotification({ title: 'Contract Created', message: `Draft contract ${id} created successfully.` });
+      window.dispatchEvent(new Event('notification-created'));
+    } catch (err) {
+      console.error(err);
+    }
+    
     setNewContract({ name: '', companyName: '', vendorName: '', category: 'Vendor Contract', value: '', expiry: '' });
   };
 

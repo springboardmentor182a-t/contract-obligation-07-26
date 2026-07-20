@@ -9,7 +9,7 @@ const getHeaders = () => {
 };
 
 export const getUserNotifications = async () => {
-  const response = await fetch(`${BASE_URL}/notification/admin_notifications`, {
+  const response = await fetch(`${BASE_URL}/notification/notifications`, {
     method: "GET",
     headers: getHeaders()
   });
@@ -43,6 +43,19 @@ export const deleteNotification = async (notification_id) => {
   const data = await response.json();
   if (!response.ok) {
     throw new Error(data.detail || data.message || "Failed to delete notification");
+  }
+  return data;
+};
+
+export const createNotification = async (notificationData) => {
+  const response = await fetch(`${BASE_URL}/notification/create_notification`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(notificationData)
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.detail || data.message || "Failed to create notification");
   }
   return data;
 };
