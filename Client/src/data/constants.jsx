@@ -7,6 +7,7 @@ export const STORAGE_KEYS = {
   THEME: 'cot_theme'
 };
 
+
 export const CONTRACT_STATUSES = {
   ACTIVE: 'Active',
   DRAFT: 'Draft',

@@ -4,6 +4,7 @@ from typing import Optional, List
 
 
 class RenewalBase(BaseModel):
+    
     contract_name: str
     contract_id_ref: str
     category: str
@@ -16,15 +17,19 @@ class RenewalBase(BaseModel):
     auto_renew: bool = False
 
 
+
 class RenewalCreate(RenewalBase):
     pass
 
 
+
 class RenewalUpdate(BaseModel):
+    
     status: str
 
 
 class ApprovalResponse(BaseModel):
+    
     approval_id: int
     renewal_id: int
     step_name: str
@@ -34,11 +39,13 @@ class ApprovalResponse(BaseModel):
     acted_at: Optional[datetime] = None
     created_at: datetime
 
+
     class Config:
         from_attributes = True
 
 
 class ReminderResponse(BaseModel):
+    
     reminder_id: int
     renewal_id: int
     reminder_date: datetime
@@ -51,7 +58,9 @@ class ReminderResponse(BaseModel):
         from_attributes = True
 
 
+
 class HistoryResponse(BaseModel):
+    
     history_id: int
     renewal_id: int
     action: str
@@ -63,7 +72,9 @@ class HistoryResponse(BaseModel):
         from_attributes = True
 
 
+
 class RenewalResponse(BaseModel):
+
     renewal_id: int
     contract_name: str
     contract_id_ref: str
@@ -83,7 +94,9 @@ class RenewalResponse(BaseModel):
         from_attributes = True
 
 
+
 class RenewalDetailResponse(RenewalResponse):
+
     approvals: List[ApprovalResponse] = []
     reminders: List[ReminderResponse] = []
     history: List[HistoryResponse] = []
@@ -93,6 +106,7 @@ class RenewalDetailResponse(RenewalResponse):
 
 
 class DashboardSummary(BaseModel):
+    
     upcoming: int = 0
     in_progress: int = 0
     renewed: int = 0
@@ -103,6 +117,7 @@ class DashboardSummary(BaseModel):
 
 
 class ApprovalActionRequest(BaseModel):
+    
     step_name: str
     action: str  # "Approved" or "Rejected"
     approver: str
@@ -110,10 +125,12 @@ class ApprovalActionRequest(BaseModel):
 
 
 class ReminderCreateRequest(BaseModel):
+    
     reminder_date: datetime
     message: Optional[str] = None
 
 
 class StatusUpdateRequest(BaseModel):
+    
     status: str
     performed_by: str = "System"
