@@ -1,0 +1,247 @@
+.settings-header-top {
+  margin-bottom: 14px;
+}
+
+.settings-tabs-row {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.settings-tab-btn {
+  background: transparent;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.settings-tab-btn:hover {
+  color: var(--text);
+}
+
+.settings-tab-btn.active {
+  color: var(--info);
+}
+
+.settings-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--info);
+  border-radius: 1px;
+}
+
+.settings-panel-redesigned {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.settings-panel-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.settings-saved-flash {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--success);
+  animation: popIn 0.2s ease forwards;
+}
+
+.integrations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.integration-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.integration-row:hover {
+  border-color: var(--info);
+}
+
+.integration-row .ico {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.integration-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+}
+
+.integration-info strong {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.integration-info span {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+/* Billing Plan card */
+.billing-plan-card-redesigned {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.billing-plan-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.plan-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  display: block;
+}
+
+.plan-desc {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  display: block;
+  margin-top: 1px;
+}
+
+.plan-pricing {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 10px 0;
+  font-family: var(--font-display);
+}
+
+.plan-pricing .period {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.plan-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.billing-usage-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 768px) {
+  .billing-usage-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.usage-meter-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.usage-meter-desc {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.usage-meter-desc span {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.usage-meter-desc strong {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.billing-payment-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.billing-card-chip {
+  width: 42px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--navy), var(--slate));
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+}
+
+.billing-flash-alert {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--info);
+  margin-top: 12px;
+  animation: popIn 0.2s ease forwards;
+}

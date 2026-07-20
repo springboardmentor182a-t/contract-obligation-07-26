@@ -1,0 +1,5 @@
+.page-surface{background:var(--color-surface);padding:20px;border-radius:12px}
+.page-surface h2{margin:0;font-size:18px}
+.page-surface .muted{color:var(--text-secondary);margin-top:8px}
+
+.obligation-list{background:var(--color-bg);border:1px solid var(--color-border);border-radius:12px;padding:6px 16px;}

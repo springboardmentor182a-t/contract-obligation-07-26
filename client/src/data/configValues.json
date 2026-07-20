@@ -1,1 +1,11 @@
-{}
+{
+  "appName": "ContractIQ",
+  "apiBaseUrl": "http://localhost:8000",
+  "defaultCurrency": "USD",
+  "defaultDateFormat": "MMM D, YYYY",
+  "sessionTimeoutMinutes": 30,
+  "pagination": {
+    "contractsPerPage": 25,
+    "auditLogsPerPage": 50
+  }
+}
