@@ -1,6 +1,6 @@
 import time
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy.future import select
 from sqlalchemy import text
 from src.database.core import get_db
@@ -8,7 +8,7 @@ from src.database.core import get_db
 router = APIRouter(prefix="/health", tags=["Health"])
 
 @router.get("")
-async def get_health(db: AsyncSession = Depends(get_db)):
+def get_health(db: Session = Depends(get_db)):
     start_time = time.time()
     
     # 1. API Status (Always OK if this router handles request)
@@ -21,7 +21,7 @@ async def get_health(db: AsyncSession = Depends(get_db)):
     db_error = None
     try:
         db_start = time.time()
-        await db.execute(text("SELECT 1"))
+        db.execute(text("SELECT 1"))
         db_latency = (time.time() - db_start) * 1000
     except Exception as e:
         db_status = "offline"
