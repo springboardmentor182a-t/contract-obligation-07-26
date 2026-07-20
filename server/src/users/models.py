@@ -29,14 +29,19 @@ class UserManagementBase(BaseModel):
     name: str
     department: str
     role: str
-    status: str
-    phone: str
+    status: str = "Active"
+
+    phone: Optional[str] = None
     date_joined: Optional[date] = None
     last_login: Optional[datetime] = None
 
 
-class UserManagementCreate(UserManagementBase):
-    password: str
+class UserManagementCreate(BaseModel):
+    email: EmailStr
+    name: str
+    department: str
+    role: str
+    status: str = "Active"
 
 
 class UserManagementResponse(UserManagementBase):

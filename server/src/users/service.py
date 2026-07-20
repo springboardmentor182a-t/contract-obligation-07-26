@@ -3,6 +3,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from src.database.core import SessionLocal
 from src.database.models import User
+from datetime import date, datetime
 
 
 def create_user(user_data: UserCreate) -> UserResponse:
@@ -47,14 +48,16 @@ def create_user_db(user_data: UserManagementCreate):
         new_user = User(
             email=user_data.email,
             name=user_data.name,
-            hashed_password=user_data.password,   # Placeholder for now
+            hashed_password="",
             is_active=True,
+
             department=user_data.department,
             role=user_data.role,
             status=user_data.status,
-            phone=user_data.phone,
-            date_joined=user_data.date_joined,
-            last_login=user_data.last_login
+
+            phone="",
+            date_joined=date.today(),
+            last_login=datetime.now()
         )
 
         db.add(new_user)

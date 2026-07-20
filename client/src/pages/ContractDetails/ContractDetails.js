@@ -17,7 +17,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 function ContractDetails() {
-  const { id } = useParams();
+  const { contractId } = useParams();
   const navigate = useNavigate();
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,10 +30,10 @@ function ContractDetails() {
 
   try {
   const response = await fetch(
-    `${BASE_URL}/contracts/${id}`,
-    {
-      method: "DELETE",
-    }
+  `${BASE_URL}/contracts/${contractId}`,
+  {
+    method: "DELETE",
+  }
   );
 
     if (!response.ok) {
@@ -55,7 +55,7 @@ function ContractDetails() {
         setLoading(true);
 
         const response = await fetch(
-          `${BASE_URL}/contracts/${id}`
+          `${BASE_URL}/contracts/${contractId}`
         );
 
         if (!response.ok) {
@@ -73,7 +73,7 @@ function ContractDetails() {
     };
 
     fetchContract();
-  }, [id]);
+  }, [contractId]);
 
   if (loading) {
     return <h2>Loading...</h2>;
