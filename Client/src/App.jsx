@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+
 import PageContainer from './layout/PageContainer';
 import AuthLayout from './layout/AuthLayout';
 import Login from './pages/Login';
@@ -21,6 +23,7 @@ import AuditLogs from './pages/auditLogs/AuditLogs';
 import Settings from './pages/settings/Settings';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import NotificationEngine from './features/notifications/NotificationEngine';
+
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('access_token');

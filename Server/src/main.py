@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+
 from core.config import settings
 from database.core import create_tables
 from api import router
@@ -17,10 +18,13 @@ def _auto_seed_renewals():
     from entities.renewal import Renewal
 
     db = SessionLocal()
+    
     try:
+        
         if db.query(Renewal).count() == 0:
             seed_renewals(db)
             print("Auto-seeded renewal data.")
+            
     finally:
         db.close()
 
@@ -45,6 +49,7 @@ app.add_middleware(
 )
 
 app.include_router(router, prefix=settings.API_PREFIX)
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
