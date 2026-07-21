@@ -6,14 +6,13 @@ from entities.user import User
 
 
 class NotificaionCreate(BaseModel):
-    
-    user_id: int
     title: str
     message: str
+    user_id: int = 0
 
 
 class NotificationResponse(BaseModel):
-    
+
     notification_id: int
     user_id: int
     date: datetime

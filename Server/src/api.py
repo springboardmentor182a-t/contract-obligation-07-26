@@ -11,6 +11,7 @@ from renewals import controller as renewal_controller
 
 from user_setting import controller as user_setting_contraller
 from notifications import controller as notification_controller
+from compliance import controller as compliance_controller
 
 router = APIRouter()
 
