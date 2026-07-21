@@ -4,7 +4,7 @@ from src.auth.controller import router as auth_router
 from src.todos.controller import router as todos_router
 from src.users.controller import router as users_router
 from src.renewals.controller import router as renewals_router
-
+from src.obligations.controller import router as obligations_router
 from src.profile.controller import router as profile_router
 from src.settings_module.controller import router as settings_router
 from src.notifications.controller import router as notifications_router
@@ -30,3 +30,4 @@ api_router.include_router(support_router)
 api_router.include_router(quick_actions_router)
 api_router.include_router(health_router)
 api_router.include_router(audit_router)
+api_router.include_router(obligations_router)

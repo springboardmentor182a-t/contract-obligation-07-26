@@ -142,17 +142,7 @@ class ObligationModel(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    contract_id = Column(
-        Integer,
-        ForeignKey(
-            "public.contracts.id",
-            ondelete="CASCADE",
-        ),
-        nullable=False,
-        index=True,
-    )
-
-    obligation_name = Column(
+    title = Column(
         String(255),
         nullable=False,
         index=True,
@@ -163,25 +153,23 @@ class ObligationModel(Base):
         nullable=True,
     )
 
-    obligation_type = Column(
-        String(100),
-        nullable=True,
+    contract_id = Column(
+        Integer,
+        ForeignKey(
+            "public.contracts.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
         index=True,
     )
 
-    assigned_to = Column(
+    owner_id = Column(
         Integer,
         ForeignKey(
             "public.users.id",
             ondelete="SET NULL",
         ),
         nullable=True,
-        index=True,
-    )
-
-    due_date = Column(
-        Date,
-        nullable=False,
         index=True,
     )
 
@@ -199,9 +187,10 @@ class ObligationModel(Base):
         index=True,
     )
 
-    completed_at = Column(
-        DateTime(timezone=True),
-        nullable=True,
+    due_date = Column(
+        Date,
+        nullable=False,
+        index=True,
     )
 
     created_at = Column(
@@ -222,12 +211,10 @@ class ObligationModel(Base):
         backref="obligations",
     )
 
-    assignee = relationship(
+    owner = relationship(
         "User",
-        backref="assigned_obligations",
-    )
-
-
+        backref="owned_obligations",
+)
 class UserInvitation(Base):
     __tablename__ = "user_invitations"
     __table_args__ = {"schema": "public"}
