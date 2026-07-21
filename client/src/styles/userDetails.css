@@ -1,0 +1,100 @@
+/* ===========================
+   User Details Card
+=========================== */
+
+.user-details-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.user-details-card h3 {
+  margin: 0 0 20px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ===========================
+   User Profile
+=========================== */
+
+.user-profile {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.user-avatar {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  background: #ede9fe;
+  color: #5b21b6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.user-profile h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #111827;
+}
+
+.user-profile p {
+  margin-top: 6px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* ===========================
+   Details
+=========================== */
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row span {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.detail-row strong {
+  color: #111827;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ===========================
+   Empty State
+=========================== */
+
+.empty-user {
+  text-align: center;
+  color: #9ca3af;
+  padding: 50px 20px;
+  font-size: 15px;
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width: 900px) {
+  .user-details-card {
+    margin-top: 20px;
+  }
+}

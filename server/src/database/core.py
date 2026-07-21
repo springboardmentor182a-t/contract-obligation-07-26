@@ -1,13 +1,20 @@
-import psycopg2
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://postgres:postgres123@localhost:5432/contractsiq"
+SQLALCHEMY_DATABASE_URL = os.getenv(
+    "DATABASE_URL", 
+    "postgresql://postgres:admin123@localhost:5432/contractiq"
 )
 
-connection = psycopg2.connect(DATABASE_URL)
-connection.autocommit = True
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
 
 def get_db():
-    return connection
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

@@ -2,3 +2,8 @@
 pytest
 httpx
 
+pytest
+pytest-cov
+httpx
+black
+flake8

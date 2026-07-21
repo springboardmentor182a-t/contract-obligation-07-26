@@ -1,208 +1,85 @@
-import React from "react";
-import {
-  FaHome,
-  FaFileContract,
-  FaClipboardList,
-  FaSyncAlt,
-  FaBell,
-  FaChartPie,
-  FaCalendarAlt,
-  FaFolderOpen,
-  FaCog,
-  FaQuestionCircle
-} from "react-icons/fa";
 
-function Sidebar() {
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
-  const menu = [
-    { icon: <FaHome />, text: "Dashboard", active: false },
-    { icon: <FaFileContract />, text: "Contracts", active: false },
-    { icon: <FaClipboardList />, text: "Obligations", active: false },
-    { icon: <FaSyncAlt />, text: "Renewals", active: true },
-    { icon: <FaBell />, text: "Alerts", active: false },
-    { icon: <FaChartPie />, text: "Reports", active: false },
-    { icon: <FaCalendarAlt />, text: "Calendar", active: false },
-    { icon: <FaFolderOpen />, text: "Documents", active: false },
-    { icon: <FaCog />, text: "Settings", active: false },
-    { icon: <FaQuestionCircle />, text: "Help & Support", active: false }
-  ];
+const Sidebar = () => {
+  const location = useLocation(); 
+
+  // Dynamically grab user info from local storage
+  const storedUser = JSON.parse(localStorage.getItem('user'));
+  // Removed hardcoded "Savannah Nguyen". It will now use the logged-in user or default to "Guest User"
+  const displayName = storedUser?.name || 'Guest User';
+  const displayRole = storedUser?.role || 'Member';
+
+  const linkStyle = { textDecoration: 'none', color: 'inherit', display: 'block' };
 
   return (
-    <div style={styles.sidebar}>
+    <aside className="sidebar">
+      <div className="sidebar-logo">
+        <h2>ContractIQ</h2>
+        <p>Contract Obligation Tracking Assistant</p>
+      </div>
+      
+      <nav className="sidebar-nav">
+        <ul>
+          <li className={location.pathname === '/dashboard' ? 'active' : ''}>
+            <Link to="/dashboard" style={linkStyle}>Dashboard</Link>
+          </li>
+          <li className={location.pathname === '/contracts' ? 'active' : ''}>
+            <Link to="/contracts" style={linkStyle}>Contracts</Link>
+          </li>
+          <li className={location.pathname === '/obligations' ? 'active' : ''}>
+            <Link to="/obligations" style={linkStyle}>Obligations</Link>
+          </li>
+          <li className={location.pathname === '/compliance' ? 'active' : ''}>
+            <Link to="/compliance" style={linkStyle}>Compliance</Link>
+          </li>
+          <li className={location.pathname === '/calendar' ? 'active' : ''}>
+            <Link to="/calendar" style={linkStyle}>Calendar</Link>
+          </li>
+          <li className={location.pathname === '/documents' ? 'active' : ''}>
+            <Link to="/documents" style={linkStyle}>Documents</Link>
+          </li>
+          <li className={location.pathname === '/tasks' ? 'active' : ''}>
+            <Link to="/tasks" style={linkStyle}>Tasks</Link>
+          </li>
+          <li className={location.pathname === '/reports' ? 'active' : ''}>
+            <Link to="/reports" style={linkStyle}>Reports</Link>
+          </li>
+          <li className={location.pathname === '/notifications' ? 'active' : ''}>
+            <Link to="/notifications" style={linkStyle}>
+              Notifications <span className="badge">3</span>
+            </Link>
+          </li>
+          <li className={location.pathname === '/users' ? 'active' : ''}>
+            <Link to="/users" style={linkStyle}>Users</Link>
+          </li>
+          <li className={location.pathname === '/settings' ? 'active' : ''}>
+            <Link to="/settings" style={linkStyle}>Settings</Link>
+          </li>
+        </ul>
+      </nav>
 
-      <div>
-
-        <div style={styles.logoArea}>
-
-          <div style={styles.logoCircle}>
-            📄
-          </div>
-
-          <div>
-
-            <div style={styles.logoTitle}>
-              Contract
-            </div>
-
-            <div style={styles.logoSub}>
-              Obligation Tracking
-            </div>
-
-          </div>
-
+      <div className="sidebar-alerts">
+        <div className="alert-card">
+          <h4>Need help?</h4>
+          <p>We are here to help you anytime</p>
+          <button style={{ background: '#5f27cd', color: 'white', width: '100%', padding: '10px', border: 'none', borderRadius: '6px', cursor: 'pointer', marginTop: '10px' }}>
+            Manage Plans
+          </button>
         </div>
-
-        <div style={{ marginTop: 35 }}>
-
-          {menu.map((item, index) => (
-
-            <div
-              key={index}
-              style={{
-                ...styles.menuItem,
-                background: item.active ? "#6C4CFF" : "transparent"
-              }}
-            >
-
-              <span style={styles.icon}>
-                {item.icon}
-              </span>
-
-              {item.text}
-
-            </div>
-
-          ))}
-
-        </div>
-
       </div>
 
-      <div>
-
-        
-
-        <div style={styles.profile}>
-
-          <img
-            src="https://i.pravatar.cc/100?img=12"
-            alt="profile"
-            style={styles.image}
-          />
-
-          <div>
-
-            <div style={styles.name}>
-              Admin
-            </div>
-
-            <div style={styles.role}>
-              Administrator
-            </div>
-
-          </div>
-
+      <div className="sidebar-profile">
+        <img src={storedUser?.profilePic || "default_profile.png"} alt="Profile" />
+        <div>
+          <p>{displayName}</p>
+          <span>{displayRole}</span>
         </div>
-
       </div>
-
-    </div>
+    </aside>
   );
-}
-const styles = {
-
-  sidebar: {
-  width: 280,
-  background: "#5f27cd",   // Exact dark navy-purple
-  minHeight: "100vh",
-  padding: 25,
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "space-between",
-  borderRight: "1px solid #2A1E63",
-  boxSizing: "border-box"
-},
-
-  logoArea: {
-    display: "flex",
-    alignItems: "center",
-    gap: 15
-  },
-
-  logoCircle: {
-    width: 55,
-    height: 55,
-    borderRadius: 16,
-    background: "#6C4CFF",
-    color: "#fff",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    fontSize: 24
-  },
-
-  logoTitle: {
-  fontSize: 20,
-  fontWeight: "700",
-  color: "#FFFFFF"
-},
-
-  logoSub: {
-  fontSize: 12,
-  color: "#C8C4F5"
-},
- menuItem: {
-  display: "flex",
-  alignItems: "center",
-  gap: 15,
-  padding: "14px 18px",
-  marginBottom: 10,
-  borderRadius: 12,
-  color: "#FFFFFF",
-  fontWeight: "500",
-  cursor: "pointer",
-  transition: "0.3s"
-},
-
-  icon: {
-    fontSize: 18,
-    width: 22
-  },
-
-  
-
- 
-
-  profile: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    paddingTop: 15,
-    borderTop: "1px solid #E5E5E5"
-  },
-
-  image: {
-    width: 48,
-    height: 48,
-    borderRadius: "50%"
-  },
-
-  name: {
-    fontWeight: "600",
-    color: "#222"
-  },
-
-  role: {
-    fontSize: 13,
-    color: "#777"
-  }
-
-
-
-  
-
-
-
+>>>>>>> origin/main-group-D
 };
 
 export default Sidebar;
