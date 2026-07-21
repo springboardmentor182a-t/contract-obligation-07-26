@@ -44,3 +44,19 @@ class Compliance(Base):
     next_review_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     contract = relationship("Contract", back_populates="compliances")
+
+    def to_dict(self):
+        """Serializes the database record to match the React frontend dictionary structure."""
+        return {
+            "id": f"CMP-{self.compliance_id:03d}",
+            "requirement": self.requirement,
+            "category": self.category,
+            "entity": self.entity,
+            "contractId": str(self.contract_id) if self.contract_id else "",
+            "status": self.status,
+            "risk": self.risk_level,
+            "lastAudit": self.last_audit.date().isoformat() if self.last_audit else None,
+            "score": self.health_score if self.health_score is not None else 0,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.created_at.isoformat() if self.created_at else None,
+        }
