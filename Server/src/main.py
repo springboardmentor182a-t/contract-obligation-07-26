@@ -56,6 +56,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(router, prefix=settings.API_PREFIX)
+
 # Auto-seed compliance records if database is empty
 db = SessionLocal()
 try:
@@ -69,7 +71,6 @@ except Exception as e:
     print("Auto-seed verification failed:", e)
     db.close()
 
-app.include_router(router, prefix=settings.API_PREFIX)
 app.include_router(renewals_controller.router, prefix=settings.API_PREFIX)
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

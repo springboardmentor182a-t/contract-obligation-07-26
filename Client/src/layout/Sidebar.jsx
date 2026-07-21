@@ -15,7 +15,8 @@ import {
   Bell,
   Activity,
   Briefcase,
-  User
+  User,
+  Building
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -31,6 +32,7 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
           { path: '/notifications', label: 'Notifications', icon: <Bell size={20} /> },
           { path: '/audit-logs', label: 'Audit Logs', icon: <Activity size={20} /> },
           { path: '/users', label: 'User Management', icon: <Users size={20} /> },
+          { path: '/organizations', label: 'Organization Management', icon: <Building size={20} /> },
         ];
     } else if (normalizedRole === 'legal manager') {
         return [

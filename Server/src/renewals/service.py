@@ -102,6 +102,24 @@ def get_renewals(
     return result
 
 
+def create_renewal(db: Session, data):
+    """Create a renewal record and its initial audit-history entry."""
+    renewal = Renewal(**data.model_dump())
+    db.add(renewal)
+    db.flush()
+    db.add(
+        RenewalHistory(
+            renewal_id=renewal.renewal_id,
+            action="Renewal record created",
+            performed_by=renewal.owner,
+            details=f"Contract {renewal.contract_id_ref} added to renewal tracking",
+        )
+    )
+    db.commit()
+    db.refresh(renewal)
+    return renewal
+
+
 def get_renewal_detail(db: Session, renewal_id: int):
     """Get a single renewal with its approvals, reminders, and history."""
     renewal = (

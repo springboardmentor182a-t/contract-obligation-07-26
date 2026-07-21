@@ -4,6 +4,7 @@ from typing import Optional
 
 from database.core import get_db
 from renewals.models import (
+    RenewalCreate,
     StatusUpdateRequest,
     ApprovalActionRequest,
     ReminderCreateRequest,
@@ -17,6 +18,7 @@ from renewals.service import (
     schedule_reminder,
     send_reminder_action,
     seed_renewals,
+    create_renewal,
 )
 
 router = APIRouter(
@@ -40,6 +42,17 @@ def list_renewals(
 ):
     """List all renewals with optional filters."""
     return get_renewals(db, search=search, category=category, status=status)
+
+
+@router.post("/", status_code=201)
+def add_renewal(request: RenewalCreate, db: Session = Depends(get_db)):
+    """Create a renewal record from the dashboard form."""
+    valid_statuses = ["Upcoming", "In Progress", "Renewed", "Expired", "Cancelled"]
+    if request.status not in valid_statuses:
+        raise HTTPException(status_code=400, detail="Invalid renewal status")
+
+    renewal = create_renewal(db, request)
+    return {"message": "Renewal created", "renewal_id": renewal.renewal_id}
 
 
 @router.get("/{renewal_id}")
