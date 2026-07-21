@@ -7,6 +7,8 @@ from audit_logs import controller as audit_logs_controller
 from reports_analytics import controller as report_analytics_controller
 from compliance import controller as compliance_controller
 from organization import controller as organization_controller
+from renewals import controller as renewal_controller
+
 from user_setting import controller as user_setting_contraller
 from notifications import controller as notification_controller
 
@@ -20,3 +22,4 @@ router.include_router(user_setting_contraller.router, tags=["User Setting"])
 router.include_router(audit_logs_controller.router, tags=["Audit Logs"])
 router.include_router(report_analytics_controller.router, tags=["Reports"])
 router.include_router(compliance_controller.router, tags=["Compliance"])
+router.include_router(renewal_controller.router, tags=["Renewals"])
