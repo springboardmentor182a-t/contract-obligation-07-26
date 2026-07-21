@@ -28,6 +28,9 @@ def initialize_database():
         return
 
     database_url = os.getenv("DATABASE_URL")
+    print("=" * 60)
+    print("DATABASE_URL =", database_url)
+    print("=" * 60)
 
     # If DATABASE_URL isn't provided in dev, fall back to a local SQLite file
     # so the app can run without external DB configuration.
@@ -40,6 +43,7 @@ def initialize_database():
         database_url,
         pool_pre_ping=True,
     )
+   
 
     # Create missing tables automatically (convenience for local development).
     try:

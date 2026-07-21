@@ -1,8 +1,8 @@
-from sqlalchemy import Boolean, Column, Integer, String, Text, ForeignKey, DateTime, func
+from sqlalchemy import Boolean, Column, Float, Integer, String, Text, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
 
 from src.database.core import Base
-
+from src.contract_repository.models import Contract
 
 class User(Base):
     __tablename__ = "users"
@@ -62,15 +62,6 @@ class Notification(Base):
 
     user = relationship("User", back_populates="notifications")
 
-
-class ContractModel(Base):
-    __tablename__ = "contracts"
-
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
-    description = Column(String, nullable=True)
-    contract_type = Column(String, nullable=True)
-    status = Column(String, nullable=True)
 
 
 class UserInvitation(Base):

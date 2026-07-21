@@ -1,36 +1,43 @@
 import React from "react";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 
-const ContractRow = ({ contract }) => {
+const ContractRow = ({ contract, onView }) => {
   return (
     <tr>
-      <td>{contract.id}</td>
-      <td>{contract.title}</td>
+      <td>{contract.contract_number}</td>
+
+      <td>{contract.contract_name}</td>
+
       <td>{contract.vendor}</td>
-      <td>{contract.type}</td>
-      <td>{contract.value}</td>
+
+      <td>{contract.contract_type}</td>
+
+      <td>₹{contract.contract_value}</td>
 
       <td>
-        <span className={`status-badge ${contract.status.toLowerCase().replace(/\s/g, "-")}`}>
+        <span
+          className={`status-badge ${contract.status
+            ?.toLowerCase()
+            .replace(/\s+/g, "-")}`}
+        >
           {contract.status}
         </span>
       </td>
 
-      <td>
-        <span className={`risk-badge ${contract.risk.toLowerCase()}`}>
-          {contract.risk}
-        </span>
-      </td>
-
-      <td>{contract.endDate}</td>
+      <td>{contract.end_date}</td>
 
       <td className="action-buttons">
-        <button title="View Contract">
+        <button
+          className="action-btn"
+          onClick={() => onView(contract)}
+        >
           <Eye size={16} />
         </button>
+
         <button title="Edit Contract">
           <Pencil size={16} />
         </button>
+
         <button title="Delete Contract">
           <Trash2 size={16} />
         </button>
