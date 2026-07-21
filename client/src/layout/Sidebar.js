@@ -2,14 +2,14 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
-  const location = useLocation(); // Gets the current URL path to highlight the active menu
+  const location = useLocation(); 
 
-  // Dynamically grab user info from local storage (so it's not hardcoded)
+  // Dynamically grab user info from local storage
   const storedUser = JSON.parse(localStorage.getItem('user'));
-  const displayName = storedUser?.name || 'User';
-  const displayRole = storedUser?.role || 'Admin';
+  // Removed hardcoded "Savannah Nguyen". It will now use the logged-in user or default to "Guest User"
+  const displayName = storedUser?.name || 'Guest User';
+  const displayRole = storedUser?.role || 'Member';
 
-  // Removes the default blue color and underline from React Router links
   const linkStyle = { textDecoration: 'none', color: 'inherit', display: 'block' };
 
   return (
@@ -21,7 +21,6 @@ const Sidebar = () => {
       
       <nav className="sidebar-nav">
         <ul>
-          {/* We dynamically apply the 'active' class based on the current URL */}
           <li className={location.pathname === '/dashboard' ? 'active' : ''}>
             <Link to="/dashboard" style={linkStyle}>Dashboard</Link>
           </li>
@@ -62,9 +61,11 @@ const Sidebar = () => {
 
       <div className="sidebar-alerts">
         <div className="alert-card">
-          <h4>Stay on top of your obligations</h4>
-          <p>Get real-time alerts and never miss a deadline.</p>
-          <button>Manage Alerts</button>
+          <h4>Need help?</h4>
+          <p>We are here to help you anytime</p>
+          <button style={{ background: '#5f27cd', color: 'white', width: '100%', padding: '10px', border: 'none', borderRadius: '6px', cursor: 'pointer', marginTop: '10px' }}>
+            Manage Plans
+          </button>
         </div>
       </div>
 

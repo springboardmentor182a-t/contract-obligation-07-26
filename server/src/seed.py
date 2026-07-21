@@ -1,8 +1,8 @@
 from datetime import date, timedelta
 from src.database.core import engine, SessionLocal
-from src.database.models import Base, Contract, Activity, Deadline, ComplianceItem
+from src.database.models import Base, Contract, Activity, Deadline, ComplianceItem, ReportHistory
 
-# Drop and recreate tables to ensure the new ComplianceItem table exists
+# Drop and recreate tables to ensure the new ComplianceItem and ReportHistory tables exist
 Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 
@@ -10,11 +10,11 @@ def seed_db():
     db = SessionLocal()
     today = date.today()
     
-    # --- 1. Existing Contracts ---
+    # --- 1. Existing Contracts (UPDATED with departments) ---
     contracts = [
-        Contract(name="Cloud Hosting SLA", party="AWS", status="Active", start_date=date(2023, 1, 1), end_date=date(2025, 1, 1), value=12000.00),
-        Contract(name="Office Lease", party="WeWork", status="Expiring Soon", start_date=date(2022, 6, 1), end_date=date(2024, 6, 1), value=45000.00),
-        Contract(name="Software License", party="Microsoft", status="Active", start_date=date(2024, 1, 15), end_date=date(2025, 1, 14), value=5000.00)
+        Contract(name="Cloud Hosting SLA", party="AWS", status="Active", start_date=date(2023, 1, 1), end_date=date(2025, 1, 1), value=12000.00, department="IT"),
+        Contract(name="Office Lease", party="WeWork", status="Expiring Soon", start_date=date(2022, 6, 1), end_date=date(2024, 6, 1), value=45000.00, department="Operations"),
+        Contract(name="Software License", party="Microsoft", status="Active", start_date=date(2024, 1, 15), end_date=date(2025, 1, 14), value=5000.00, department="IT")
     ]
     db.add_all(contracts)
 
@@ -32,7 +32,7 @@ def seed_db():
     ]
     db.add_all(deadlines)
 
-    # --- 4. NEW: Compliance Items ---
+    # --- 4. Compliance Items ---
     compliance_items = [
         ComplianceItem(
             item_name="Data Privacy Compliance",
@@ -95,7 +95,7 @@ def seed_db():
     # Save everything to PostgreSQL
     db.commit()
     db.close()
-    print("Database successfully wiped, tables recreated, and seeded with fresh compliance data!")
+    print("Database successfully wiped, tables recreated, and seeded with fresh data including Report History!")
 
 if __name__ == "__main__":
     seed_db()

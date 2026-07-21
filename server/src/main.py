@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from src.database.core import get_db
+from src.database.models import Contract, Activity, Deadline, ComplianceItem, ReportHistory
 from src.database.models import Activity, Deadline, ComplianceItem
 from src.users.controller import router as users_router
 from src.contracts.controller import router as contracts_router
@@ -37,6 +38,7 @@ class ContractCreate(BaseModel):
     start_date: date
     end_date: date
     value: float
+    department: str = "General" # --- NEW: Accepts department on creation ---
 
 @app.post("/api/v1/contracts")
 def create_contract(contract: ContractCreate, db: Session = Depends(get_db)):
@@ -46,7 +48,8 @@ def create_contract(contract: ContractCreate, db: Session = Depends(get_db)):
         status=contract.status,
         start_date=contract.start_date,
         end_date=contract.end_date,
-        value=contract.value
+        value=contract.value,
+        department=contract.department
     )
     db.add(db_contract)
     db.commit()
@@ -76,6 +79,8 @@ def get_dashboard_data(db: Session = Depends(get_db)):
         "deadlines": [{"title": d.title, "date": d.date} for d in deadlines],
         "contracts": [{
             "id": c.id,
+            "name": c.name,
+            "party": c.party,
 
             # Existing keys (for frontend compatibility)
             "name": c.contract,
@@ -184,7 +189,6 @@ def delete_compliance_item(item_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Compliance item deleted successfully"}
 
-# --- NEW: DELETE endpoint for Contracts ---
 @app.delete("/api/v1/contracts/{contract_id}")
 def delete_contract(contract_id: int, db: Session = Depends(get_db)):
     contract = (
@@ -199,3 +203,126 @@ def delete_contract(contract_id: int, db: Session = Depends(get_db)):
     db.delete(contract)
     db.commit()
     return {"message": "Contract deleted successfully"}
+
+class ReportCreate(BaseModel):
+    name: str
+    type: str
+    generatedBy: str
+    date: str
+    format: str
+    status: str
+
+@app.post("/api/v1/reports/history")
+def add_report_history(report: ReportCreate, db: Session = Depends(get_db)):
+    db_report = ReportHistory(
+        name=report.name,
+        type=report.type,
+        generated_by=report.generatedBy,
+        date=report.date,
+        format=report.format,
+        status=report.status
+    )
+    db.add(db_report)
+    db.commit()
+    db.refresh(db_report)
+    return db_report
+
+@app.get("/api/v1/reports")
+def get_reports_data(db: Session = Depends(get_db)):
+    contracts = db.query(Contract).all()
+    compliance_items = db.query(ComplianceItem).all()
+    history_db = db.query(ReportHistory).order_by(ReportHistory.id.desc()).all()
+
+    # 1. Calculate KPIs
+    total_contracts = len(contracts)
+    compliant_contracts = sum(1 for i in compliance_items if i.status == "Compliant")
+    expiring_soon = sum(1 for c in contracts if c.status == "Expiring Soon")
+    overdue_contracts = sum(1 for c in contracts if c.status == "Overdue") 
+
+    # 2. Value Summary Math
+    total_value = sum(c.value for c in contracts)
+    avg_value = total_value / total_contracts if total_contracts > 0 else 0
+    high_value = max((c.value for c in contracts), default=0)
+    low_value = min((c.value for c in contracts), default=0)
+
+    # 3. Chart Data Generation
+    active = sum(1 for c in contracts if c.status == "Active")
+    pending = sum(1 for c in contracts if c.status == "Pending Review" or c.status == "Pending")
+    terminated = sum(1 for c in contracts if c.status == "Terminated")
+
+    # 4. LIVE Dynamic Aggregation: Contracts by Department
+    dept_map = {}
+    for c in contracts:
+        # Default to "General" if department is missing or None
+        dept = c.department if getattr(c, 'department', None) else "General"
+        dept_map[dept] = dept_map.get(dept, 0) + 1
+    
+    department_chart = [{"name": k, "value": v} for k, v in dept_map.items()]
+    # Fallback to keep chart structured if DB is empty
+    if not department_chart:
+        department_chart = [{"name": "None", "value": 0}]
+
+    # 5. LIVE Dynamic Aggregation: Reports by Type
+    type_map = {}
+    colors_pool = ["#5f27cd", "#3498db", "#f39c12", "#e74c3c", "#2ecc71"]
+    for r in history_db:
+        r_type = r.type if r.type else "Other"
+        type_map[r_type] = type_map.get(r_type, 0) + 1
+        
+    type_chart = []
+    for idx, (k, v) in enumerate(type_map.items()):
+        type_chart.append({
+            "name": k,
+            "value": v,
+            "color": colors_pool[idx % len(colors_pool)]
+        })
+    # Fallback for empty history
+    if not type_chart:
+        type_chart = [{"name": "No Reports Run", "value": 1, "color": "#e0e0e0"}]
+
+    # 6. Generate Live Insights based on DB state
+    insights = []
+    if total_contracts > 0:
+        compliant_pct = round((compliant_contracts / total_contracts) * 100)
+        insights.append({"title": f"{compliant_contracts} contracts are active and compliant", "subtext": f"{compliant_pct}% of total contracts", "icon": "✅", "color": "#2ecc71"})
+    else:
+        insights.append({"title": "0 contracts are active and compliant", "subtext": "0% of total contracts", "icon": "✅", "color": "#2ecc71"})
+        
+    insights.append({"title": f"{expiring_soon} contracts are expiring soon", "subtext": "Action required in next 30 days", "icon": "⏱️", "color": "#f39c12"})
+    insights.append({"title": f"{overdue_contracts} contracts are overdue", "subtext": "Immediate attention required", "icon": "❗", "color": "#e74c3c"})
+    insights.append({"title": f"Total contract value is ${total_value:,.0f}", "subtext": "Calculated from active database", "icon": "📄", "color": "#5f27cd"})
+
+    # 7. Recent Reports Table Mapping
+    recent_reports = [
+        {
+            "id": r.id, "name": r.name, "type": r.type, 
+            "generatedBy": r.generated_by, "date": r.date, 
+            "format": r.format, "status": r.status
+        } for r in history_db[:6]
+    ]
+
+    return {
+        "kpi": {
+            "total": total_contracts,
+            "compliant": compliant_contracts,
+            "expiring": expiring_soon,
+            "overdue": overdue_contracts
+        },
+        "statusChart": [
+            {"name": "Active", "value": active, "color": "#5f27cd"},
+            {"name": "Pending", "value": pending, "color": "#3498db"},
+            {"name": "Expiring Soon", "value": expiring_soon, "color": "#f39c12"},
+            {"name": "Overdue", "value": overdue_contracts, "color": "#e74c3c"},
+            {"name": "Terminated", "value": terminated, "color": "#2ecc71"}
+        ],
+        "departmentChart": department_chart,
+        "typeChart": type_chart,
+        "valueSummary": {
+            "total": f"${total_value:,.0f}",
+            "average": f"${avg_value:,.0f}",
+            "highest": f"${high_value:,.0f}",
+            "lowest": f"${low_value:,.0f}"
+        },
+        "recentReports": recent_reports,
+        "insights": insights
+    }
