@@ -1,19 +1,28 @@
 import React from "react";
 import Sidebar from "./layout/Sidebar";
 import Navbar from "./layout/Navbar";
-import PageContainer from "./layout/PageContainer";
 import Home from "./pages/Home";
 import "./assets/global.css";
 
 function App() {
   return (
-    <div className="app-container">
+    <div
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        background: "#EEF2FF"
+      }}
+    >
       <Sidebar />
-      <div className="main-content">
+
+      <div
+        style={{
+          flex: 1,
+          padding: "20px"
+        }}
+      >
         <Navbar />
-        <PageContainer>
-          <Home />
-        </PageContainer>
+        <Home />
       </div>
     </div>
   );
