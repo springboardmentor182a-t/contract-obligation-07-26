@@ -10,6 +10,7 @@ import {
 const ROUTE_TITLES = {
   "/": "Dashboard",
   "/renewal-dashboard": "Renewal Dashboard",
+  "/contract-repository": "Contract Repository",
   "/reports": "Reports & Analytics",
   "/settings": "Settings",
   "/notifications": "Notifications",
@@ -37,6 +38,7 @@ const SEARCH_INDEX = [
   { group: "Pages", label: "Settings", sub: "App configuration & billing", to: "/settings" },
   { group: "Pages", label: "Help & Support", sub: "FAQs & ticket submission", to: "/help" },
   { group: "Pages", label: "Calendar", sub: "Compliance milestones & renewals calendar", to: "/calendar" },
+  {group: "Pages",label: "Contract Repository",sub: "Manage and search contracts",to: "/contract-repository"},
 ];
 
 function useOutsideClick(ref, handler) {
