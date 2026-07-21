@@ -15,16 +15,15 @@ def get_dashboard_summary(db: Session) -> Dict[str, Any]:
     total_count = db.query(Compliance).count()
     
     if total_count == 0:
-        # Fallback default values matching the React mockup exactly
         return {
-            "compliance_score": 84.0,
-            "trend_value": 2.4,
-            "compliant_contracts": 142,
-            "compliant_contracts_trend": "+12 this month",
-            "critical_violations": 3,
-            "critical_violations_trend": "Needs immediate action",
-            "pending_audits": 18,
-            "pending_audits_trend": "Scheduled for Q4"
+            "compliance_score": 0.0,
+            "trend_value": 0.0,
+            "compliant_contracts": 0,
+            "compliant_contracts_trend": "No records",
+            "critical_violations": 0,
+            "critical_violations_trend": "No records",
+            "pending_audits": 0,
+            "pending_audits_trend": "No records"
         }
         
     avg_score = db.query(func.avg(Compliance.health_score)).scalar() or 84.0
@@ -64,15 +63,7 @@ def get_compliance_trend(db: Session) -> List[Dict[str, Any]]:
         })
 
     if not results:
-        # Fallback values matching the React mockup trend [78, 82, 85, 84, 89, 94]
-        results = [
-            {"month": "Jan", "compliance_score": 78.0},
-            {"month": "Feb", "compliance_score": 82.0},
-            {"month": "Mar", "compliance_score": 85.0},
-            {"month": "Apr", "compliance_score": 84.0},
-            {"month": "May", "compliance_score": 89.0},
-            {"month": "Jun", "compliance_score": 94.0},
-        ]
+        results = []
     return results
 
 def get_risk_distribution(db: Session) -> Dict[str, int]:
@@ -83,11 +74,10 @@ def get_risk_distribution(db: Session) -> Dict[str, int]:
     total_count = db.query(Compliance).count()
     
     if total_count == 0:
-        # Fallback values matching the React mockup doughnut [2, 2, 1]
         return {
-            "high": 2,
-            "medium": 2,
-            "low": 1
+            "high": 0,
+            "medium": 0,
+            "low": 0
         }
         
     high_count = db.query(Compliance).filter(Compliance.risk_level == "High").count()
@@ -131,94 +121,7 @@ def get_per_contract_compliance(
     total = query.count()
     records = query.order_by(Compliance.compliance_id.asc()).offset(skip).limit(limit).all()
 
-    # Pre-populate sample list matching React dummy data if database is empty
-    if total == 0:
-        sample_records = [
-            {
-                "id": "CMP-004",
-                "requirement": "GDPR Data Processing",
-                "category": "Data Privacy",
-                "entity": "TechCorp Solutions",
-                "contractId": "1",
-                "status": "Compliant",
-                "risk": "High",
-                "lastAudit": "2023-10-01",
-                "score": 98,
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat()
-            },
-            {
-                "id": "CMP-005",
-                "requirement": "ISO 27001 Certification",
-                "category": "Security",
-                "entity": "Cloud Services LLC",
-                "contractId": "1",
-                "status": "Non-Compliant",
-                "risk": "High",
-                "lastAudit": "2023-09-15",
-                "score": 45,
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat()
-            },
-            {
-                "id": "CMP-006",
-                "requirement": "Annual Background Checks",
-                "category": "HR Policy",
-                "entity": "Staffing Agency",
-                "contractId": "1",
-                "status": "Under Review",
-                "risk": "Medium",
-                "lastAudit": "2023-11-05",
-                "score": 72,
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat()
-            },
-            {
-                "id": "CMP-007",
-                "requirement": "Anti-Bribery Clause",
-                "category": "Legal",
-                "entity": "GlobalTech",
-                "contractId": "1",
-                "status": "Compliant",
-                "risk": "Low",
-                "lastAudit": "2023-01-10",
-                "score": 100,
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat()
-            },
-            {
-                "id": "CMP-008",
-                "requirement": "SLA Uptime >= 99.9%",
-                "category": "Operations",
-                "entity": "HostProvider Inc",
-                "contractId": "1",
-                "status": "Warning",
-                "risk": "Medium",
-                "lastAudit": "2023-11-20",
-                "score": 85,
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat()
-            }
-        ]
-        
-        # Apply local python search/filtering to mock list for instant UI feedback
-        filtered_mock = sample_records
-        if status:
-            filtered_mock = [r for r in filtered_mock if r["status"] == status]
-        if risk:
-            filtered_mock = [r for r in filtered_mock if r["risk"] == risk]
-        if category:
-            filtered_mock = [r for r in filtered_mock if r["category"] == category]
-        if search_query:
-            q = search_query.lower()
-            filtered_mock = [r for r in filtered_mock if q in r["requirement"].lower() or q in r["entity"].lower()]
-            
-        return {
-            "total": len(filtered_mock),
-            "records": filtered_mock,
-            "skip": skip,
-            "limit": limit
-        }
+
 
     return {
         "total": total,

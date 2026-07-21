@@ -3,13 +3,38 @@ import { Files, AlertTriangle, CalendarClock, CheckCircle } from 'lucide-react';
 import Card from '../../components/DataDisplay/Card';
 import './Dashboard.css';
 
+import { getContracts } from '../../features/contracts/services/contractAPI';
+import { getRenewals } from '../../features/renewals/services/renewalAPI';
+import { getObligations } from '../../features/obligations/services/obligationAPI';
+
 const ComplianceOfficerDashboard = () => {
-  const stats = [
-    { label: 'Active Contracts', value: '45', icon: <Files size={24} />, color: 'var(--color-primary)' },
-    { label: 'Pending Approvals', value: '12', icon: <AlertTriangle size={24} />, color: 'var(--color-warning)' },
-    { label: 'Upcoming Renewals', value: '3', icon: <CalendarClock size={24} />, color: 'var(--color-danger)' },
-    { label: 'Completed Obligations', value: '89', icon: <CheckCircle size={24} />, color: 'var(--color-success)' },
-  ];
+  const [stats, setStats] = React.useState([
+    { label: 'Active Contracts', value: '0', icon: <Files size={24} />, color: 'var(--color-primary)' },
+    { label: 'Pending Approvals', value: '0', icon: <AlertTriangle size={24} />, color: 'var(--color-warning)' },
+    { label: 'Upcoming Renewals', value: '0', icon: <CalendarClock size={24} />, color: 'var(--color-danger)' },
+    { label: 'Completed Obligations', value: '0', icon: <CheckCircle size={24} />, color: 'var(--color-success)' },
+  ]);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [contracts, renewals, obligations] = await Promise.all([
+          getContracts().catch(() => []),
+          getRenewals().catch(() => []),
+          getObligations().catch(() => [])
+        ]);
+        setStats([
+          { label: 'Active Contracts', value: contracts.length.toString(), icon: <Files size={24} />, color: 'var(--color-primary)' },
+          { label: 'Pending Approvals', value: '0', icon: <AlertTriangle size={24} />, color: 'var(--color-warning)' },
+          { label: 'Upcoming Renewals', value: renewals.length.toString(), icon: <CalendarClock size={24} />, color: 'var(--color-danger)' },
+          { label: 'Completed Obligations', value: obligations.length.toString(), icon: <CheckCircle size={24} />, color: 'var(--color-success)' },
+        ]);
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="dashboard-container fade-in">

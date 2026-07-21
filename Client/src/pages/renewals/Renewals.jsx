@@ -1,15 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Search, AlertTriangle, RefreshCw, CheckCircle, Clock,
   XCircle, CalendarClock, Eye, PlayCircle, Bell, Filter,
   TrendingUp, ArrowUpRight, Plus
 } from 'lucide-react';
+
+
+
 import Button from '../../components/Buttons/Button';
-import './Renewals.css';
+import Modal from '../../components/Modals/Modal';
 import { API_BASE } from "../../constants";
+import './Renewals.css';
+
+
 
 const Renewals = () => {
+
   const navigate = useNavigate();
   const [renewals, setRenewals] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -18,6 +25,13 @@ const Renewals = () => {
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [actionLoading, setActionLoading] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+  const [newRenewal, setNewRenewal] = useState({
+    contract_name: '', contract_id_ref: '', category: 'Software License', vendor: '',
+    owner: '', expiry_date: '', notice_period_days: 30, value: '', auto_renew: false,
+  });
 
   const categories = [
     'All', 'Software License', 'Cloud Services', 'IT Services',
@@ -33,9 +47,12 @@ const Renewals = () => {
       if (res.ok) {
         const data = await res.json();
         setSummary(data);
+      } else {
+        setFeedback({ type: 'error', message: 'Could not load renewal summary. Confirm that the backend is running.' });
       }
     } catch (err) {
       console.error('Failed to fetch summary:', err);
+      setFeedback({ type: 'error', message: 'Could not connect to the backend. Start the server and refresh this page.' });
     }
   }, []);
 
@@ -51,9 +68,12 @@ const Renewals = () => {
       if (res.ok) {
         const data = await res.json();
         setRenewals(data);
+      } else {
+        setFeedback({ type: 'error', message: 'Could not load renewals.' });
       }
     } catch (err) {
       console.error('Failed to fetch renewals:', err);
+      setFeedback({ type: 'error', message: 'Could not connect to the backend. Start the server and refresh this page.' });
     } finally {
       setLoading(false);
     }
@@ -64,6 +84,64 @@ const Renewals = () => {
     fetchRenewals();
   }, [fetchSummary, fetchRenewals]);
 
+  const updateNewRenewal = (field, value) => {
+    setNewRenewal((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleAddRenewal = async (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    try {
+
+      const res = await fetch(`${API_BASE}/renewals/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newRenewal,
+          expiry_date: new Date(`${newRenewal.expiry_date}T00:00:00`).toISOString(),
+          notice_period_days: Number(newRenewal.notice_period_days),
+          value: Number(newRenewal.value),
+        }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.detail || 'Unable to create renewal');
+
+      setIsAddModalOpen(false);
+      setNewRenewal({
+        contract_name: '', contract_id_ref: '', category: 'Software License', vendor: '',
+        owner: '', expiry_date: '', notice_period_days: 30, value: '', auto_renew: false,
+      });
+
+      setFeedback({ type: 'success', message: 'Renewal created successfully.' });
+      await Promise.all([fetchRenewals(), fetchSummary()]);
+    } catch (err) {
+      setFeedback({ type: 'error', message: err.message || 'Unable to create renewal.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleExport = () => {
+    if (renewals.length === 0) {
+      setFeedback({ type: 'error', message: 'There are no renewal records to export.' });
+      return;
+    }
+    const columns = ['Contract', 'Contract ID', 'Category', 'Vendor', 'Owner', 'Expiry Date', 'Days Left', 'Value', 'Status'];
+    const rows = renewals.map((renewal) => [
+      renewal.contract_name, renewal.contract_id_ref, renewal.category, renewal.vendor,
+      renewal.owner, renewal.expiry_date, renewal.days_until_expiry, renewal.value, renewal.status,
+    ]);
+
+    const csv = [columns, ...rows].map((row) => row.map((value) => `"${String(value ?? '').replaceAll('"', '""')}"`).join(',')).join('\n');
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    link.download = 'renewals.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
+    setFeedback({ type: 'success', message: 'Renewals exported to CSV.' });
+  };
+
   const handleStartRenewal = async (renewalId) => {
     setActionLoading(renewalId);
     try {
@@ -73,6 +151,11 @@ const Renewals = () => {
         body: JSON.stringify({ status: 'In Progress', performed_by: 'Current User' }),
       });
       if (res.ok) {
+        try {
+          const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+          await createNotification({ title: 'Renewal Started', message: `Renewal process started for ID: ${renewalId}.` });
+          window.dispatchEvent(new Event('notification-created'));
+        } catch (err) { console.error(err); }
         await fetchRenewals();
         await fetchSummary();
       }
@@ -86,6 +169,7 @@ const Renewals = () => {
   const handleSendReminder = async (renewalId) => {
     setActionLoading(`remind-${renewalId}`);
     try {
+
       // Schedule a reminder for 7 days from now
       const reminderDate = new Date();
       reminderDate.setDate(reminderDate.getDate() + 7);
@@ -99,6 +183,11 @@ const Renewals = () => {
         }),
       });
       if (res.ok) {
+        try {
+          const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+          await createNotification({ title: 'Renewal Reminder Sent', message: `Reminder scheduled for Renewal ID: ${renewalId}.` });
+          window.dispatchEvent(new Event('notification-created'));
+        } catch (err) { console.error(err); }
         alert('Reminder scheduled successfully!');
         await fetchRenewals();
       }
@@ -110,14 +199,17 @@ const Renewals = () => {
   };
 
   const getStatusBadge = (status) => {
+
     const config = {
-      'Upcoming':    { icon: <Clock size={13} />, className: 'rnw-badge-upcoming' },
+      'Upcoming': { icon: <Clock size={13} />, className: 'rnw-badge-upcoming' },
       'In Progress': { icon: <RefreshCw size={13} />, className: 'rnw-badge-progress' },
-      'Renewed':     { icon: <CheckCircle size={13} />, className: 'rnw-badge-renewed' },
-      'Expired':     { icon: <XCircle size={13} />, className: 'rnw-badge-expired' },
-      'Cancelled':   { icon: <XCircle size={13} />, className: 'rnw-badge-cancelled' },
+      'Renewed': { icon: <CheckCircle size={13} />, className: 'rnw-badge-renewed' },
+      'Expired': { icon: <XCircle size={13} />, className: 'rnw-badge-expired' },
+      'Cancelled': { icon: <XCircle size={13} />, className: 'rnw-badge-cancelled' },
     };
+
     const c = config[status] || { icon: null, className: '' };
+
     return (
       <span className={`rnw-status-badge ${c.className}`}>
         {c.icon} {status}
@@ -126,9 +218,11 @@ const Renewals = () => {
   };
 
   const getDaysLeftDisplay = (days) => {
+
     if (days < 0) {
       return <span className="rnw-days-text rnw-days-expired">Expired</span>;
     }
+
     let urgencyClass = 'rnw-days-safe';
     if (days <= 30) urgencyClass = 'rnw-days-critical';
     else if (days <= 90) urgencyClass = 'rnw-days-warning';
@@ -137,6 +231,7 @@ const Renewals = () => {
   };
 
   const getActionRequired = (renewal) => {
+
     if (renewal.status === 'Expired') return 'Review Required';
     if (renewal.status === 'Cancelled') return 'N/A';
     if (renewal.status === 'Renewed') return 'On Track';
@@ -195,22 +290,34 @@ const Renewals = () => {
 
   return (
     <div className="renewals-dashboard fade-in">
+
       {/* Header */}
       <div className="rnw-header-section">
+
         <div className="rnw-header-content">
           <h1 className="rnw-title">Renewal Dashboard</h1>
           <p className="rnw-subtitle">Monitor and manage upcoming contract renewals</p>
         </div>
+
         <div className="rnw-header-actions">
-          <Button variant="outline" icon={TrendingUp}>Export</Button>
-          <Button variant="primary" icon={Plus}>Add Renewal</Button>
+          <Button variant="outline" icon={TrendingUp} onClick={handleExport}>Export</Button>
+          <Button variant="primary" icon={Plus} onClick={() => setIsAddModalOpen(true)}>Add Renewal</Button>
         </div>
+
       </div>
+
+      {feedback && (
+        <div className={`rnw-feedback rnw-feedback-${feedback.type}`} role="status">
+          <span>{feedback.message}</span>
+          <button type="button" onClick={() => setFeedback(null)} aria-label="Dismiss message">×</button>
+        </div>
+      )}
 
       {/* Stat Cards */}
       {summary && (
         <div className="rnw-stat-cards">
           {summaryCards.map((card) => (
+
             <div key={card.label} className={`rnw-stat-card ${card.colorClass}`}>
               <div className="rnw-stat-icon">{card.icon}</div>
               <div className="rnw-stat-info">
@@ -219,12 +326,14 @@ const Renewals = () => {
                 <div className="rnw-stat-desc">{card.desc}</div>
               </div>
             </div>
+
           ))}
         </div>
       )}
 
       {/* Alert Banner */}
       {summary && summary.expiring_soon_no_action > 0 && (
+
         <div className="rnw-alert-banner">
           <AlertTriangle size={18} />
           <span>
@@ -236,15 +345,18 @@ const Renewals = () => {
 
       {/* Contracts Table Section */}
       <div className="rnw-main-area animate-slide-up">
+
         <div className="rnw-section-header">
           <h2>Contracts Requiring Renewal Action</h2>
           <span className="rnw-view-all" onClick={() => setStatusFilter('All')}>
             View All Contracts →
           </span>
+
         </div>
 
         {/* Filter Bar */}
         <div className="rnw-toolbar">
+
           <div className="rnw-search">
             <Search size={18} className="search-icon" />
             <input
@@ -254,6 +366,7 @@ const Renewals = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
           <div className="rnw-filters">
             <select
               className="rnw-select"
@@ -273,7 +386,9 @@ const Renewals = () => {
                 <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>
               ))}
             </select>
+
           </div>
+
         </div>
 
         {/* Table */}
@@ -347,6 +462,45 @@ const Renewals = () => {
           )}
         </div>
       </div>
+
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => !isSubmitting && setIsAddModalOpen(false)}
+        title="Add Renewal"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setIsAddModalOpen(false)} disabled={isSubmitting}>Cancel</Button>
+            <Button variant="primary" type="submit" form="add-renewal-form" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Create Renewal'}
+            </Button>
+          </>
+        }
+      >
+        <form id="add-renewal-form" className="rnw-form" onSubmit={handleAddRenewal}>
+
+          <label className="rnw-form-field">Contract name<input required value={newRenewal.contract_name} onChange={(e) => updateNewRenewal('contract_name', e.target.value)} /></label>
+          <div className="rnw-form-grid">
+            <label className="rnw-form-field">Contract ID<input required value={newRenewal.contract_id_ref} onChange={(e) => updateNewRenewal('contract_id_ref', e.target.value)} placeholder="e.g. CNT-2026-001" /></label>
+            <label className="rnw-form-field">Category<select value={newRenewal.category} onChange={(e) => updateNewRenewal('category', e.target.value)}>{categories.slice(1).map((category) => <option key={category}>{category}</option>)}</select></label>
+          </div>
+
+          <div className="rnw-form-grid">
+            <label className="rnw-form-field">Vendor<input required value={newRenewal.vendor} onChange={(e) => updateNewRenewal('vendor', e.target.value)} /></label>
+            <label className="rnw-form-field">Owner<input required value={newRenewal.owner} onChange={(e) => updateNewRenewal('owner', e.target.value)} /></label>
+          </div>
+
+          <div className="rnw-form-grid">
+            <label className="rnw-form-field">Expiry date<input required type="date" value={newRenewal.expiry_date} onChange={(e) => updateNewRenewal('expiry_date', e.target.value)} /></label>
+            <label className="rnw-form-field">Value<input required min="0" type="number" step="0.01" value={newRenewal.value} onChange={(e) => updateNewRenewal('value', e.target.value)} /></label>
+          </div>
+
+          <div className="rnw-form-grid">
+            <label className="rnw-form-field">Notice period (days)<input required min="0" type="number" value={newRenewal.notice_period_days} onChange={(e) => updateNewRenewal('notice_period_days', e.target.value)} /></label>
+            <label className="rnw-checkbox"><input type="checkbox" checked={newRenewal.auto_renew} onChange={(e) => updateNewRenewal('auto_renew', e.target.checked)} /> Automatically renew</label>
+          </div>
+          
+        </form>
+      </Modal>
     </div>
   );
 };

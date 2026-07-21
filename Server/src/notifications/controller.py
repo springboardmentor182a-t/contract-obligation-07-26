@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
+
 from database.core import get_db
 from entities.notification import Notification
 from entities.user import User
 from users.service import admin_required
 from auth.service import verify_token
-from notifications.models import NotificationResponse
+from notifications.models import NotificationResponse, NotificaionCreate
+from notifications.service import create_notification
 
 router = APIRouter(
     prefix="/notification",
@@ -14,7 +16,26 @@ router = APIRouter(
 )
 
 
-@router.get("/notifications")
+@router.post("/create_notification", response_model=NotificationResponse)
+def create_new_notification(
+    data: NotificaionCreate,
+    payload: dict = Depends(verify_token), db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == payload["sub"]).first()
+
+    if not user:
+        raise HTTPException(404, "User not exist!!")
+    notification = create_notification(
+        db=db,
+        user_id=user.user_id,
+        title=data.title,
+        message=data.message,
+    )
+
+    return notification
+
+
+@router.get("/notifications", response_model=list[NotificationResponse])
 def get_notifications(
     payload: dict = Depends(verify_token), db: Session = Depends(get_db)
 ):
@@ -22,9 +43,11 @@ def get_notifications(
 
     if not user:
         raise HTTPException(404, "User not exist!!")
+
     notifications = (
         db.query(Notification).filter(Notification.user_id == user.user_id).all()
     )
+
     return notifications
 
 
@@ -34,6 +57,7 @@ def get_admin_notifications(
     db: Session = Depends(get_db),
 ):
     notifications = db.query(Notification).all()
+
     return notifications
 
 
@@ -61,4 +85,5 @@ def delete_notification(
 
     db.delete(notification)
     db.commit()
+
     return {"message": "Notification deleted successfully"}

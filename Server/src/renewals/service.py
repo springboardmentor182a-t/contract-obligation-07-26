@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func as sql_func
 
+
+
 from entities.renewal import (
     Renewal,
     RenewalApproval,
@@ -10,9 +12,12 @@ from entities.renewal import (
     RenewalStatus,
     ApprovalStatus,
 )
+from audit_logs.service import create_audit_log
+
 
 
 def get_dashboard_summary(db: Session):
+    
     """Get counts per status + expiring-soon-no-action count."""
     counts = {}
     for status in RenewalStatus:
@@ -57,6 +62,7 @@ def get_renewals(
     category: str = None,
     status: str = None,
 ):
+    
     """List renewals with optional filters. Computes days_until_expiry server-side."""
     query = db.query(Renewal)
 
@@ -78,8 +84,10 @@ def get_renewals(
 
     result = []
     now = datetime.utcnow()
+    
     for r in renewals:
         days_left = (r.expiry_date - now).days
+        
         renewal_dict = {
             "renewal_id": r.renewal_id,
             "contract_name": r.contract_name,
@@ -96,16 +104,39 @@ def get_renewals(
             "updated_at": r.updated_at.isoformat() if r.updated_at else None,
             "days_until_expiry": days_left,
         }
+        
         result.append(renewal_dict)
 
     return result
 
 
+def create_renewal(db: Session, data):
+    
+    """Create a renewal record and its initial audit-history entry."""
+    renewal = Renewal(**data.model_dump())
+    db.add(renewal)
+    db.flush()
+    db.add(
+        RenewalHistory(
+            renewal_id=renewal.renewal_id,
+            action="Renewal record created",
+            performed_by=renewal.owner,
+            details=f"Contract {renewal.contract_id_ref} added to renewal tracking",
+        )
+    )
+    db.commit()
+    db.refresh(renewal)
+    
+    return renewal
+
+
 def get_renewal_detail(db: Session, renewal_id: int):
+    
     """Get a single renewal with its approvals, reminders, and history."""
     renewal = (
         db.query(Renewal).filter(Renewal.renewal_id == renewal_id).first()
     )
+    
     if not renewal:
         return None
 
@@ -140,6 +171,7 @@ def get_renewal_detail(db: Session, renewal_id: int):
             }
             for a in renewal.approvals
         ],
+        
         "reminders": [
             {
                 "reminder_id": rm.reminder_id,
@@ -183,6 +215,7 @@ def update_renewal_status(db: Session, renewal_id: int, new_status: str, perform
         details=f"Renewal status updated by {performed_by}",
     )
     db.add(history)
+    create_audit_log(db, user_name=performed_by, action="updated renewal status", module="Renewals", category="Change", entity_type="Renewal", entity_id=renewal_id, description=f"Changed renewal status from {old_status} to {new_status}", old_value={"status": old_status}, new_value={"status": new_status})
     db.commit()
     db.refresh(renewal)
 
@@ -194,6 +227,7 @@ def submit_approval(db: Session, renewal_id: int, step_name: str, action: str, a
     renewal = db.query(Renewal).filter(Renewal.renewal_id == renewal_id).first()
     if not renewal:
         return None
+
 
     # Find or create the approval step
     approval = (
@@ -215,7 +249,9 @@ def submit_approval(db: Session, renewal_id: int, step_name: str, action: str, a
             acted_at=datetime.utcnow(),
         )
         db.add(approval)
+        
     else:
+        
         approval.status = action
         approval.approver = approver
         approval.comments = comments
@@ -228,10 +264,14 @@ def submit_approval(db: Session, renewal_id: int, step_name: str, action: str, a
         performed_by=approver,
         details=comments or f"Step {step_name} marked as {action}",
     )
+    
     db.add(history)
+    create_audit_log(db, user_name=approver, action=action.lower() + " renewal", module="Renewals", category="Approval", entity_type="Renewal", entity_id=renewal_id, description=f"{step_name} {action.lower()} by {approver}", new_value={"approval_status": action, "comments": comments})
 
-    # If approved at final step, update status to Renewed
+    # If approved at final step, 
+    # update status to Renewed
     if action == "Approved":
+        
         all_approvals = (
             db.query(RenewalApproval)
             .filter(RenewalApproval.renewal_id == renewal_id)
@@ -251,18 +291,22 @@ def submit_approval(db: Session, renewal_id: int, step_name: str, action: str, a
             )
             db.add(history2)
 
+
     # If rejected, keep status as In Progress
     if action == "Rejected":
         renewal.status = RenewalStatus.IN_PROGRESS
 
+
     db.commit()
     db.refresh(approval)
+    
     return approval
 
 
 def schedule_reminder(db: Session, renewal_id: int, reminder_date: datetime, message: str = None):
     """Schedule a reminder for a renewal."""
     renewal = db.query(Renewal).filter(Renewal.renewal_id == renewal_id).first()
+    
     if not renewal:
         return None
 
@@ -284,6 +328,7 @@ def schedule_reminder(db: Session, renewal_id: int, reminder_date: datetime, mes
 
     db.commit()
     db.refresh(reminder)
+    
     return reminder
 
 
@@ -314,10 +359,12 @@ def send_reminder_action(db: Session, renewal_id: int):
     db.add(history)
 
     db.commit()
+    
     return {"sent_count": len(reminders)}
 
 
 def seed_renewals(db: Session):
+    
     """Seed the database with 15 realistic sample renewals."""
     # Clear existing data
     db.query(RenewalHistory).delete()
@@ -636,4 +683,5 @@ def seed_renewals(db: Session):
         db.add(reminder)
 
     db.commit()
+    
     return {"message": f"Seeded {len(created_renewals)} renewals with approvals, history, and reminders"}
