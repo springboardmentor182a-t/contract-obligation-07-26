@@ -10,8 +10,8 @@ import {
 const MENU = [
   { to: "/", label: "Dashboard", Icon: GridIcon, implemented: false },
   { to: "/repository", label: "Contract Repository", Icon: FileIcon, implemented: false },
-  { to: "/obligations", label: "Obligation Tracker", Icon: ClipboardIcon, implemented: false },
-  { to: "/renewal-dashboard",label: "Renewal Dashboard",Icon: RepeatIcon,implemented: true},
+  { to: "/obligations", label: "Obligation Tracker", Icon: ClipboardIcon, implemented: true },
+  { to: "/renewal-dashboard",label: "Renewacdl Dashboard",Icon: RepeatIcon,implemented: true},
   { to: "/compliance", label: "Compliance", Icon: ShieldIcon, implemented: false },
   { to: "/reports", label: "Reports & Analytics", Icon: BarIcon, implemented: true },
   { to: "/notifications", label: "Notifications", Icon: BellIcon, badgeKey: "notifications", implemented: true },
