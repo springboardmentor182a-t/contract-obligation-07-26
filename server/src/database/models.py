@@ -7,6 +7,7 @@ from sqlalchemy import (
     String,
     Text,
     func,
+    Date,
 )
 from sqlalchemy.orm import relationship
 
@@ -135,6 +136,96 @@ class ContractModel(Base):
     description = Column(String, nullable=True)
     contract_type = Column(String, nullable=True)
     status = Column(String, nullable=True)
+class ObligationModel(Base):
+    __tablename__ = "obligations"
+    __table_args__ = {"schema": "public"}
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    contract_id = Column(
+        Integer,
+        ForeignKey(
+            "public.contracts.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    obligation_name = Column(
+        String(255),
+        nullable=False,
+        index=True,
+    )
+
+    description = Column(
+        Text,
+        nullable=True,
+    )
+
+    obligation_type = Column(
+        String(100),
+        nullable=True,
+        index=True,
+    )
+
+    assigned_to = Column(
+        Integer,
+        ForeignKey(
+            "public.users.id",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+        index=True,
+    )
+
+    due_date = Column(
+        Date,
+        nullable=False,
+        index=True,
+    )
+
+    priority = Column(
+        String(50),
+        nullable=False,
+        default="Medium",
+        index=True,
+    )
+
+    status = Column(
+        String(50),
+        nullable=False,
+        default="Pending",
+        index=True,
+    )
+
+    completed_at = Column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    contract = relationship(
+        "ContractModel",
+        backref="obligations",
+    )
+
+    assignee = relationship(
+        "User",
+        backref="assigned_obligations",
+    )
 
 
 class UserInvitation(Base):
