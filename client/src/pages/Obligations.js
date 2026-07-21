@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 import "./Obligations.css";
 import { STATUS_COLORS, STATUS_LABELS } from "../data/constants";
@@ -130,13 +131,98 @@ export default function Obligations() {
   }, []);
 
   function toggle(id) {
+    const obligation = items.find((item) => item.id === id);
+
+    if (!obligation) return;
+
+    const previousCompleted = obligation.completed;
+    const previousStatus = obligation.status;
+    const newCompleted = !previousCompleted;
+
+    const newStatus = newCompleted ? "completed" : "on_track";
+
+    setError("");
+
     setItems((list) =>
-      list.map((obligation) =>
-        obligation.id === id
-          ? { ...obligation, completed: !obligation.completed }
-          : obligation
+      list.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              completed: newCompleted,
+              status: newCompleted ? "ontrack" : "ontrack",
+            }
+          : item
       )
     );
+
+    fetch(`${API_URL}${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        status: newStatus,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response
+            .json()
+            .catch(() => null)
+            .then((errorData) => {
+              throw new Error(
+                errorData?.detail ||
+                  `Unable to update obligation (${response.status})`
+              );
+            });
+        }
+
+        return response.json();
+      })
+      .then((updatedObligation) => {
+        const normalizedStatus = normalizeStatus(
+          updatedObligation.status
+        );
+
+        setItems((list) =>
+          list.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  completed: normalizedStatus === "completed",
+                  status:
+                    normalizedStatus === "completed"
+                      ? "ontrack"
+                      : normalizedStatus,
+                }
+              : item
+          )
+        );
+      })
+      .catch((updateError) => {
+        console.error(
+          "Failed to update obligation:",
+          updateError
+        );
+
+        setItems((list) =>
+          list.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  completed: previousCompleted,
+                  status: previousStatus,
+                }
+              : item
+          )
+        );
+
+        setError(
+          updateError.message ||
+            "Unable to update obligation status."
+        );
+      });
   }
 
   const filtered = useMemo(() => {
@@ -281,3 +367,4 @@ export default function Obligations() {
     </div>
   );
 }
+
