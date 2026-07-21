@@ -144,6 +144,13 @@ const Settings = () => {
         await refreshProfile();
       }
       setProfileStatus({ type: 'success', message: 'Profile updated successfully!' });
+      
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Profile Updated', message: 'Your profile information was updated.' });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
+
     } catch (err) {
       setProfileStatus({ type: 'error', message: err.message || 'Failed to update profile' });
     } finally {
@@ -168,6 +175,13 @@ const Settings = () => {
     try {
       await changePassword(passwordData.currentPassword, passwordData.newPassword);
       setPasswordStatus({ type: 'success', message: 'Password updated successfully!' });
+      
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Password & Security Alerts', message: 'Your password was successfully changed.' });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error('Failed to notify security alert:', err); }
+
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
       setPasswordStatus({ type: 'error', message: err.message || 'Failed to update password' });
@@ -182,6 +196,11 @@ const Settings = () => {
     try {
       await updateUserSettings(userSettings);
       setNotificationStatus({ type: 'success', message: 'Notification preferences saved!' });
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Settings Updated', message: 'Your notification preferences have been saved.' });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
     } catch (err) {
       setNotificationStatus({ type: 'error', message: err.message || 'Failed to save notifications' });
     } finally {
@@ -197,6 +216,12 @@ const Settings = () => {
       await updateUserSettings(userSettings);
       setAppearanceStatus({ type: 'success', message: 'Appearance settings applied!' });
       
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Settings Updated', message: 'Your appearance settings have been applied.' });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
+
       if (updateGlobalTheme) {
         updateGlobalTheme(userSettings.theme);
       }

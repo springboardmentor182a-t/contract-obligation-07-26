@@ -10,6 +10,7 @@ from renewals import controller as renewal_controller
 
 from user_setting import controller as user_setting_contraller
 from notifications import controller as notification_controller
+from compliance import controller as compliance_controller
 
 
 router = APIRouter()
@@ -21,5 +22,6 @@ router.include_router(organization_controller.router, tags=["Organization"])
 router.include_router(user_setting_contraller.router, tags=["User Setting"])
 router.include_router(audit_logs_controller.router, tags=["Audit Logs"])
 router.include_router(report_analytics_controller.router, tags=["Reports"])
+router.include_router(compliance_controller.router, tags=["Compliance"])
 router.include_router(renewal_controller.router, tags=["Renewals"])
 router.include_router(notification_controller.router, tags=["Notifications"])
