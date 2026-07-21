@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import {
   LayoutDashboard,
@@ -16,8 +17,8 @@ import {
   ChevronUp,
   Cpu
 } from "lucide-react";
-
 export default function Sidebar() {
+  const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState("Dashboard");
   const [orgDropdown, setOrgDropdown] = useState(false);
   const [systemDropdown, setSystemDropdown] = useState(false);
@@ -83,8 +84,18 @@ export default function Sidebar() {
               <li key={item.name}>
                 <button
                   className={`nav-item-btn ${isActive ? "active" : ""}`}
-                  onClick={() => setActiveMenu(item.name)}
-                >
+                  onClick={() => {
+                    setActiveMenu(item.name);
+
+                    if (item.name === "Dashboard") {
+                      navigate("/");
+                    } else if (item.name === "Contract Repository") {
+                      navigate("/contract-details");
+                    } else if (item.name === "Compliance") {
+                      navigate("/compliance");
+                    }
+                  }}
+                 >
                   <div className="nav-item-left">
                     <Icon className="nav-icon" />
                     <span>{item.name}</span>
