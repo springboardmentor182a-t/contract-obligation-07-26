@@ -3,6 +3,7 @@ from .core import Base
 
 class Contract(Base):
     __tablename__ = "contracts"
+    __table_args__ = {'extend_existing': True} # --- NEW: Allows model merging ---
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
@@ -11,7 +12,7 @@ class Contract(Base):
     start_date = Column(Date)
     end_date = Column(Date)
     value = Column(Float)
-    department = Column(String, default="General") # --- NEW: Added department ---
+    department = Column(String, default="General")
 
 # -----------------------------
 # Activity Model
@@ -23,7 +24,6 @@ class Activity(Base):
     description = Column(String)
     time = Column(String)
 
-
 # -----------------------------
 # Deadline Model
 # -----------------------------
@@ -34,7 +34,6 @@ class Deadline(Base):
     title = Column(String)
     date = Column(String)
 
-
 # -----------------------------
 # Compliance Model
 # -----------------------------
@@ -42,12 +41,7 @@ class ComplianceItem(Base):
     __tablename__ = "compliance_items"
 
     id = Column(Integer, primary_key=True, index=True)
-    item_name = Column(String)          
-    description = Column(String)        
-    contract_ref = Column(String)       
-    obligation = Column(String)         
-    status = Column(String)             
-    risk_level = Column(String)         
+    # --- UPDATED: Removed the accidental duplicate columns here ---
     item_name = Column(String)
     description = Column(String)
     contract_ref = Column(String)
