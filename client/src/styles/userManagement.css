@@ -79,7 +79,15 @@
 .new-user-btn:hover {
   background: #5b21b6;
 }
+/* Filter Wrapper */
 
+.filter-wrapper {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
 /* Main Layout */
 
 .user-content {

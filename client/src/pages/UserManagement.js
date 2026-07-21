@@ -27,6 +27,13 @@ function UserManagement() {
   const [department, setDepartment] = useState("");
   const [status, setStatus] = useState("");
   const [sortBy, setSortBy] = useState("");
+  const [appliedFilters, setAppliedFilters] = useState({
+  searchTerm: "",
+  role: "",
+  department: "",
+  status: "",
+  sortBy: "",
+});
 
   const [selectedUser, setSelectedUser] = useState(null);
 
@@ -70,16 +77,35 @@ useEffect(() => {
     }
     };
   const resetFilters = () => {
-  setSearchTerm("");
-  setRole("");
-  setDepartment("");
-  setStatus("");
+    setSearchTerm("");
+    setRole("");
+    setDepartment("");
+    setStatus("");
+    setSortBy("");
+
+    setAppliedFilters({
+      searchTerm: "",
+      role: "",
+      department: "",
+      status: "",
+      sortBy: "",
+    });
+  };
+  const applyFilters = () => {
+  setAppliedFilters({
+    searchTerm,
+    role,
+    department,
+    status,
+    sortBy,
+  });
 };
 const exportUsers = () => {
   if (users.length === 0) {
     alert("No users to export.");
     return;
   }
+
 
   const headers = [
     "Name",
@@ -118,24 +144,26 @@ const exportUsers = () => {
     URL.revokeObjectURL(link.href);
 };
 
-    const filteredUsers = users.filter((user) => {
+    let filteredUsers = users.filter((user) => {
   const matchesSearch =
-    (user.name || "")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase()) ||
-    (user.email || "")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+  (user.name || "")
+    .toLowerCase()
+    .includes(appliedFilters.searchTerm.toLowerCase()) ||
+  (user.email || "")
+    .toLowerCase()
+    .includes(appliedFilters.searchTerm.toLowerCase());
 
   const matchesRole =
-    role === "" || user.role === role;
+    appliedFilters.role === "" ||
+    user.role === appliedFilters.role;
 
   const matchesDepartment =
-    department === "" || user.department === department;
+    appliedFilters.department === "" ||
+    user.department === appliedFilters.department;
 
   const matchesStatus =
-    status === "" || user.status === status;
-
+    appliedFilters.status === "" ||
+    user.status === appliedFilters.status;
   return (
     matchesSearch &&
     matchesRole &&
@@ -143,6 +171,36 @@ const exportUsers = () => {
     matchesStatus
   );
 });
+switch (appliedFilters.sortBy) {
+  case "name":
+    filteredUsers.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    break;
+
+  case "role":
+    filteredUsers.sort((a, b) =>
+      a.role.localeCompare(b.role)
+    );
+    break;
+
+  case "department":
+    filteredUsers.sort((a, b) =>
+      a.department.localeCompare(b.department)
+    );
+    break;
+
+  case "lastLogin":
+    filteredUsers.sort(
+      (a, b) =>
+        new Date(b.last_login) -
+        new Date(a.last_login)
+    );
+    break;
+
+  default:
+    break;
+}
 
   return (
     <div className="user-management">
@@ -167,7 +225,7 @@ const exportUsers = () => {
           {/* Top Buttons */}
           <div className="user-top">
             <div className="user-title">
-              <h2>Users</h2>
+              <h2>Users ({filteredUsers.length})</h2>
             </div>
 
             <div className="top-buttons">
@@ -187,18 +245,23 @@ const exportUsers = () => {
             </div>
           </div>
 
-          <UserSearchBar
-            users={users}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            role={role}
-            setRole={setRole}
-            department={department}
-            setDepartment={setDepartment}
-            status={status}
-            setStatus={setStatus}
-            resetFilters={resetFilters}
+          <div className="filter-wrapper">
+            <UserSearchBar
+              users={users}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              role={role}
+              setRole={setRole}
+              department={department}
+              setDepartment={setDepartment}
+              status={status}
+              setStatus={setStatus}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              applyFilters={applyFilters}
+              resetFilters={resetFilters}
             />
+          </div>
 
           {/* Main Content */}
           <div className="user-content">

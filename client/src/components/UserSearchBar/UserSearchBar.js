@@ -1,5 +1,4 @@
-import { FiSearch, FiRotateCcw } from "react-icons/fi";
-
+import { FiSearch, FiRotateCcw, FiFilter } from "react-icons/fi";
 import "../../styles/Searchbar.css";
 
 function UserSearchBar({
@@ -12,6 +11,9 @@ function UserSearchBar({
   setDepartment,
   status,
   setStatus,
+  sortBy,
+  setSortBy,
+  applyFilters,
   resetFilters,
 }) {
   return (
@@ -74,6 +76,23 @@ function UserSearchBar({
           )
         )}
       </select>
+      <select
+        value={sortBy}
+        onChange={(e) => setSortBy(e.target.value)}
+      >
+        <option value="">Sort By</option>
+        <option value="name">Name</option>
+        <option value="role">Role</option>
+        <option value="department">Department</option>
+        <option value="lastLogin">Last Login</option>
+      </select>
+      <button
+        className="apply-btn"
+        onClick={applyFilters}
+      >
+        <FiFilter />
+        Apply Filters
+      </button>
 
       {/* Reset */}
       <button
