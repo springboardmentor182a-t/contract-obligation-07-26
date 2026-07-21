@@ -14,3 +14,15 @@ venv/
 # Editors
 .vscode/
 .idea/
+node_modules/
+dist/
+build/
+coverage/
+package-lock.json
+environment.ts 
+environment.prod.ts
+.env
+logs/
+*.log
+.DS_Store
+Thumbs.db

@@ -1,5 +1,14 @@
-"""System-wide rate limiting middleware. Wraps incoming HTTP transport boundaries."""
+from fastapi import Request, HTTPException
+import time
 
-def init_rate_limiter(app):
-    """Placeholder no-op rate limiter setup."""
-    return app
+requests = {}
+
+def rate_limit(request: Request):
+    client_ip = request.client.host
+    current_time = time.time()
+    
+    if client_ip in requests:
+        if current_time - requests[client_ip] < 1.0: 
+            raise HTTPException(status_code=429, detail="Too many requests")
+    
+    requests[client_ip] = current_time

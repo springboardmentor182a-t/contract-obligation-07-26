@@ -1,7 +1,16 @@
 from pydantic import BaseModel
+from typing import Optional
 
-
-class TodoResponse(BaseModel):
-    id: int
+class TodoBase(BaseModel):
     title: str
-    done: bool = False
+    description: Optional[str] = None
+    completed: bool = False
+
+class TodoCreate(TodoBase):
+    pass
+
+class TodoResponse(TodoBase):
+    id: int
+
+    class Config:
+        from_attributes = True
