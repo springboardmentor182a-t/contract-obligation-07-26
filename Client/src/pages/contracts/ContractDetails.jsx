@@ -13,13 +13,27 @@ const ContractDetails = () => {
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [commentText, setCommentText] = useState('');
 
-  const [timeline, setTimeline] = useState([
-    { id: 1, date: 'Oct 12, 2023 - 10:00 AM', title: 'Draft Created', desc: 'by John Smith', status: 'completed' }
-  ]);
+  const [contract, setContract] = useState(null);
+  const [timeline, setTimeline] = useState([]);
+  const [versions, setVersions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [versions, setVersions] = useState([
-    { id: 'v1.0', date: 'Oct 12, 2023', current: true }
-  ]);
+  React.useEffect(() => {
+    const fetchContract = async () => {
+      try {
+        setLoading(true);
+        // Assuming getContractById exists in contractAPI
+        // const data = await getContractById(id);
+        // For now, we simulate API behavior which would fail (404)
+        // setContract(data);
+      } catch (err) {
+        console.error("Failed to fetch contract:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContract();
+  }, [id]);
 
   const getBadgeStyle = () => {
     switch (contractStatus) {
@@ -95,10 +109,10 @@ const ContractDetails = () => {
             <FileText size={28} />
           </div>
           <div>
-            <h1>Vendor Agreement - TechCorp</h1>
+            <h1>{contract?.name || 'Unknown Contract'}</h1>
             <div className="flex items-center gap-4 text-sm text-muted">
               <span>ID: {id}</span>
-              <span>Category: Vendor Contract</span>
+              <span>Category: {contract?.category || 'N/A'}</span>
             </div>
           </div>
         </div>
@@ -140,35 +154,35 @@ const ContractDetails = () => {
             <div className="info-grid">
               <div className="info-item">
                 <span className="info-label">Company Name</span>
-                <span className="info-value">Global Industries Ltd.</span>
+                <span className="info-value">{contract?.companyName || 'N/A'}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Vendor Name</span>
-                <span className="info-value">TechCorp Solutions Inc.</span>
+                <span className="info-value">{contract?.vendorName || 'N/A'}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Category</span>
-                <span className="info-value">Vendor Contract</span>
+                <span className="info-value">{contract?.category || 'N/A'}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Contract Value</span>
-                <span className="info-value">$120,000 USD</span>
+                <span className="info-value">{contract?.value || 'N/A'}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Effective Date</span>
-                <span className="info-value">Jan 01, 2024</span>
+                <span className="info-value">{contract?.effectiveDate || 'N/A'}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Expiry Date</span>
-                <span className="info-value text-danger">Dec 31, 2025</span>
+                <span className="info-value text-danger">{contract?.expiry || 'N/A'}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Responsible Person</span>
-                <span className="info-value">Jane Doe (Legal Mgr)</span>
+                <span className="info-value">{contract?.responsiblePerson || 'N/A'}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Department</span>
-                <span className="info-value">Procurement</span>
+                <span className="info-value">{contract?.department || 'N/A'}</span>
               </div>
             </div>
           </div>
@@ -188,16 +202,19 @@ const ContractDetails = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>Initial Payment (30%)</td>
-                    <td>Feb 15, 2024</td>
-                    <td><span className="badge badge-success">Compliant</span></td>
-                  </tr>
-                  <tr>
-                    <td>Quarterly Performance Review</td>
-                    <td>Jun 01, 2024</td>
-                    <td><span className="badge badge-warning">Pending</span></td>
-                  </tr>
+                  {contract?.obligations?.length > 0 ? (
+                    contract.obligations.map((obl, idx) => (
+                      <tr key={idx}>
+                        <td>{obl.description}</td>
+                        <td>{obl.dueDate}</td>
+                        <td><span className={`badge badge-${obl.status === 'Compliant' ? 'success' : 'warning'}`}>{obl.status}</span></td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="3" style={{ textAlign: 'center' }}>No obligations found</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -287,7 +304,7 @@ const ContractDetails = () => {
               </div>
               <div className="input-group">
                 <label className="input-label">Responsible Person (Assignee)</label>
-                <input type="text" className="input-field" defaultValue="Jane Doe (Legal Mgr)" id="edit-assignee" />
+                <input type="text" className="input-field" defaultValue={contract?.responsiblePerson || ''} id="edit-assignee" />
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-outline" onClick={() => setIsEditModalOpen(false)}>Cancel</button>

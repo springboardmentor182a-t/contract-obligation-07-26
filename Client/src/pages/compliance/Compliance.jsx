@@ -22,13 +22,20 @@ const Compliance = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const complianceItems = [
-    { id: 'CMP-001', requirement: 'GDPR Data Processing', category: 'Data Privacy', entity: 'TechCorp Solutions', status: 'Compliant', risk: 'High', lastAudit: '2023-10-01', score: 98 },
-    { id: 'CMP-002', requirement: 'ISO 27001 Certification', category: 'Security', entity: 'Cloud Services LLC', status: 'Non-Compliant', risk: 'High', lastAudit: '2023-09-15', score: 45 },
-    { id: 'CMP-003', requirement: 'Annual Background Checks', category: 'HR Policy', entity: 'Staffing Agency', status: 'Under Review', risk: 'Medium', lastAudit: '2023-11-05', score: 72 },
-    { id: 'CMP-004', requirement: 'Anti-Bribery Clause', category: 'Legal', entity: 'GlobalTech', status: 'Compliant', risk: 'Low', lastAudit: '2023-01-10', score: 100 },
-    { id: 'CMP-005', requirement: 'SLA Uptime >= 99.9%', category: 'Operations', entity: 'HostProvider Inc', status: 'Warning', risk: 'Medium', lastAudit: '2023-11-20', score: 85 },
-  ];
+  const [complianceItems, setComplianceItems] = useState([]);
+  
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { getComplianceItems } = await import('../../features/compliance/services/complianceAPI');
+        const data = await getComplianceItems();
+        setComplianceItems(data);
+      } catch (err) {
+        console.error("Failed to fetch compliance items:", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const getStatusBadge = (status) => {
     switch(status) {
@@ -84,7 +91,7 @@ const Compliance = () => {
     labels: ['High Risk', 'Medium Risk', 'Low Risk'],
     datasets: [
       {
-        data: [2, 2, 1], // Matches dummy data length
+        data: [0, 0, 0],
         backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
         borderWidth: 0,
         hoverOffset: 8
@@ -139,7 +146,7 @@ const Compliance = () => {
           <div className="stat-icon-wrapper"><ShieldCheck size={28} /></div>
           <div className="stat-info">
             <span className="stat-label">Compliant Contracts</span>
-            <h2 className="stat-value">142</h2>
+            <h2 className="stat-value">{complianceItems.filter(i => i.status === 'Compliant').length}</h2>
             <span className="stat-trend">+12 this month</span>
           </div>
         </div>
@@ -148,7 +155,7 @@ const Compliance = () => {
           <div className="stat-icon-wrapper"><AlertOctagon size={28} /></div>
           <div className="stat-info">
             <span className="stat-label">Critical Violations</span>
-            <h2 className="stat-value">3</h2>
+            <h2 className="stat-value">{complianceItems.filter(i => i.risk === 'High').length}</h2>
             <span className="stat-trend negative">Needs immediate action</span>
           </div>
         </div>
@@ -157,7 +164,7 @@ const Compliance = () => {
           <div className="stat-icon-wrapper"><Activity size={28} /></div>
           <div className="stat-info">
             <span className="stat-label">Pending Audits</span>
-            <h2 className="stat-value">18</h2>
+            <h2 className="stat-value">{complianceItems.filter(i => i.status === 'Under Review').length}</h2>
             <span className="stat-trend">Scheduled for Q4</span>
           </div>
         </div>

@@ -32,13 +32,20 @@ const Obligations = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
 
-  const [obligations, setObligations] = useState([
-    { id: 'OBL-101', description: 'Quarterly Payment to Vendor', contractId: 'CON-2023-001', dueDate: '2023-09-30', status: 'Pending', priority: 'High' },
-    { id: 'OBL-102', description: 'Annual Security Audit', contractId: 'CON-2023-045', dueDate: '2023-11-15', status: 'Completed', priority: 'High' },
-    { id: 'OBL-103', description: 'Software License Renewal Notice', contractId: 'CON-2023-089', dueDate: '2023-08-01', status: 'Overdue', priority: 'Medium' },
-    { id: 'OBL-104', description: 'Submit Performance Report', contractId: 'CON-2022-404', dueDate: '2023-12-01', status: 'Pending', priority: 'Low' },
-    { id: 'OBL-105', description: 'Data Processing Addendum Review', contractId: 'CON-2021-112', dueDate: '2023-10-15', status: 'Pending', priority: 'Medium' },
-  ]);
+  const [obligations, setObligations] = useState([]);
+  
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { getObligations } = await import('../../features/obligations/services/obligationAPI');
+        const data = await getObligations();
+        setObligations(data);
+      } catch (err) {
+        console.error("Failed to fetch obligations:", err);
+      }
+    };
+    fetchData();
+  }, []);
   const [menuOpen, setMenuOpen] = useState(null);
   const [viewMode, setViewMode] = useState("table");
   const [selectedObligation, setSelectedObligation] = useState(null);

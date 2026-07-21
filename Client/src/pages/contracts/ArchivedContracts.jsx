@@ -6,6 +6,8 @@ import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modals/Modal';
 import './Contracts.css';
 
+import { getArchivedContracts } from '../../features/contracts/services/contractAPI';
+
 const ArchivedContracts = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,11 +15,19 @@ const ArchivedContracts = () => {
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [contractToRestore, setContractToRestore] = useState(null);
 
-  const [contracts, setContracts] = useState([
-    { id: 'CON-2021-004', name: 'Service Agreement', entity: 'Alpha Co', category: 'Service Agreement', status: 'Archived', value: '$80,000', expiry: '2022-05-31' },
-    { id: 'CON-2020-092', name: 'Vendor Contract', entity: 'Beta Ltd', category: 'Vendor Contract', status: 'Archived', value: '$45,000', expiry: '2021-12-15' },
-    { id: 'CON-2019-115', name: 'Lease Agreement', entity: 'Old HQ', category: 'Lease Agreement', status: 'Archived', value: '$120,000/yr', expiry: '2020-10-31' },
-  ]);
+  const [contracts, setContracts] = useState([]);
+  
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getArchivedContracts();
+        setContracts(data);
+      } catch (err) {
+        console.error("Failed to fetch archived contracts:", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const getStatusBadge = (status) => {
     return <span className="status-pill status-muted"><FolderOpen size={14} /> {status}</span>;
