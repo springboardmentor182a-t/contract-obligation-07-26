@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
-import StatusBadge from "../StatusBadge/StatusBadge";
-import ProgressBar from "../ProgressBar/ProgressBar";
+import StatusBadge from "../../components/StatusBadge/StatusBadge";
+import ProgressBar from "../../components/ProgressBar/ProgressBar";
 
 import {
   FiMoreVertical,
@@ -14,7 +14,7 @@ function ContractTable({ contracts }) {
   const navigate = useNavigate();
 
   const openContractDetails = (id) => {
-    navigate(`/contract-details/${id}`);
+  navigate(`/contracts/${id}`);
   };
 
   return (

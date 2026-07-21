@@ -3,6 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from src.database.core import get_db
 from src.database.models import Contract, Activity, Deadline, ComplianceItem, ReportHistory
+from src.database.models import Activity, Deadline, ComplianceItem
+from src.users.controller import router as users_router
+from src.contracts.controller import router as contracts_router
+
 from pydantic import BaseModel
 from datetime import date, datetime, timedelta 
 
@@ -17,6 +21,14 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+app.include_router(
+    users_router,
+    prefix="/users",
+    tags=["Users"]
+)
+app.include_router(
+    contracts_router
 )
 
 class ContractCreate(BaseModel):
@@ -69,10 +81,21 @@ def get_dashboard_data(db: Session = Depends(get_db)):
             "id": c.id,
             "name": c.name,
             "party": c.party,
+
+            # Existing keys (for frontend compatibility)
+            "name": c.contract,
+            "party": c.company,
+
+            # Additional keys
+            "company": c.company,
+            "contract": c.contract,
+            "category": c.category,
+            "owner": c.owner,
+
             "status": c.status,
-            "startDate": c.start_date.strftime("%Y-%m-%d"),
-            "endDate": c.end_date.strftime("%Y-%m-%d"),
-            "value": f"${c.value:,.2f}"
+            "startDate": c.start_date,
+            "endDate": c.end_date,
+            "value": c.value
         } for c in contracts],
         "activities": [{"description": a.description, "time": a.time} for a in activities]
     }
@@ -168,7 +191,11 @@ def delete_compliance_item(item_id: int, db: Session = Depends(get_db)):
 
 @app.delete("/api/v1/contracts/{contract_id}")
 def delete_contract(contract_id: int, db: Session = Depends(get_db)):
-    contract = db.query(Contract).filter(Contract.id == contract_id).first()
+    contract = (
+    db.query(Contract)
+    .filter(Contract.id == contract_id)
+    .first()
+)
     
     if not contract:
         raise HTTPException(status_code=404, detail="Contract not found")
