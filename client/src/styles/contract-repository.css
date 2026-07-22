@@ -1283,3 +1283,126 @@
 .modal-actions .primary-btn {
     min-width: 150px;
 }
+
+
+/* ==========================================
+   DOCUMENT MANAGEMENT
+========================================== */
+
+.documents-section {
+    margin-top: 24px;
+}
+
+.document-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    background: #FFFFFF;
+    transition: all 0.2s ease;
+}
+
+.document-card:hover {
+    border-color: #2563EB;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.document-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.document-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    background: #EFF6FF;
+    color: #2563EB;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.document-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.document-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0F172A;
+    margin-bottom: 4px;
+}
+
+.document-meta {
+    font-size: 13px;
+    color: #64748B;
+}
+
+.document-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.document-icon-btn {
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    background: #F8FAFC;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.document-icon-btn:hover {
+    background: #DBEAFE;
+    color: #2563EB;
+}
+
+.document-delete-btn:hover {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.no-documents {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    border: 2px dashed #CBD5E1;
+    border-radius: 12px;
+    color: #64748B;
+    text-align: center;
+}
+
+.no-documents svg {
+    margin-bottom: 12px;
+    color: #94A3B8;
+}
+
+.no-documents h4 {
+    margin: 0;
+    font-size: 17px;
+    color: #0F172A;
+}
+
+.no-documents p {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #64748B;
+}
+
+.disabled-btn {
+    pointer-events: none;
+}

@@ -153,11 +153,6 @@ const handleExport = () => {
 
         <div className="header-actions">
 
-          <button className="outline-btn">
-            <Upload size={18} />
-            Upload
-          </button>
-
           <button
             className="outline-btn"
             onClick={handleExport}
