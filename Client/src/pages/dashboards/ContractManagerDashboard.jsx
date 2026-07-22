@@ -74,3 +74,5 @@ const ContractManagerDashboard = () => {
 };
 
 export default ContractManagerDashboard;
+
+// trigger commit to show on git
