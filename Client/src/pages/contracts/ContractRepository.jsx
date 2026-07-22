@@ -82,7 +82,7 @@ const ContractRepository = () => {
     compliance: 90
   });
 
-  const API_BASE_URL = 'http://127.0.0.1:8000/api/contracts';
+  const API_BASE_URL = import.meta.env.API_BASE_URL || 'http://127.0.0.1:8000/api/contracts';
 
   // --- READ: Fetch records from backend ---
   const fetchContracts = async () => {
@@ -98,11 +98,7 @@ const ContractRepository = () => {
     } catch (error) {
       console.error("Backend connection failed, using local fallback data:", error);
       // Fallback local state mock array if backend is offline/unreachable
-      setContracts([
-        { id: 1, title: 'Microsoft Azure Enterprise Agreement', vendor: 'Microsoft Corp', type: 'Cloud Services', value: 2.40, end_date: '2026-01-14', owner: 'Sarah Chen', status: 'Active', compliance: 95 },
-        { id: 2, title: 'Salesforce CRM Platform License', vendor: 'Salesforce Inc', type: 'SaaS License', value: 0.89, end_date: '2025-02-28', owner: 'James Miller', status: 'Active', compliance: 87 },
-        { id: 3, title: 'AWS Infrastructure Services', vendor: 'Amazon Web Services', type: 'IaaS', value: 1.56, end_date: '2025-05-31', owner: 'Emily Rodriguez', status: 'Renewal Due', compliance: 72 }
-      ]);
+     
     } finally {
       setLoading(false);
     }
