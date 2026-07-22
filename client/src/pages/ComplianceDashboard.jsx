@@ -1,33 +1,26 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-const stats = [
-  {
-    title: "Total Contracts",
-    value: "156",
-    color: "#2563EB",
-    icon: "📄",
-  },
-  {
-    title: "Compliant",
-    value: "132",
-    color: "#22C55E",
-    icon: "✅",
-  },
-  {
-    title: "Pending Reviews",
-    value: "18",
-    color: "#F59E0B",
-    icon: "⏳",
-  },
-  {
-    title: "Violations",
-    value: "6",
-    color: "#EF4444",
-    icon: "⚠️",
-  },
-];
+const API_URL = "http://127.0.0.1:8000/api/contracts/compliance";
 
 const ComplianceDashboard = () => {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((result) => setData(result))
+      .catch((err) => console.error(err));
+  }, []);
+
+  if (!data) {
+    return <h2>Loading...</h2>;
+  }
+
+const stats = data.stats;
+const departments = data.departments;
+const riskContracts = data.riskContracts;
+const activities = data.activities;
+const reviews = data.reviews;
   return (
     <div style={{ padding: "20px" }}>
       <div
@@ -118,12 +111,7 @@ const ComplianceDashboard = () => {
             Department Compliance
           </h2>
 
-          {[
-            { name: "Legal", value: 98, color: "#22C55E" },
-            { name: "Procurement", value: 85, color: "#F59E0B" },
-            { name: "Finance", value: 91, color: "#2563EB" },
-            { name: "HR", value: 72, color: "#EF4444" },
-          ].map((item) => (
+          {departments.map((item) => (
             <div key={item.name} style={{ marginBottom: "20px" }}>
               <div
                 style={{
@@ -214,30 +202,16 @@ const ComplianceDashboard = () => {
           </thead>
 
           <tbody>
-            <tr>
-              <td style={{ padding: "12px" }}>CT-101</td>
-              <td>ABC Pvt Ltd</td>
-              <td style={{ color: "#EF4444" }}>High</td>
-              <td>Pending</td>
-              <td>20 Jul 2026</td>
+          {riskContracts.map((contract) => (
+            <tr key={contract.id}>
+              <td style={{ padding: "12px" }}>{contract.id}</td>
+              <td>{contract.vendor}</td>
+              <td>{contract.risk}</td>
+              <td>{contract.status}</td>
+              <td>{contract.reviewDate}</td>
             </tr>
-
-            <tr>
-              <td style={{ padding: "12px" }}>CT-145</td>
-              <td>Infosys</td>
-              <td style={{ color: "#F59E0B" }}>Medium</td>
-              <td>In Review</td>
-              <td>28 Jul 2026</td>
-            </tr>
-
-            <tr>
-              <td style={{ padding: "12px" }}>CT-189</td>
-              <td>TCS</td>
-              <td style={{ color: "#22C55E" }}>Low</td>
-              <td>Compliant</td>
-              <td>05 Aug 2026</td>
-            </tr>
-          </tbody>
+          ))}
+        </tbody>
         </table>
       </div>
 
@@ -259,13 +233,12 @@ const ComplianceDashboard = () => {
           }}
         >
           <h2 style={{ color: "#2563EB" }}>Recent Activities</h2>
-
-          <ul style={{ lineHeight: "2" }}>
-            <li>✅ GDPR audit completed</li>
-            <li>📄 New compliance policy added</li>
-            <li>⚠️ HR contract requires review</li>
-            <li>✔ ISO checklist updated</li>
-          </ul>
+         <ul style={{ lineHeight: "2" }}>
+          {activities.map((activity, index) => (
+            <li key={index}>{activity}</li>
+          ))}
+        </ul>
+          
         </div>
 
         <div
@@ -278,12 +251,11 @@ const ComplianceDashboard = () => {
         >
           <h2 style={{ color: "#2563EB" }}>Upcoming Reviews</h2>
 
-          <ul style={{ lineHeight: "2" }}>
-            <li>📅 ABC Pvt Ltd - 20 Jul</li>
-            <li>📅 Infosys - 28 Jul</li>
-            <li>📅 Microsoft - 02 Aug</li>
-            <li>📅 Google - 08 Aug</li>
-          </ul>
+        <ul style={{ lineHeight: "2" }}>
+          {reviews.map((review, index) => (
+            <li key={index}>{review}</li>
+          ))}
+        </ul>  
         </div>
       </div>
 
