@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import (
     Column,
     Integer,
@@ -6,10 +8,13 @@ from sqlalchemy import (
     Date,
     DateTime,
     Text,
+    ForeignKey,
 )
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from src.database.core import Base
+
 
 class Contract(Base):
     __tablename__ = "contracts"
@@ -31,11 +36,50 @@ class Contract(Base):
     # Existing
     status = Column(String, default="Active")
 
-    # NEW
+    # Existing
     risk_level = Column(String, default="Low")
 
-    # Optional but useful
+    # Existing
     owner = Column(String, nullable=True)
     renewal_type = Column(String, default="Manual")
 
     description = Column(Text, nullable=True)
+
+    
+
+
+    # One Contract -> Many Documents
+    documents = relationship(
+        "ContractDocument",
+        back_populates="contract",
+        cascade="all, delete-orphan",
+    )
+
+
+class ContractDocument(Base):
+    __tablename__ = "contract_documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    contract_id = Column(
+        Integer,
+        ForeignKey("contracts.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    file_name = Column(String(255), nullable=False)
+    original_name = Column(String(255), nullable=False)
+    file_type = Column(String(100), nullable=False)
+    file_size = Column(Integer, nullable=False)
+    file_path = Column(String(500), nullable=False)
+
+    uploaded_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+
+    contract = relationship(
+        "Contract",
+        back_populates="documents",
+    )

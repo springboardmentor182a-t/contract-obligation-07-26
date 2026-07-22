@@ -1,7 +1,8 @@
 from datetime import date
 from typing import Optional
 from pydantic import BaseModel, ConfigDict
-
+from pydantic import BaseModel
+from datetime import datetime
 
 class ContractBase(BaseModel):
     contract_name: str
@@ -57,3 +58,25 @@ class ContractResponse(ContractBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ContractDocumentResponse(BaseModel):
+    id: int
+    contract_id: int
+    file_name: str
+    original_name: str
+    file_type: str
+    file_size: int
+    uploaded_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ContractDocumentListResponse(BaseModel):
+    documents: list[ContractDocumentResponse]
+
+
+class DocumentUploadResponse(BaseModel):
+    message: str
+    document: ContractDocumentResponse

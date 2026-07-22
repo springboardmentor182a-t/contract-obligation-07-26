@@ -1,6 +1,5 @@
 from sqlalchemy import Boolean, Column, Float, Integer, String, Text, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
-
 from src.database.core import Base
 from src.contract_repository.models import Contract
 
