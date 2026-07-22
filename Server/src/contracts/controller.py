@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from src.database.core import get_db
-from src.todos import service
-from src.todos.models import (
+from src.contracts import service
+from src.contracts.models import (
     ContractCreate,
     ContractUpdate,
     ContractResponse
