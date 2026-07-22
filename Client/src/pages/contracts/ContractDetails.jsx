@@ -103,16 +103,13 @@ const ContractDetails = ({ contract, onBack, onEditClick }) => {
       </div>
 
       {/* Dynamic Content Panel Layout */}
-      <div className="details-content-split">
-        <div className="left-split-panel">
+     <div className="left-split-panel">
           {activeTab === 'Overview' && (
             <>
               <div className="info-content-card">
                 <h3 className="card-box-title">Contract Summary</h3>
                 <p className="card-box-paragraph">
-                  This enterprise agreement covers cloud infrastructure services including compute, storage, 
-                  networking, and managed services with 99.95% SLA uptime guarantee, 24/7 support, 
-                  and dedicated account management.
+                  {contract.summary || contract.description || contract.details || contract.notes || 'No summary available.'}
                 </p>
               </div>
 
@@ -122,19 +119,19 @@ const ContractDetails = ({ contract, onBack, onEditClick }) => {
                   <tbody>
                     <tr>
                       <td className="term-property">Auto-renewal</td>
-                      <td className="term-response-val">Enabled – 90 days notice</td>
+                      <td className="term-response-val">{contract.autoRenewal || contract.auto_renewal || 'N/A'}</td>
                     </tr>
                     <tr>
                       <td className="term-property">Payment</td>
-                      <td className="term-response-val">Annual prepayment</td>
+                      <td className="term-response-val">{contract.paymentTerms || contract.payment_terms || 'N/A'}</td>
                     </tr>
                     <tr>
                       <td className="term-property">Governing Law</td>
-                      <td className="term-response-val">California, USA</td>
+                      <td className="term-response-val">{contract.governingLaw || contract.governing_law || 'N/A'}</td>
                     </tr>
                     <tr>
                       <td className="term-property">Liability Cap</td>
-                      <td className="term-response-val">100% of annual fees</td>
+                      <td className="term-response-val">{contract.liabilityCap || contract.liability_cap || 'N/A'}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -145,25 +142,31 @@ const ContractDetails = ({ contract, onBack, onEditClick }) => {
           {activeTab === 'Obligations' && (
             <div className="info-content-card">
               <h3 className="card-box-title">Active Obligations</h3>
-              <p className="card-box-paragraph">Tracking item operations and recurring metrics associated with delivery schedules.</p>
+              <p className="card-box-paragraph">
+                {contract.obligationsSummary || contract.obligations || 'No obligations details recorded.'}
+              </p>
             </div>
           )}
 
           {activeTab === 'Documents' && (
             <div className="info-content-card">
               <h3 className="card-box-title">Associated Attachments</h3>
-              <p className="card-box-paragraph">Original uploaded PDF files and amendment extensions.</p>
+              <p className="card-box-paragraph">
+                {contract.documentsNote || contract.documents || 'No associated attachments available.'}
+              </p>
             </div>
           )}
 
           {activeTab === 'History' && (
             <div className="info-content-card">
               <h3 className="card-box-title">Audit Log History</h3>
-              <p className="card-box-paragraph">Lifecycle updates logged systematically from state initialization changes.</p>
+              <p className="card-box-paragraph">
+                {contract.historyNote || contract.history || 'No audit log history available.'}
+              </p>
             </div>
           )}
         </div>
-
+      
         {/* Right Circular Compliance Panel Section */}
         <div className="right-split-panel">
           <div className="info-content-card compliance-widget">
