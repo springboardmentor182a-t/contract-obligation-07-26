@@ -49,3 +49,4 @@ const LegalManagerDashboard = () => {
 };
 
 export default LegalManagerDashboard;
+
