@@ -1,36 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ShieldIcon, DownloadIcon } from "../components/Icons";
 import "./Compliance.css";
 
-// TODO: Replace with API call — e.g. GET /api/compliance/controls
-// Data shape each item must follow:
-// {
-//   id: string,           // e.g. "ISO-27001-A.9.1.1"
-//   title: string,        // e.g. "Access Control Policy"
-//   status: "PASSED" | "WARNING" | "FAILED",
-//   weight: number,       // 0-100
-//   lastVerified: string, // ISO 8601 timestamp
-//   logs: Array<{
-//     id: number,
-//     timestamp: string,  // ISO 8601
-//     status: "VERIFIED" | "WARNING" | "FAILED",
-//     message: string
-//   }>
-// }
-const CONTROLS_DATA = [];
-
-
 export default function Compliance() {
+  const [controls, setControls] = useState([]);
   const [selectedControl, setSelectedControl] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Metrics summary data (calculated/static matching requirements)
-  const totalControls = CONTROLS_DATA.length;
-  const passedChecks = CONTROLS_DATA.filter((c) => c.status === "PASSED").length;
-  const warningsOutstanding = CONTROLS_DATA.filter((c) => c.status === "WARNING").length;
-  const failedPolicies = CONTROLS_DATA.filter((c) => c.status === "FAILED").length;
+  useEffect(() => {
+    async function fetchControls() {
+      try {
+        const response = await fetch("/api/compliance/controls");
+        if (response.ok) {
+          const data = await response.json();
+          setControls(data);
+        }
+      } catch (err) {
+        console.warn("Compliance API unavailable — waiting for backend connection.", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchControls();
+  }, []);
 
-  // Exact math: (14*100 + 75 + 50 + 60) / 18 = 88.05% => 88%
-  const overallScore = 88;
+  // Deduplicate controls by ID to guarantee clean unique list
+  const uniqueControls = Array.from(
+    new Map(controls.map((item) => [item.id, item])).values()
+  );
+
+  // Metrics summary data calculated dynamically from backend data
+  const totalControls = uniqueControls.length;
+  const passedChecks = uniqueControls.filter((c) => c.status === "PASSED").length;
+  const warningsOutstanding = uniqueControls.filter((c) => c.status === "WARNING").length;
+  const failedPolicies = uniqueControls.filter((c) => c.status === "FAILED").length;
+
+  const totalWeight = uniqueControls.reduce((sum, c) => sum + (c.weight || 0), 0);
+  const overallScore = totalControls > 0 ? Math.round(totalWeight / totalControls) : 100;
 
   // Localized timestamp formatter helper
   const formatTimestamp = (dateString) => {
@@ -62,7 +68,6 @@ export default function Compliance() {
 
   const handleRowClick = (control) => {
     if (selectedControl && selectedControl.id === control.id) {
-      // Toggle selection off if clicked again
       setSelectedControl(null);
     } else {
       setSelectedControl(control);
@@ -163,30 +168,44 @@ export default function Compliance() {
                   </tr>
                 </thead>
                 <tbody>
-                  {CONTROLS_DATA.map((control) => {
-                    const isSelected = selectedControl && selectedControl.id === control.id;
-                    let badgeClass = "badge-neutral";
-                    if (control.status === "PASSED") badgeClass = "status-badge-passed";
-                    else if (control.status === "WARNING") badgeClass = "status-badge-warning";
-                    else if (control.status === "FAILED") badgeClass = "status-badge-failed";
+                  {loading ? (
+                    <tr>
+                      <td colSpan="4" style={{ textAlign: "center", padding: "24px" }}>
+                        Loading compliance controls...
+                      </td>
+                    </tr>
+                  ) : uniqueControls.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" style={{ textAlign: "center", padding: "24px" }}>
+                        No compliance controls found.
+                      </td>
+                    </tr>
+                  ) : (
+                    uniqueControls.map((control) => {
+                      const isSelected = selectedControl && selectedControl.id === control.id;
+                      let badgeClass = "badge-neutral";
+                      if (control.status === "PASSED") badgeClass = "status-badge-passed";
+                      else if (control.status === "WARNING") badgeClass = "status-badge-warning";
+                      else if (control.status === "FAILED") badgeClass = "status-badge-failed";
 
-                    return (
-                      <tr
-                        key={control.id}
-                        onClick={() => handleRowClick(control)}
-                        className={`control-row ${isSelected ? "row-selected" : ""}`}
-                      >
-                        <td className="monospace-cell">{control.id}</td>
-                        <td className="title-cell">{control.title}</td>
-                        <td>
-                          <span className={`status-badge ${badgeClass}`}>
-                            {control.status}
-                          </span>
-                        </td>
-                        <td className="weight-cell">{control.weight}%</td>
-                      </tr>
-                    );
-                  })}
+                      return (
+                        <tr
+                          key={control.id}
+                          onClick={() => handleRowClick(control)}
+                          className={`control-row ${isSelected ? "row-selected" : ""}`}
+                        >
+                          <td className="monospace-cell">{control.id}</td>
+                          <td className="title-cell">{control.title}</td>
+                          <td>
+                            <span className={`status-badge ${badgeClass}`}>
+                              {control.status}
+                            </span>
+                          </td>
+                          <td className="weight-cell">{control.weight}%</td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -218,7 +237,7 @@ export default function Compliance() {
                       <div className="log-item-card" key={log.id}>
                         <div className="log-item-meta">
                           <span className="log-timestamp">{formatCompactTimestamp(log.timestamp)}</span>
-                          <span className={`log-status-keyword keyword-${log.status.toLowerCase()}`}>
+                          <span className={`log-status-keyword keyword-${(log.status || "").toLowerCase()}`}>
                             {log.status}
                           </span>
                         </div>

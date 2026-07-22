@@ -31,15 +31,25 @@ def initialize_database():
 
     # If DATABASE_URL isn't provided in dev, fall back to a local SQLite file
     # so the app can run without external DB configuration.
-    if not database_url:
+    if not database_url or not database_url.strip():
         fallback = SERVER_DIR / "dev.db"
         database_url = f"sqlite:///{fallback}"
         print("WARNING: DATABASE_URL not set — falling back to local SQLite:", database_url)
+    elif database_url.startswith("postgresql+asyncpg://"):
+        database_url = database_url.replace("postgresql+asyncpg://", "postgresql://")
+    elif database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://")
+
+    connect_args = {}
+    if database_url.startswith("sqlite"):
+        connect_args = {"check_same_thread": False}
 
     engine = create_engine(
         database_url,
         pool_pre_ping=True,
+        connect_args=connect_args,
     )
+
 
     # Create missing tables automatically (convenience for local development).
     try:

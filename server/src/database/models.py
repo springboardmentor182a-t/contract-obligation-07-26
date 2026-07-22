@@ -160,3 +160,28 @@ class SupportTicket(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", backref="support_tickets")
+
+
+class ComplianceControl(Base):
+    __tablename__ = "compliance_controls"
+
+    id = Column(String(100), primary_key=True)
+    title = Column(String(255), nullable=False)
+    status = Column(String(50), nullable=False, default="PASSED")
+    weight = Column(Integer, nullable=False, default=100)
+    last_verified = Column(DateTime(timezone=True), server_default=func.now())
+
+    logs = relationship("ComplianceLog", back_populates="control", cascade="all, delete-orphan")
+
+
+class ComplianceLog(Base):
+    __tablename__ = "compliance_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    control_id = Column(String(100), ForeignKey("compliance_controls.id", ondelete="CASCADE"), nullable=False)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    status = Column(String(50), nullable=False, default="VERIFIED")
+    message = Column(Text, nullable=False)
+
+    control = relationship("ComplianceControl", back_populates="logs")
+
