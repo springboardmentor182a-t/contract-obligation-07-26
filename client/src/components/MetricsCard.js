@@ -7,7 +7,7 @@ import {
   FaClipboardList
 } from "react-icons/fa";
 
-function MetricsCard({ title, value, color }) {
+function MetricsCard({ title, value, color, percentage }) {
   const getIcon = () => {
     switch (title) {
       case "Total Contracts":
@@ -25,23 +25,6 @@ function MetricsCard({ title, value, color }) {
     }
   };
 
-  const getPercentage = () => {
-    switch (title) {
-      case "Total Contracts":
-        return "+12%";
-      case "Renewing Soon":
-        return "+8%";
-      case "Expired":
-        return "-3%";
-      case "Auto Renewal":
-        return "+15%";
-      case "Manual Renewal":
-        return "+5%";
-      default:
-        return "";
-    }
-  };
-
   return (
     <div
       style={{
@@ -50,7 +33,7 @@ function MetricsCard({ title, value, color }) {
         padding: 22,
         boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
         borderTop: `4px solid ${color}`,
-        transition: "0.3s",
+        transition: "0.3s"
       }}
     >
       <div
@@ -58,7 +41,7 @@ function MetricsCard({ title, value, color }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: 20,
+          marginBottom: 20
         }}
       >
         <div
@@ -71,28 +54,30 @@ function MetricsCard({ title, value, color }) {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            fontSize: 22,
+            fontSize: 22
           }}
         >
           {getIcon()}
         </div>
 
-        <span
-          style={{
-            color: "#16A34A",
-            fontWeight: "bold",
-            fontSize: 14,
-          }}
-        >
-          {getPercentage()}
-        </span>
+        {percentage && (
+          <span
+            style={{
+              color: percentage.startsWith("-") ? "#DC2626" : "#16A34A",
+              fontWeight: "bold",
+              fontSize: 14
+            }}
+          >
+            {percentage}
+          </span>
+        )}
       </div>
 
       <div
         style={{
           color: "#666",
           fontSize: 15,
-          marginBottom: 8,
+          marginBottom: 8
         }}
       >
         {title}
@@ -102,7 +87,7 @@ function MetricsCard({ title, value, color }) {
         style={{
           fontSize: 32,
           fontWeight: "700",
-          color: "#222",
+          color: "#222"
         }}
       >
         {value}
