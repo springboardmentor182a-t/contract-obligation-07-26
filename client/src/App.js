@@ -20,6 +20,8 @@ import Calendar from "./pages/Calendar";
 import RenewalDashboard from "./pages/RenewalDashboard";
 import UserManagement from "./pages/UserManagement";
 import Audit from "./pages/Audit";
+import Compliance from "./pages/Compliance";
+
 
 function AppShell() {
   return (
@@ -31,6 +33,7 @@ function AppShell() {
         <Route path="/user-management" element={<UserManagement />} />
         <Route path="/audit" element={<Audit />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/compliance" element={<Compliance />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/quick-actions" element={<QuickActions />} />
         <Route path="/profile" element={<Profile />} />
