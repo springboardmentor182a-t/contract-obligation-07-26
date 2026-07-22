@@ -17,13 +17,6 @@ import {
 } from "@dnd-kit/sortable";
 
 
-import FormInput from '../../components/Form/FormInput';
-import FormSelect from '../../components/Form/FormSelect';
-import Button from '../../components/Buttons/Button';
-import Modal from '../../components/Modals/Modal';
-import SortableCard from "./SortableCard";
-import './Obligations.css';
-
 
 
 const Obligations = () => {
