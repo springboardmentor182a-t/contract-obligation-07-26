@@ -73,3 +73,45 @@ VALUES
 ('test_webhook', 'Send Webhook Ping', 'Verifies DocuSign status ping receivers', 'Plug', '#14B8A6')
 ON CONFLICT (id) DO UPDATE 
 SET label = EXCLUDED.label, description = EXCLUDED.description;
+
+-- 8. Insert Compliance Controls & Audit Logs
+INSERT INTO compliance_controls (id, title, status, weight, last_verified)
+VALUES
+('ISO-27001-A.9.1.1', 'Access Control Policy & Multi-Factor Enforcement', 'PASSED', 100, CURRENT_TIMESTAMP),
+('SOC2-CC-6.1', 'Logical Access & Role-Based Authorization', 'PASSED', 100, CURRENT_TIMESTAMP),
+('HIPAA-164.312(a)', 'Access Control & Data Encryption at Rest', 'PASSED', 100, CURRENT_TIMESTAMP),
+('GDPR-ART-32', 'Security of Processing & Data Protection', 'PASSED', 100, CURRENT_TIMESTAMP),
+('PCI-DSS-v4-3.2', 'Sensitive Authentication Data Protection', 'WARNING', 75, CURRENT_TIMESTAMP),
+('NIST-800-53-AC-2', 'Account Management & Role Enforcement', 'PASSED', 100, CURRENT_TIMESTAMP),
+('ISO-27001-A.12.6.1', 'Vulnerability Management Protocol', 'WARNING', 50, CURRENT_TIMESTAMP),
+('SOC2-CC-7.2', 'Incident Monitoring & Anomaly Detection', 'PASSED', 100, CURRENT_TIMESTAMP),
+('SOX-404-ITGC', 'IT General Controls & Change Log Audit', 'FAILED', 60, CURRENT_TIMESTAMP),
+('CCPA-1798.100', 'Consumer Privacy Notice & Disclosure', 'PASSED', 100, CURRENT_TIMESTAMP),
+('ISO-27001-A.8.1.1', 'Asset Inventory & Responsibility Assignment', 'PASSED', 100, CURRENT_TIMESTAMP),
+('SOC2-CC-6.8', 'Unauthorized & Malicious Code Prevention', 'PASSED', 100, CURRENT_TIMESTAMP),
+('NIST-800-53-SI-4', 'System Monitoring & Intrusion Detection', 'PASSED', 100, CURRENT_TIMESTAMP),
+('HIPAA-164.312(e)', 'Transmission Security & TLS 1.3 Enforcement', 'PASSED', 100, CURRENT_TIMESTAMP),
+('GDPR-ART-33', 'Personal Data Breach Notification Workflow', 'PASSED', 100, CURRENT_TIMESTAMP),
+('ISO-27001-A.15.1.1', 'Supplier Relationship Information Security', 'PASSED', 100, CURRENT_TIMESTAMP),
+('SOC2-CC-9.2', 'Vendor Risk Assessment & Contract SLA', 'PASSED', 100, CURRENT_TIMESTAMP),
+('NIST-800-53-CP-9', 'Information System Backup & Recovery Testing', 'PASSED', 100, CURRENT_TIMESTAMP)
+ON CONFLICT (id) DO UPDATE 
+SET title = EXCLUDED.title, status = EXCLUDED.status, weight = EXCLUDED.weight;
+
+INSERT INTO compliance_logs (id, control_id, timestamp, status, message)
+VALUES
+(1, 'ISO-27001-A.9.1.1', CURRENT_TIMESTAMP, 'VERIFIED', 'Access control matrix verified against active directory groups.'),
+(2, 'ISO-27001-A.9.1.1', CURRENT_TIMESTAMP, 'VERIFIED', 'Quarterly privilege user review completed with zero unauthorized accounts.'),
+(3, 'SOC2-CC-6.1', CURRENT_TIMESTAMP, 'VERIFIED', 'Role RBAC policies re-validated for contract management APIs.'),
+(4, 'HIPAA-164.312(a)', CURRENT_TIMESTAMP, 'VERIFIED', 'AES-256 encryption keys rotated for storage volume.'),
+(5, 'GDPR-ART-32', CURRENT_TIMESTAMP, 'VERIFIED', 'DPIA conducted and verified for cloud infrastructure.'),
+(6, 'PCI-DSS-v4-3.2', CURRENT_TIMESTAMP, 'WARNING', '1 storage bucket missing automated key rotation rule.'),
+(7, 'NIST-800-53-AC-2', CURRENT_TIMESTAMP, 'VERIFIED', 'Inactive user auto-disable policy enforced.'),
+(8, 'ISO-27001-A.12.6.1', CURRENT_TIMESTAMP, 'WARNING', '2 low-priority npm package patches pending installation.'),
+(9, 'SOC2-CC-7.2', CURRENT_TIMESTAMP, 'VERIFIED', 'SIEM audit alert channels verified.'),
+(10, 'SOX-404-ITGC', CURRENT_TIMESTAMP, 'FAILED', 'Unapproved schema migration detected without secondary signature.'),
+(11, 'CCPA-1798.100', CURRENT_TIMESTAMP, 'VERIFIED', 'Privacy policy agreement links verified on public landing.')
+ON CONFLICT (id) DO NOTHING;
+
+SELECT setval('compliance_logs_id_seq', (SELECT MAX(id) FROM compliance_logs));
+

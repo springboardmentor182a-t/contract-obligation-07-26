@@ -16,201 +16,6 @@ from .schemas import (
 
 router = APIRouter(prefix="/compliance", tags=["Compliance"])
 
-INITIAL_CONTROLS = [
-    {
-        "id": "ISO-27001-A.9.1.1",
-        "title": "Access Control Policy & Multi-Factor Enforcement",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "Access control matrix verified against active directory groups."},
-            {"status": "VERIFIED", "message": "Quarterly privilege user review completed with zero unauthorized accounts."}
-        ]
-    },
-    {
-        "id": "SOC2-CC-6.1",
-        "title": "Logical Access & Role-Based Authorization",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "Role RBAC policies re-validated for contract management APIs."}
-        ]
-    },
-    {
-        "id": "HIPAA-164.312(a)",
-        "title": "Access Control & Data Encryption at Rest",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "AES-256 encryption keys rotated for storage volume."}
-        ]
-    },
-    {
-        "id": "GDPR-ART-32",
-        "title": "Security of Processing & Data Protection",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "DPIA conducted and verified for cloud infrastructure."}
-        ]
-    },
-    {
-        "id": "PCI-DSS-v4-3.2",
-        "title": "Sensitive Authentication Data Protection",
-        "status": "WARNING",
-        "weight": 75,
-        "logs": [
-            {"status": "WARNING", "message": "1 storage bucket missing automated key rotation rule."}
-        ]
-    },
-    {
-        "id": "NIST-800-53-AC-2",
-        "title": "Account Management & Role Enforcement",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "Inactive user auto-disable policy enforced."}
-        ]
-    },
-    {
-        "id": "ISO-27001-A.12.6.1",
-        "title": "Vulnerability Management Protocol",
-        "status": "WARNING",
-        "weight": 50,
-        "logs": [
-            {"status": "WARNING", "message": "2 low-priority npm package patches pending installation."}
-        ]
-    },
-    {
-        "id": "SOC2-CC-7.2",
-        "title": "Incident Monitoring & Anomaly Detection",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "SIEM audit alert channels verified."}
-        ]
-    },
-    {
-        "id": "SOX-404-ITGC",
-        "title": "IT General Controls & Change Log Audit",
-        "status": "FAILED",
-        "weight": 60,
-        "logs": [
-            {"status": "FAILED", "message": "Unapproved schema migration detected without secondary signature."}
-        ]
-    },
-    {
-        "id": "CCPA-1798.100",
-        "title": "Consumer Privacy Notice & Disclosure",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "Privacy policy agreement links verified on public landing."}
-        ]
-    },
-    {
-        "id": "ISO-27001-A.8.1.1",
-        "title": "Asset Inventory & Responsibility Assignment",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "Server hardware asset tag list synchronized with cloud CMDB."}
-        ]
-    },
-    {
-        "id": "SOC2-CC-6.8",
-        "title": "Unauthorized & Malicious Code Prevention",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "Endpoint protection updated across all developer workstations."}
-        ]
-    },
-    {
-        "id": "NIST-800-53-SI-4",
-        "title": "System Monitoring & Intrusion Detection",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "Intrusion detection signatures updated to latest CVE definition."}
-        ]
-    },
-    {
-        "id": "HIPAA-164.312(e)",
-        "title": "Transmission Security & TLS 1.3 Enforcement",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "All API endpoints configured to mandate TLS 1.3."}
-        ]
-    },
-    {
-        "id": "GDPR-ART-33",
-        "title": "Personal Data Breach Notification Workflow",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "Incident response notification SLA tested and confirmed."}
-        ]
-    },
-    {
-        "id": "ISO-27001-A.15.1.1",
-        "title": "Supplier Relationship Information Security",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "Vendor security questionnaires updated for Q3 vendors."}
-        ]
-    },
-    {
-        "id": "SOC2-CC-9.2",
-        "title": "Vendor Risk Assessment & Contract SLA",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "Third-party SaaS contract SLAs reviewed for compliance."}
-        ]
-    },
-    {
-        "id": "NIST-800-53-CP-9",
-        "title": "Information System Backup & Recovery Testing",
-        "status": "PASSED",
-        "weight": 100,
-        "logs": [
-            {"status": "VERIFIED", "message": "Disaster recovery snapshot restore simulation succeeded in 12 mins."}
-        ]
-    }
-]
-
-
-def _ensure_seeded(db: Session):
-    existing = db.execute(select(ComplianceControl)).scalars().first()
-    if existing:
-        return
-
-    now = datetime.now(timezone.utc)
-    for item in INITIAL_CONTROLS:
-        ctrl = ComplianceControl(
-            id=item["id"],
-            title=item["title"],
-            status=item["status"],
-            weight=item["weight"],
-            last_verified=now,
-        )
-        db.add(ctrl)
-        db.flush()
-
-        for log in item.get("logs", []):
-            clog = ComplianceLog(
-                control_id=ctrl.id,
-                timestamp=now,
-                status=log["status"],
-                message=log["message"],
-            )
-            db.add(clog)
-
-    db.commit()
-
 
 def _format_iso(dt: datetime | None) -> str:
     if dt is None:
@@ -220,7 +25,6 @@ def _format_iso(dt: datetime | None) -> str:
 
 @router.get("/controls", response_model=List[ComplianceControlResponse])
 def get_compliance_controls(db: Session = Depends(get_db)):
-    _ensure_seeded(db)
     controls = db.execute(select(ComplianceControl)).scalars().all()
     
     res = []
@@ -249,7 +53,6 @@ def get_compliance_controls(db: Session = Depends(get_db)):
 
 @router.get("/controls/{control_id}", response_model=ComplianceControlResponse)
 def get_compliance_control(control_id: str, db: Session = Depends(get_db)):
-    _ensure_seeded(db)
     ctrl = db.execute(select(ComplianceControl).where(ComplianceControl.id == control_id)).scalars().first()
     if not ctrl:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Control not found")
@@ -327,7 +130,6 @@ def add_compliance_log(control_id: str, payload: ComplianceLogCreate, db: Sessio
 
 @router.get("/summary", response_model=ComplianceSummaryResponse)
 def get_compliance_summary(db: Session = Depends(get_db)):
-    _ensure_seeded(db)
     controls = db.execute(select(ComplianceControl)).scalars().all()
     
     total = len(controls)

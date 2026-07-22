@@ -1,6 +1,8 @@
 -- ContractIQ Relational Schema (PostgreSQL DDL)
 
 -- Drop tables if they exist for clean setups
+DROP TABLE IF EXISTS compliance_logs CASCADE;
+DROP TABLE IF EXISTS compliance_controls CASCADE;
 DROP TABLE IF EXISTS quick_action_logs CASCADE;
 DROP TABLE IF EXISTS quick_actions CASCADE;
 DROP TABLE IF EXISTS faqs CASCADE;
@@ -12,6 +14,7 @@ DROP TABLE IF EXISTS user_settings CASCADE;
 DROP TABLE IF EXISTS api_keys CASCADE;
 DROP TABLE IF EXISTS user_invitations CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
+
 
 -- Users Table
 CREATE TABLE users (
@@ -132,3 +135,22 @@ CREATE TABLE user_invitations (
     status VARCHAR(50) DEFAULT 'Pending',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Compliance Controls Table
+CREATE TABLE compliance_controls (
+    id VARCHAR(100) PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'PASSED',
+    weight INTEGER NOT NULL DEFAULT 100,
+    last_verified TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Compliance Audit Logs Table
+CREATE TABLE compliance_logs (
+    id SERIAL PRIMARY KEY,
+    control_id VARCHAR(100) REFERENCES compliance_controls(id) ON DELETE CASCADE,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50) NOT NULL DEFAULT 'VERIFIED',
+    message TEXT NOT NULL
+);
+
