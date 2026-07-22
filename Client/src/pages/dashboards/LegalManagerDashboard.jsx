@@ -50,3 +50,4 @@ const LegalManagerDashboard = () => {
 
 export default LegalManagerDashboard;
 
+// trigger commit to show on git
