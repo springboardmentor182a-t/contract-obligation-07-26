@@ -1,5 +1,5 @@
 import "./assets/global.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UIProvider } from "./context/UIContext";
 import PageContainer from "./layout/PageContainer";
 import Obligations from "./pages/Obligations";
@@ -19,15 +19,36 @@ import Reports from "./pages/Reports";
 import QuickActions from "./pages/QuickActions";
 import Calendar from "./pages/Calendar";
 import RenewalDashboard from "./pages/RenewalDashboard";
+import UserManagement from "./pages/UserManagement";
 import Audit from "./pages/Audit";
+
+function AppShell() {
+  return (
+    <PageContainer>
+      <Routes>
+        <Route path="/" element={<Navigate to="/renewal-dashboard" replace />} />
+        <Route path="/renewal-dashboard" element={<RenewalDashboard />} />
+        <Route path="/dashboard" element={<RenewalDashboard />} />
+        <Route path="/user-management" element={<UserManagement />} />
+        <Route path="/audit" element={<Audit />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/quick-actions" element={<QuickActions />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="*" element={<Navigate to="/renewal-dashboard" replace />} />
+      </Routes>
+    </PageContainer>
+  );
+}
 
 function App() {
   return (
     <BrowserRouter>
       <UIProvider>
         <Routes>
-          {/* Auth routes */}
-          <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -39,88 +60,7 @@ function App() {
                 <Obligations />
               </PageContainer>
             }
-          />
-          {/* Dashboard routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <PageContainer>
-                <RenewalDashboard />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/renewal-dashboard"
-            element={
-              <PageContainer>
-                <RenewalDashboard />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/reports"
-            element={
-              <PageContainer>
-                <Reports />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <PageContainer>
-                <Profile />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <PageContainer>
-                <Settings />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/notifications"
-            element={
-              <PageContainer>
-                <Notifications />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/help"
-            element={
-              <PageContainer>
-                <Help />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/calendar"
-            element={
-              <PageContainer>
-                <Calendar />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/quick-actions"
-            element={
-              <PageContainer>
-                <QuickActions />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/audit"
-            element={
-              <PageContainer>
-                <Audit />
-              </PageContainer>
-            }
-          />
+          />          <Route path="/*" element={<AppShell />} />
         </Routes>
       </UIProvider>
     </BrowserRouter>
