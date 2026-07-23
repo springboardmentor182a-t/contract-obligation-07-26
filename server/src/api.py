@@ -13,6 +13,7 @@ from src.support.controller import router as support_router
 from src.quick_actions.controller import router as quick_actions_router
 from src.health.controller import router as health_router
 from src.audit.controller import router as audit_router
+from src.compliance.controller import router as compliance_router
 api_router = APIRouter(prefix="/api")
 
 api_router.include_router(auth_router)
@@ -30,3 +31,5 @@ api_router.include_router(quick_actions_router)
 api_router.include_router(health_router)
 api_router.include_router(audit_router)
 api_router.include_router(obligations_router)
+api_router.include_router(compliance_router)
+
