@@ -1,9 +1,9 @@
-import BASE_URL from "../config/api";
+import { API_BASE_URL } from "../data/constants";
 
 /* ---------------- GET ALL USERS ---------------- */
 
 export const getUsers = async () => {
-  const response = await fetch(`${BASE_URL}/users/`);
+  const response = await fetch(`${API_BASE_URL}/users`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch users");
@@ -15,7 +15,7 @@ export const getUsers = async () => {
 /* ---------------- GET USER BY ID ---------------- */
 
 export const getUserById = async (id) => {
-  const response = await fetch(`${BASE_URL}/users/db/${id}`);
+  const response = await fetch(`${API_BASE_URL}/users/db/${id}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch user");
@@ -27,7 +27,7 @@ export const getUserById = async (id) => {
 /* ---------------- CREATE USER ---------------- */
 
 export const createUser = async (userData) => {
-  const response = await fetch(`${BASE_URL}/users/create`, {
+  const response = await fetch(`${API_BASE_URL}/users/create`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -45,7 +45,7 @@ export const createUser = async (userData) => {
 /* ---------------- UPDATE USER ---------------- */
 
 export const updateUser = async (id, userData) => {
-  const response = await fetch(`${BASE_URL}/users/update/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/users/update/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -63,7 +63,7 @@ export const updateUser = async (id, userData) => {
 /* ---------------- DELETE USER ---------------- */
 
 export const deleteUser = async (id) => {
-  const response = await fetch(`${BASE_URL}/users/delete/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/users/delete/${id}`, {
     method: "DELETE",
   });
 

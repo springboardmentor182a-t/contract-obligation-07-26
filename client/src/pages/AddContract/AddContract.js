@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
-import BASE_URL from "../../config/api";
+import { API_BASE_URL } from "../../data/constants";
 import "../../styles/AddContract.css";
 
 function AddContract() {
@@ -74,7 +74,7 @@ const [saving, setSaving] = useState(false);   // Saving the form
         setLoading(true);
 
         const response = await fetch(
-         `${BASE_URL}/contracts/${id}`
+         `${API_BASE_URL}/contracts/${id}`
         );
 
         if (!response.ok) {
@@ -110,8 +110,8 @@ const [saving, setSaving] = useState(false);   // Saving the form
       setSaving(true);
 
       const url = isEditMode
-        ? `${BASE_URL}/contracts/${id}`
-        : `${BASE_URL}/contracts`;
+        ? `${API_BASE_URL}/contracts/${id}`
+        : `${API_BASE_URL}/contracts`;
 
       const method = isEditMode ? "PUT" : "POST";
 

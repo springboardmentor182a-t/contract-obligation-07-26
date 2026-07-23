@@ -1,4 +1,4 @@
-import BASE_URL from "../../config/api";
+import { API_BASE_URL } from "../../data/constants";
 import "../../styles/details.css";
 
 import Sidebar from "../../components/Sidebar/Sidebar";
@@ -30,10 +30,10 @@ function ContractDetails() {
 
   try {
   const response = await fetch(
-  `${BASE_URL}/contracts/${contractId}`,
-  {
-    method: "DELETE",
-  }
+    `${API_BASE_URL}/contracts/${contractId}`,
+    {
+     method: "DELETE",
+    }
   );
 
     if (!response.ok) {
@@ -55,7 +55,7 @@ function ContractDetails() {
         setLoading(true);
 
         const response = await fetch(
-          `${BASE_URL}/contracts/${contractId}`
+          `${API_BASE_URL}/contracts/${contractId}`
         );
 
         if (!response.ok) {

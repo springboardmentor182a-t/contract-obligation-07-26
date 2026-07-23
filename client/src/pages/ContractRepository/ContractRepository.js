@@ -1,4 +1,4 @@
-import BASE_URL from "../../config/api";
+import { API_BASE_URL } from "../../data/constants";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -31,7 +31,7 @@ function ContractRepository() {
   useEffect(() => {
   const fetchContracts = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/contracts`);
+      const response = await fetch(`${API_BASE_URL}/contracts`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch contracts");
@@ -250,7 +250,7 @@ const filteredContracts = contracts.filter((contract) => {
 
               <button
                 className="new-contract"
-                onClick={() => navigate("/add-contract")}
+                onClick={() => navigate("/contracts/add")}
               >
                 + New Contract
               </button>
