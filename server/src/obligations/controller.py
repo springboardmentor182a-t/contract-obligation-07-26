@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from src.database.core import get_db
 from src.obligations.schemas import (
+    ObligationCreate,
     ObligationResponse,
     ObligationUpdate,
 )
@@ -17,6 +18,21 @@ router = APIRouter(
 @router.get("/", response_model=list[ObligationResponse])
 def get_obligations(db: Session = Depends(get_db)):
     return ObligationService.get_all_obligations(db)
+
+
+@router.post(
+    "/",
+    response_model=ObligationResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_obligation(
+    obligation_data: ObligationCreate,
+    db: Session = Depends(get_db),
+):
+    return ObligationService.create_obligation(
+        db=db,
+        obligation_data=obligation_data,
+    )
 
 
 @router.patch(
@@ -41,3 +57,23 @@ def update_obligation(
         )
 
     return obligation
+@router.delete(
+    "/{obligation_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_obligation(
+    obligation_id: int,
+    db: Session = Depends(get_db),
+):
+    deleted = ObligationService.delete_obligation(
+        db=db,
+        obligation_id=obligation_id,
+    )
+
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Obligation not found",
+        )
+
+    return None
