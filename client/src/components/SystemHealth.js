@@ -1,7 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Zap } from "lucide-react";
 
 export default function SystemHealth() {
+  const [health, setHealth] = useState([]);
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/contracts/system-health")
+      .then((res) => res.json())
+      .then((data) => setHealth(data))
+      .catch((err) => console.error(err));
+  }, []);
+
   return (
     <div className="card details-card">
       <div className="chart-header">
@@ -10,38 +19,18 @@ export default function SystemHealth() {
           System Health
         </h3>
       </div>
+
       <div className="system-health-list">
-        <div className="health-row">
-          <span className="health-label">API Server</span>
-          <span className="health-status green">
-            <span className="status-ping-dot green"></span>
-            Operational
-          </span>
-        </div>
+        {health.map((item, index) => (
+          <div className="health-row" key={index}>
+            <span className="health-label">{item.label}</span>
 
-        <div className="health-row">
-          <span className="health-label">AI Engine</span>
-          <span className="health-status green">
-            <span className="status-ping-dot green"></span>
-            Active
-          </span>
-        </div>
-
-        <div className="health-row">
-          <span className="health-label">Database</span>
-          <span className="health-status green">
-            <span className="status-ping-dot green"></span>
-            Operational
-          </span>
-        </div>
-
-        <div className="health-row">
-          <span className="health-label">Storage</span>
-          <span className="health-status green">
-            <span className="status-ping-dot green"></span>
-            73% Used
-          </span>
-        </div>
+            <span className={`health-status ${item.color}`}>
+              <span className={`status-ping-dot ${item.color}`}></span>
+              {item.status}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );

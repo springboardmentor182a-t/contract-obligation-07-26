@@ -3,19 +3,31 @@ import React, { useEffect, useState } from "react";
 const API_URL = "http://127.0.0.1:8000/api/contracts/compliance";
 
 const ComplianceDashboard = () => {
-  const [data, setData] = useState(null);
-
+  const [data, setData] = useState({
+  stats: [],
+  departments: [],
+  riskContracts: [],
+  activities: [],
+  reviews: [],
+  }); 
   useEffect(() => {
-    fetch(API_URL)
-      .then((res) => res.json())
-      .then((result) => setData(result))
-      .catch((err) => console.error(err));
-  }, []);
+  async function loadData() {
+    try {
+      const res = await fetch(API_URL);
+      console.log("Status:", res.status);
 
-  if (!data) {
-    return <h2>Loading...</h2>;
+      const result = await res.json();
+      console.log("Response:", result);
+
+      setData(result);
+    } catch (err) {
+      console.error("Fetch failed:", err);
+    }
   }
 
+  loadData();
+  }, []);
+  
 const stats = data.stats;
 const departments = data.departments;
 const riskContracts = data.riskContracts;

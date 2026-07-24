@@ -1,7 +1,16 @@
-import React from "react";
-import { Sparkles, AlertTriangle, AlertCircle, Clock, ArrowRight } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Sparkles, ArrowRight } from "lucide-react";
 
 export default function AIRecommendations() {
+  const [recommendations, setRecommendations] = useState([]);
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/contracts/ai-recommendations")
+      .then((res) => res.json())
+      .then((data) => setRecommendations(data))
+      .catch((err) => console.error(err));
+  }, []);
+
   return (
     <div className="card details-card">
       <div className="chart-header">
@@ -10,30 +19,17 @@ export default function AIRecommendations() {
           AI Recommendations
         </h3>
       </div>
+
       <div className="recommendations-list">
-        <div className="rec-box color-pink">
-          <div className="rec-box-left">
-            <AlertTriangle className="rec-icon-danger" />
-            <span>Initiate renewal for CTR-2024-005 — expires in 25 days</span>
+        {recommendations.map((item, index) => (
+          <div key={index} className={`rec-box ${item.color}`}>
+            <div className="rec-box-left">
+              <span>{item.icon}</span>
+              <span>{item.message}</span>
+            </div>
+            <ArrowRight className="rec-arrow" />
           </div>
-          <ArrowRight className="rec-arrow" />
-        </div>
-
-        <div className="rec-box color-yellow">
-          <div className="rec-box-left">
-            <AlertCircle className="rec-icon-warning" />
-            <span>3 contracts lack signed addendums — compliance risk</span>
-          </div>
-          <ArrowRight className="rec-arrow" />
-        </div>
-
-        <div className="rec-box color-light-yellow">
-          <div className="rec-box-left">
-            <Clock className="rec-icon-info" />
-            <span>Marketing dept compliance below 70% threshold</span>
-          </div>
-          <ArrowRight className="rec-arrow" />
-        </div>
+        ))}
       </div>
     </div>
   );

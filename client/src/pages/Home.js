@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import QuickActions from "../components/QuickActions";
 import MetricsCard from "../components/MetricsCard";
 import ContractActivityChart from "../components/ContractActivityChart";
@@ -22,6 +22,23 @@ import {
 } from "lucide-react";
 
 export default function Home() {
+ const [dashboard, setDashboard] = useState({
+  totalUsers: 0,
+  totalContracts: 0,
+  pendingApprovals: 0,
+  complianceScore: 0,
+  activeContracts: 0,
+  expiredContracts: 0,
+  highRisk: 0,
+  storageUsed: 0,
+});
+
+useEffect(() => {
+  fetch("http://127.0.0.1:8000/api/contracts/dashboard")
+    .then((res) => res.json())
+    .then((data) => setDashboard(data))
+    .catch((err) => console.error(err));
+}, []);
   return (
     <div style={styles.container}>
 
@@ -81,7 +98,7 @@ export default function Home() {
       <div className="metrics-grid">
         <MetricsCard
           title="Total Users"
-          value="142"
+          value={dashboard.totalUsers}
           trend="+5 this week"
           trendSubtext="vs last month"
           trendType="positive"
@@ -91,7 +108,7 @@ export default function Home() {
         />
         <MetricsCard
           title="Total Contracts"
-          value="61"
+          value={dashboard.totalContracts}
           trend="+7 this month"
           trendSubtext="vs last month"
           trendType="positive"
@@ -101,14 +118,14 @@ export default function Home() {
         />
         <MetricsCard
           title="Pending Approvals"
-          value="7"
+          value={dashboard.pendingApprovals}
           icon={Clock}
           iconColor="#f59e0b"
           iconBgColor="rgba(245, 158, 11, 0.08)"
         />
         <MetricsCard
           title="Compliance Score"
-          value="84%"
+          value={`${dashboard.complianceScore}%`}
           trend="+2% this month"
           trendSubtext="vs last month"
           trendType="positive"
@@ -118,21 +135,21 @@ export default function Home() {
         />
         <MetricsCard
           title="Active Contracts"
-          value="48"
+          value={dashboard.activeContracts}
           icon={ShieldCheck}
           iconColor="#10b981"
           iconBgColor="rgba(16, 185, 129, 0.08)"
         />
         <MetricsCard
           title="Expired Contracts"
-          value="8"
+          value={dashboard.expiredContracts}
           icon={AlertCircle}
           iconColor="#ef4444"
           iconBgColor="rgba(239, 68, 68, 0.08)"
         />
         <MetricsCard
           title="High Risk"
-          value="8"
+          value={dashboard.highRisk}
           trend="+1 flagged"
           trendSubtext="vs last month"
           trendType="warning"
@@ -142,7 +159,7 @@ export default function Home() {
         />
         <MetricsCard
           title="Storage Used"
-          value="73%"
+          value={`${dashboard.storageUsed}%`}
           trend="182 GB / 250 GB"
           trendType="neutral"
           icon={Database}

@@ -1,27 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function ContractActivityChart() {
   const [activeTooltip, setActiveTooltip] = useState(null);
+  const [activePoints, setActivePoints] = useState([]);
+  const [newPoints, setNewPoints] = useState([]);
 
-  const activePoints = [
-    { label: "Jan", val: 40, x: 50, y: 150 },
-    { label: "Feb", val: 42, x: 150, y: 144.5 },
-    { label: "Mar", val: 47, x: 250, y: 130.75 },
-    { label: "Apr", val: 51, x: 350, y: 119.75 },
-    { label: "May", val: 54, x: 450, y: 111.5 },
-    { label: "Jun", val: 58, x: 550, y: 100.5 },
-    { label: "Jul", val: 61, x: 650, y: 92.25 }
-  ];
-
-  const newPoints = [
-    { label: "Jan", val: 8, x: 50, y: 238 },
-    { label: "Feb", val: 5, x: 150, y: 246.25 },
-    { label: "Mar", val: 9, x: 250, y: 235.25 },
-    { label: "Apr", val: 8, x: 350, y: 238 },
-    { label: "May", val: 7, x: 450, y: 240.75 },
-    { label: "Jun", val: 10, x: 550, y: 232.5 },
-    { label: "Jul", val: 8, x: 650, y: 238 }
-  ];
+useEffect(() => {
+  fetch("http://127.0.0.1:8000/api/contracts/activity-chart")
+    .then((res) => res.json())
+    .then((data) => {
+      setActivePoints(data.activePoints);
+      setNewPoints(data.newPoints);
+    })
+    .catch((err) => console.error(err));
+}, []);
+ 
 
   const getLinePath = (points) => {
     return points.reduce((path, pt, index) => {

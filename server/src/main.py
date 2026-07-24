@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-<<<<<<< HEAD
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.api import api_router
 from src.logging import configure_logging
@@ -7,19 +7,9 @@ from src.rate_limiter import init_rate_limiter
 
 configure_logging()
 
-app = FastAPI(title="Server")
-app = init_rate_limiter(app)
-app.include_router(api_router)
-
-
-@app.get("/")
-def root():
-    return {"status": "ok"}
-=======
-from fastapi.middleware.cors import CORSMiddleware
-from src.api import api_router
-
 app = FastAPI(title="ContractIQ API")
+
+app = init_rate_limiter(app)
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,7 +21,12 @@ app.add_middleware(
 
 app.include_router(api_router, prefix="/api")
 
+
+@app.get("/")
+def root():
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("src.main:app", host="127.0.0.1", port=8000, reload=True)
->>>>>>> e4b4e4e0c29f6c8156d879c7524be11fe270caa9
