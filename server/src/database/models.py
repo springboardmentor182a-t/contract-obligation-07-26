@@ -429,11 +429,9 @@ class AuditLogModel(Base):
     )
 
     user = relationship(
-        "User",
-        backref="audit_logs",
-    )
-    user = relationship("User", backref="support_tickets")
-
+    "User",
+    backref="audit_logs",
+)
 
 class ComplianceControl(Base):
     __tablename__ = "compliance_controls"
