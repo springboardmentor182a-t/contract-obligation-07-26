@@ -3,7 +3,7 @@ from sqlalchemy.sql import func
 
 
 
-from database.core import Base
+from src.database.core import Base
 
 
 class AuditLog(Base):

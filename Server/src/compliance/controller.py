@@ -15,7 +15,7 @@ from .models import (
     RiskDistributionResponse,
     PaginatedComplianceResponse
 )
-from database.core import get_db
+from src.database.core import get_db
 
 def verify_compliance_access(x_user_role: str = Header(None)):
     """

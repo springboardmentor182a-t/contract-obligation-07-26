@@ -3,15 +3,15 @@ from sqlalchemy.orm import Session
 from typing import Optional
 
 
-from database.core import get_db
-from renewals.models import (
+from src.database.core import get_db
+from src.renewals.models import (
     RenewalCreate,
     StatusUpdateRequest,
     ApprovalActionRequest,
     ReminderCreateRequest,
 )
 
-from renewals.service import (
+from src.renewals.service import (
     get_dashboard_summary,
     get_renewals,
     get_renewal_detail,
