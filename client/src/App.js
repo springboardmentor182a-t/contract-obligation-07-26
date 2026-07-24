@@ -2,7 +2,10 @@ import "./assets/global.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UIProvider } from "./context/UIContext";
 import PageContainer from "./layout/PageContainer";
+import { UIProvider } from "./context/UIContext";
+
 import ContractRepository from "./pages/ContractRepository";
+import Obligations from "./pages/Obligations";
 // Auth pages
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -20,6 +23,8 @@ import Calendar from "./pages/Calendar";
 import RenewalDashboard from "./pages/RenewalDashboard";
 import UserManagement from "./pages/UserManagement";
 import Audit from "./pages/Audit";
+import Compliance from "./pages/Compliance";
+
 
 function AppShell() {
   return (
@@ -31,6 +36,7 @@ function AppShell() {
         <Route path="/user-management" element={<UserManagement />} />
         <Route path="/audit" element={<Audit />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/compliance" element={<Compliance />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/quick-actions" element={<QuickActions />} />
         <Route path="/profile" element={<Profile />} />
@@ -53,7 +59,14 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/*" element={<AppShell />} />
+          <Route
+            path="/obligations"
+            element={
+              <PageContainer>
+                <Obligations />
+              </PageContainer>
+            }
+          />          <Route path="/*" element={<AppShell />} />
         </Routes>
       </UIProvider>
     </BrowserRouter>

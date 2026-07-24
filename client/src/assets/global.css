@@ -1,6 +1,12 @@
 
+/* Tailwind CSS — required for pages added by main-group-C team */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ContractIQ design system — ported to match the approved design exactly. */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Public+Sans:wght@400;500;600;700;800&display=swap');
+
 
 :root{
   --bg:#F8FAFC; --surface:#FFFFFF; --border:#E2E8F0;
