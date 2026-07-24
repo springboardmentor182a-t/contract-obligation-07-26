@@ -18,6 +18,7 @@ from src.database.core import Base
 
 class Contract(Base):
     __tablename__ = "contracts"
+    __table_args__ = {"schema": "public"}
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -58,12 +59,13 @@ class Contract(Base):
 
 class ContractDocument(Base):
     __tablename__ = "contract_documents"
+    __table_args__ = {"schema": "public"}
 
     id = Column(Integer, primary_key=True, index=True)
 
     contract_id = Column(
         Integer,
-        ForeignKey("contracts.id", ondelete="CASCADE"),
+        ForeignKey("public.contracts.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )

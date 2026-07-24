@@ -2,7 +2,6 @@ import "./assets/global.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UIProvider } from "./context/UIContext";
 import PageContainer from "./layout/PageContainer";
-import { UIProvider } from "./context/UIContext";
 
 import ContractRepository from "./pages/ContractRepository";
 import Obligations from "./pages/Obligations";
