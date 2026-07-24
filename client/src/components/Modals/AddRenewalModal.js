@@ -3,7 +3,7 @@ import { addRenewal } from "../../services/renewalService";
 
 export default function AddRenewalModal({ onClose, onSuccess }) {
   const [form, setForm] = useState({
-    contract_id: "",
+    contract_name: "",
     renewal_date: "",
     reminder_days: 30,
     renewal_type: "Automatic",
@@ -22,13 +22,20 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
 
   const handleSubmit = async () => {
     try {
-      await addRenewal(form);
+      const response = await addRenewal(form);
+
+      console.log("Added:", response);
+
       alert("Renewal added successfully");
-      onSuccess();
+
+      if (onSuccess) {
+        await onSuccess();
+      }
+
       onClose();
     } catch (error) {
-      alert("Failed to add renewal");
       console.error(error);
+      alert("Failed to add renewal");
     }
   };
 
@@ -54,12 +61,16 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
         <h2>Add Renewal</h2>
 
         <input
-          type="number"
-          name="contract_id"
-          placeholder="Contract ID"
-          value={form.contract_id}
+          type="text"
+          name="contract_name"
+          placeholder="Contract Name"
+          value={form.contract_name}
           onChange={handleChange}
-          style={{ width: "100%", marginBottom: 10, padding: 8 }}
+          style={{
+            width: "100%",
+            marginBottom: 10,
+            padding: 8,
+          }}
         />
 
         <input
@@ -67,7 +78,11 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
           name="renewal_date"
           value={form.renewal_date}
           onChange={handleChange}
-          style={{ width: "100%", marginBottom: 10, padding: 8 }}
+          style={{
+            width: "100%",
+            marginBottom: 10,
+            padding: 8,
+          }}
         />
 
         <input
@@ -76,14 +91,22 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
           placeholder="Reminder Days"
           value={form.reminder_days}
           onChange={handleChange}
-          style={{ width: "100%", marginBottom: 10, padding: 8 }}
+          style={{
+            width: "100%",
+            marginBottom: 10,
+            padding: 8,
+          }}
         />
 
         <select
           name="renewal_type"
           value={form.renewal_type}
           onChange={handleChange}
-          style={{ width: "100%", marginBottom: 10, padding: 8 }}
+          style={{
+            width: "100%",
+            marginBottom: 10,
+            padding: 8,
+          }}
         >
           <option value="Automatic">Automatic</option>
           <option value="Manual">Manual</option>
@@ -93,7 +116,11 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
           name="status"
           value={form.status}
           onChange={handleChange}
-          style={{ width: "100%", marginBottom: 20, padding: 8 }}
+          style={{
+            width: "100%",
+            marginBottom: 20,
+            padding: 8,
+          }}
         >
           <option value="Pending">Pending</option>
           <option value="Active">Active</option>

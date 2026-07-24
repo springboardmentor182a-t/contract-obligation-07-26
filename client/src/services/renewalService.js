@@ -1,5 +1,5 @@
-const API = "http://127.0.0.1:8000/renewals/";
 
+const API = `${process.env.REACT_APP_API_URL}/renewals/`;
 export async function getRenewals() {
   const response = await fetch(API);
 
@@ -19,8 +19,18 @@ export async function addRenewal(data) {
     body: JSON.stringify(data),
   });
 
-  return await response.json();
+  const result = await response.json();
+
+  if (!response.ok) {
+    console.log(result);
+    throw new Error(JSON.stringify(result));
+  }
+
+  return result;
 }
+
+  
+
 
 export async function updateRenewal(id, data) {
   const response = await fetch(API + id, {

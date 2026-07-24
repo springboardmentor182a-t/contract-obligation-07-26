@@ -14,13 +14,16 @@ import ContractDetails from './pages/ContractDetails/ContractDetails';
 import AddContract from './pages/AddContract/AddContract';
 import UserManagement from './pages/UserManagement';
 
+import Renewals from "./pages/Renewals";
+
 function App() {
   return (
     <Router>
       <div className="App">
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
+          
+          <Route path="/renewals" element={<Renewals />} />
           <Route path="/dashboard" element={<Home />} />
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/reports" element={<Reports />} />
@@ -30,7 +33,7 @@ function App() {
           <Route path="/users" element={<UserManagement />} />
           <Route path="/add-user" element={<AddUser />} />
           <Route path="/compliance" element={<Compliance />} />
-
+           
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/settings" element={<Settings />} />

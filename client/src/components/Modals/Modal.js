@@ -1,8 +1,6 @@
-<<<<<<< HEAD
 export default function Modal(props) {
   return null;
 }
-=======
 import React from 'react';
 
 const Modal = ({ isOpen, onClose, title, children }) => {
@@ -24,4 +22,3 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 };
 
 export default Modal;
->>>>>>> origin/main-group-D
