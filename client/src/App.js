@@ -2,6 +2,7 @@ import "./assets/global.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UIProvider } from "./context/UIContext";
 import PageContainer from "./layout/PageContainer";
+import Obligations from "./pages/Obligations";
 
 // Auth pages
 import Login from "./pages/Login";
@@ -55,7 +56,14 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/*" element={<AppShell />} />
+          <Route
+            path="/obligations"
+            element={
+              <PageContainer>
+                <Obligations />
+              </PageContainer>
+            }
+          />          <Route path="/*" element={<AppShell />} />
         </Routes>
       </UIProvider>
     </BrowserRouter>
