@@ -20,6 +20,9 @@ import FormInput from '../../components/Form/FormInput';
 import FormSelect from '../../components/Form/FormSelect';
 import './Contracts.css';
 
+import { createNotification } from '../../features/notifications/services/notificationAPI';
+import { getContracts } from '../../features/contracts/services/contractAPI';
+
 const ContractRepository = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,13 +30,19 @@ const ContractRepository = () => {
   const [filterCategory, setFilterCategory] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
 
-  const [contracts, setContracts] = useState([
-    { id: 'CON-2023-001', name: 'Vendor Agreement', entity: 'TechCorp Solutions', category: 'Vendor Contract', status: 'Active', value: '$120,000', expiry: '2025-12-31' },
-    { id: 'CON-2023-045', name: 'Office Lease', entity: 'Downtown Plaza', category: 'Lease Agreement', status: 'Under Review', value: '$50,000/yr', expiry: '2026-06-30' },
-    { id: 'CON-2023-089', name: 'Software License', entity: 'Adobe Systems', category: 'Service Agreement', status: 'Approved', value: '$12,000', expiry: '2024-10-15' },
-    { id: 'CON-2023-112', name: 'Employment Agreement', entity: 'Jane Doe', category: 'Employment Contract', status: 'Draft', value: '-', expiry: '-' },
-    { id: 'CON-2022-404', name: 'Strategic Partnership', entity: 'GlobalTech', category: 'Partnership Agreement', status: 'Expired', value: '$250,000', expiry: '2023-01-01' },
-  ]);
+  const [contracts, setContracts] = useState([]);
+  
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getContracts();
+        setContracts(data);
+      } catch (err) {
+        console.error("Failed to fetch contracts:", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const [newContract, setNewContract] = useState({ name: '', companyName: '', vendorName: '', category: 'Vendor Contract', value: '', expiry: '' });
 
@@ -57,17 +66,31 @@ const ContractRepository = () => {
     navigate(`/contracts/${id}`);
   };
 
-  const handleUploadContract = (e) => {
+  const handleUploadContract = async (e) => {
     e.preventDefault();
     const id = `CON-2023-${Math.floor(Math.random() * 900) + 100}`;
     setContracts([{ id, name: newContract.name, entity: newContract.vendorName || newContract.companyName, category: newContract.category, value: newContract.value, expiry: newContract.expiry, status: 'Draft' }, ...contracts]);
     setIsUploadModalOpen(false);
+    
+    try {
+      await createNotification({ title: 'Contract Created', message: `Draft contract ${id} created successfully.` });
+      window.dispatchEvent(new Event('notification-created'));
+    } catch (err) {
+      console.error(err);
+    }
+    
     setNewContract({ name: '', companyName: '', vendorName: '', category: 'Vendor Contract', value: '', expiry: '' });
   };
 
-  const handleArchive = (e, id) => {
+  const handleArchive = async (e, id) => {
     e.stopPropagation();
     setContracts(contracts.map(c => c.id === id ? { ...c, status: 'Archived' } : c));
+    try {
+      await createNotification({ title: 'Contract Archived', message: `Contract ${id} has been archived.` });
+      window.dispatchEvent(new Event('notification-created'));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const filteredContracts = contracts.filter(c => {
@@ -99,11 +122,11 @@ const ContractRepository = () => {
         <div className="cr-card glass-blue">
           <div className="cr-card-top">
             <div className="cr-card-icon"><FileText size={24} /></div>
-            <span className="cr-trend positive"><ArrowUpRight size={14} /> 12</span>
+            <span className="cr-trend positive"><ArrowUpRight size={14} /> {contracts.filter(c => c.status === 'Active').length}</span>
           </div>
           <div className="cr-card-data">
             <h3>Active Contracts</h3>
-            <div className="cr-val">142</div>
+            <div className="cr-val">{contracts.filter(c => c.status === 'Active').length}</div>
             <p>Currently managing</p>
           </div>
         </div>
@@ -111,11 +134,11 @@ const ContractRepository = () => {
         <div className="cr-card glass-green">
           <div className="cr-card-top">
             <div className="cr-card-icon"><CheckCircleIcon /></div>
-            <span className="cr-trend positive"><ArrowUpRight size={14} /> 5</span>
+            <span className="cr-trend positive"><ArrowUpRight size={14} /> {contracts.filter(c => c.status === 'Approved').length}</span>
           </div>
           <div className="cr-card-data">
-            <h3>Approved this Month</h3>
-            <div className="cr-val">28</div>
+            <h3>Approved</h3>
+            <div className="cr-val">{contracts.filter(c => c.status === 'Approved').length}</div>
             <p>Ready for execution</p>
           </div>
         </div>
@@ -127,7 +150,7 @@ const ContractRepository = () => {
           </div>
           <div className="cr-card-data">
             <h3>Pending Review</h3>
-            <div className="cr-val">14</div>
+            <div className="cr-val">{contracts.filter(c => c.status === 'Under Review').length}</div>
             <p>Awaiting signatures</p>
           </div>
         </div>
@@ -135,11 +158,11 @@ const ContractRepository = () => {
         <div className="cr-card glass-purple">
           <div className="cr-card-top">
             <div className="cr-card-icon"><FolderOpen size={24} /></div>
-            <span className="cr-trend positive"><ArrowDownRight size={14} /> 2</span>
+            <span className="cr-trend positive"><ArrowDownRight size={14} /> {contracts.filter(c => c.status === 'Archived').length}</span>
           </div>
           <div className="cr-card-data">
             <h3>Archived</h3>
-            <div className="cr-val">846</div>
+            <div className="cr-val">{contracts.filter(c => c.status === 'Archived').length}</div>
             <p>Historical records</p>
           </div>
         </div>

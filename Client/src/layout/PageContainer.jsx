@@ -6,6 +6,7 @@ import './Layout.css';
 
 const PageContainer = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [userRole, setUserRole] = useState(localStorage.getItem('user-role') || 'Legal Manager');
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -15,14 +16,20 @@ const PageContainer = () => {
     setIsSidebarOpen(false);
   };
 
+  const handleRoleChange = (newRole) => {
+    localStorage.setItem('user-role', newRole);
+    setUserRole(newRole);
+    window.dispatchEvent(new Event('roleChanged'));
+  };
+
   return (
     <div className="layout-wrapper">
-      <Sidebar isOpen={isSidebarOpen} closeSidebar={closeSidebar} />
+      <Sidebar isOpen={isSidebarOpen} closeSidebar={closeSidebar} userRole={userRole} />
       {isSidebarOpen && (
         <div className="sidebar-overlay" onClick={closeSidebar}></div>
       )}
       <div className="layout-main">
-        <Navbar toggleSidebar={toggleSidebar} />
+        <Navbar toggleSidebar={toggleSidebar} userRole={userRole} onRoleChange={handleRoleChange} />
         <main className="layout-content">
           <Outlet />
         </main>
@@ -32,3 +39,4 @@ const PageContainer = () => {
 };
 
 export default PageContainer;
+
