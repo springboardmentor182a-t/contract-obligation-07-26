@@ -8,8 +8,6 @@ import { loginService } from '../features/authentication/services/login';
 import { useAuth } from '../context/AuthContext';
 
 
-import { createNotification } from '../features/notifications/services/notificationAPI';
-
 const Login = () => {
 
   const navigate = useNavigate();
@@ -31,12 +29,6 @@ const Login = () => {
     try {
       await loginService(credentials);
       await refreshProfile();
-      try {
-        await createNotification({ title: 'Login Successful', message: 'Welcome back to ContractIQ!' });
-        window.dispatchEvent(new Event('notification-created'));
-      } catch (notifErr) {
-        console.error('Failed to create login notification', notifErr);
-      }
       // Only navigate if login is fully successful
       navigate('/dashboard');
     } catch (err) {

@@ -27,9 +27,6 @@ const Signup = () => {
     setLoading(true);
     try {
       await signupService(details);
-      window.dispatchEvent(new CustomEvent('show-local-toast', { 
-        detail: { title: 'Registration Successful', message: 'Welcome! Please log in to continue.' } 
-      }));
       // Only navigate if registration is fully successful
       navigate('/login');
     } catch (err) {
