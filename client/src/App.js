@@ -27,7 +27,6 @@ function App() {
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/calendar" element={<Calendar />} />
-          <Route path="/obligations" element={<Obligations />} />
           <Route path="/contracts" element={<ContractRepository />} />
           <Route path="/contracts/:contractId" element={<ContractDetails />} />
           <Route path="/contracts/add" element={<AddContract />} />
