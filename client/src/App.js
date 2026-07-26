@@ -8,7 +8,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Settings from './pages/Settings';
 import AddUser from "./pages/AddUser";
-
+import Obligations from "./pages/Obligations";
 import ContractRepository from './pages/ContractRepository/ContractRepository';
 import ContractDetails from './pages/ContractDetails/ContractDetails';
 import AddContract from './pages/AddContract/AddContract';
@@ -32,7 +32,6 @@ function App() {
           <Route path="/contracts/add" element={<AddContract />} />
           <Route path="/users" element={<UserManagement />} />
           <Route path="/add-user" element={<AddUser />} />
-          <Route path="/compliance" element={<Compliance />} />
           <Route path="/edit-contract/:id" element={<AddContract />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
