@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 function ContractDetails() {
   const { contractId } = useParams();
   const navigate = useNavigate();
+  
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const deleteContract = async () => {

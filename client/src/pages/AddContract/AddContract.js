@@ -1,19 +1,14 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-
-import Sidebar from "../../components/Sidebar/Sidebar";
-import Header from "../../components/Header/Header";
+import { useParams } from "react-router-dom";
 import { API_BASE_URL } from "../../data/constants";
 import "../../styles/AddContract.css";
 
-function AddContract() {
-  const navigate = useNavigate();
+function AddContract({ onClose, onContractAdded }) {
   const { id } = useParams();
 
   const isEditMode = Boolean(id);
-
-  const [loading, setLoading] = useState(false); // Loading existing contract
-const [saving, setSaving] = useState(false);   // Saving the form
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [contract, setContract] = useState({
   id: "",
@@ -133,11 +128,12 @@ const [saving, setSaving] = useState(false);   // Saving the form
 
       alert(
         isEditMode
-          ? "Contract updated successfully!"
-          : "Contract added successfully!"
-      );
+        ? "Contract updated successfully!"
+        : "Contract added successfully!"
+    );
 
-      navigate("/");
+    onContractAdded?.();
+    onClose?.();
     } catch (error) {
         console.error("Error:", error);
         alert(error.message);
@@ -151,31 +147,24 @@ const [saving, setSaving] = useState(false);   // Saving the form
   }
 
   return (
-    <div className="add-layout">
-      <Sidebar />
-
-      <div className="add-main">
-        <Header />
-
+    <div className="modal-overlay">
+      <div className="modal-content">
         <div className="add-container">
 
-          <div className="page-title">
-            <h1>
-              {isEditMode
-                ? "Edit Contract"
-                : "Add New Contract"}
-            </h1>
+          <h1>
+            {isEditMode ? "Edit Contract" : "Add New Contract"}
+          </h1>
 
-            <p>
-              {isEditMode
-                ? "Update contract information."
-                : "Create a new contract."}
-            </p>
-          </div>
-            <form
-                className="contract-form"
-                onSubmit={handleSubmit}
-            >
+          <p>
+            {isEditMode
+              ? "Update contract information."
+              : "Create a new contract."}
+          </p>
+
+          <form
+            className="contract-form"
+            onSubmit={handleSubmit}
+          >
                 <div className="form-grid">
 
                     <div className="form-group">
@@ -477,9 +466,13 @@ const [saving, setSaving] = useState(false);   // Saving the form
                 <div className="form-buttons">
 
                     <button
-                        type="button"
-                        className="cancel-btn"
-                        onClick={() => navigate("/")}
+                      type="button"
+                      className="cancel-btn"
+                      onClick={() => {
+                        if (onClose) {
+                          onClose();
+                        }
+                      }}
                     >
                         Cancel
                     </button>
@@ -495,14 +488,11 @@ const [saving, setSaving] = useState(false);   // Saving the form
                           ? "Update Contract"
                           : "Save Contract"}
                     </button>
-
-                </div>
+              </div>
             </form>
-
-                        </div>
-                    </div>
-                </div>
-                );
-            }
-
-            export default AddContract;
+          </div>
+        </div>
+      </div>
+    );
+  }
+  export default AddContract;

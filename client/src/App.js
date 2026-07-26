@@ -30,7 +30,7 @@ function App() {
           <Route path="/users" element={<UserManagement />} />
           <Route path="/add-user" element={<AddUser />} />
           <Route path="/compliance" element={<Compliance />} />
-
+          <Route path="/edit-contract/:id" element={<AddContract />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/settings" element={<Settings />} />
