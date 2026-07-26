@@ -13,6 +13,7 @@ import ContractRepository from './pages/ContractRepository/ContractRepository';
 import ContractDetails from './pages/ContractDetails/ContractDetails';
 import AddContract from './pages/AddContract/AddContract';
 import UserManagement from './pages/UserManagement';
+import Calendar from './pages/Calendar';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/dashboard" element={<Home />} />
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/calendar" element={<Calendar />} />
           <Route path="/contracts" element={<ContractRepository />} />
           <Route path="/contracts/:contractId" element={<ContractDetails />} />
           <Route path="/contracts/add" element={<AddContract />} />
