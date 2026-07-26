@@ -205,7 +205,7 @@ const ContractDetails = ({ contract, onBack, onEditClick }) => {
           </div>
         </div>
       </div>
-    </div>
+  
   );
 };
 
