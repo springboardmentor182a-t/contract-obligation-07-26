@@ -1,20 +1,56 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { API_BASE_URL } from "../../data/constants";
 
 import StatusBadge from "../../components/StatusBadge/StatusBadge";
 import ProgressBar from "../../components/ProgressBar/ProgressBar";
 
 import {
-  FiMoreVertical,
   FiEye,
+  FiMoreVertical,
+  FiEdit2,
+  FiTrash2,
 } from "react-icons/fi";
 
 import "../../styles/table.css";
 
 function ContractTable({ contracts }) {
   const navigate = useNavigate();
+  const [openMenu, setOpenMenu] = useState(null);
 
   const openContractDetails = (id) => {
-  navigate(`/contracts/${id}`);
+    navigate(`/contracts/${id}`);
+  };
+
+  const editContract = (id) => {
+    navigate(`/edit-contract/${id}`);
+  };
+
+  const deleteContract = async (id) => {
+    const confirmDelete = window.confirm(
+      "Delete this contract?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/contracts/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Delete failed");
+      }
+
+      alert("Contract deleted.");
+
+      navigate("/contracts");
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   return (
@@ -85,13 +121,43 @@ function ContractTable({ contracts }) {
                 <td>{item.renewal || "-"}</td>
 
                 <td>
-                  <div className="actions">
+                  <div
+                    className="actions"
+                    style={{ position: "relative" }}
+                  >
                     <FiEye
                       style={{ cursor: "pointer" }}
-                      onClick={() => openContractDetails(item.id)}
+                      onClick={() =>
+                        openContractDetails(item.id)
+                      }
                     />
 
-                    <FiMoreVertical />
+                    <FiMoreVertical
+                      style={{ cursor: "pointer" }}
+                      onClick={() =>
+                        setOpenMenu(
+                          openMenu === item.id ? null : item.id
+                        )
+                      }
+                    />
+
+                    {openMenu === item.id && (
+                      <div className="dropdown-menu">
+                        <div
+                          className="dropdown-item"
+                          onClick={() => editContract(item.id)}
+                        >
+                          <FiEdit2 /> Edit
+                        </div>
+
+                        <div
+                          className="dropdown-item delete"
+                          onClick={() => deleteContract(item.id)}
+                        >
+                          <FiTrash2 /> Delete
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </td>
               </tr>
