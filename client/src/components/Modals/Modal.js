@@ -1,3 +1,6 @@
+export default function Modal(props) {
+  return null;
+}
 import React from 'react';
 import "./Modal.css";
 

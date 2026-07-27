@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - Group-C-feature/auth-module-deepa
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      # Use GitHub secrets IF available, otherwise fall back to safe default mock values so tests pass
+      DATABASE_URL: ${{ secrets.DATABASE_URL || 'sqlite:///./test.db' }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY || 'default_test_secret_key_12345' }}
+      ALGORITHM: ${{ secrets.ALGORITHM || 'HS256' }}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES || '30' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Ensure main dependencies AND dev dependencies get installed
+          if [ -f server/requirements.txt ]; then python -m pip install -r server/requirements.txt; fi
+          if [ -f server/requirements-dev.txt ]; then python -m pip install -r server/requirements-dev.txt; fi
+          # Direct fallback to guarantee core testing packages exist
+          python -m pip install fastapi pytest httpx
+
+      - name: Verify environment
+        run: |
+          python -c "import os; print('DATABASE_URL configured:', bool(os.getenv('DATABASE_URL')))"
+
+      - name: Run server tests
+        run: |
+          cd server
+          python -m pytest -q
