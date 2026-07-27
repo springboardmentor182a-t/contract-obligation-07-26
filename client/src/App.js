@@ -15,6 +15,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
 // Dashboard pages
+import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
@@ -39,8 +40,15 @@ function App() {
     <BrowserRouter>
       <UIProvider>
         <Routes>
-          {/* Auth routes */}
-          <Route path="/" element={<Login />} />
+          {/* Default and Auth routes */}
+          <Route
+            path="/"
+            element={
+              <PageContainer>
+                <Home />
+              </PageContainer>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -51,7 +59,7 @@ function App() {
             path="/dashboard"
             element={
               <PageContainer>
-                <RenewalDashboard />
+                <Home />
               </PageContainer>
             }
           />
