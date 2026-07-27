@@ -3510,6 +3510,19 @@ textarea:focus {
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.sb-org:hover {
+  transform: translateY(-2px);
+  background-color: #162438;
+  border-color: #3B82F6;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+.sb-org:hover .sb-org-avatar {
+  transform: scale(1.12);
+  transition: transform 0.22s ease;
 }
 
 .sb-org-left {
@@ -3529,6 +3542,7 @@ textarea:focus {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.22s ease;
 }
 
 .sb-org-meta {
@@ -3573,18 +3587,30 @@ textarea:focus {
   font-size: 0.82rem;
   font-weight: 500;
   border-radius: 8px;
-  transition: all 0.15s ease;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.22s ease, color 0.22s ease;
+}
+
+.sb-item svg {
+  transition: transform 0.22s ease, color 0.22s ease;
 }
 
 .sb-item:hover {
-  background-color: #111B2A;
+  transform: translateX(5px);
+  background-color: #162438;
   color: #FFFFFF;
 }
 
+.sb-item:hover svg {
+  transform: scale(1.18);
+  color: #3B82F6;
+}
+
 .sb-item.active {
-  background-color: #1E293B;
+  background: linear-gradient(90deg, #1E293B 0%, #111B2A 100%);
   color: #FFFFFF;
   font-weight: 600;
+  border-left: 3px solid #3B82F6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .sb-badge-red {
@@ -3611,6 +3637,14 @@ textarea:focus {
   border: 1px solid #1E293B;
   border-radius: 10px;
   padding: 0.65rem 0.85rem;
+  transition: transform 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.sb-status:hover {
+  transform: translateY(-2px);
+  border-color: #10B981;
+  background-color: #162438;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.18);
 }
 
 .sb-status-head {
@@ -3626,6 +3660,17 @@ textarea:focus {
   cursor: pointer;
 }
 
+@keyframes statusDotPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 6px #10B981;
+  }
+  50% {
+    transform: scale(1.35);
+    box-shadow: 0 0 10px #10B981;
+  }
+}
+
 .sb-status-head .dot {
   width: 7px;
   height: 7px;
@@ -3634,7 +3679,7 @@ textarea:focus {
 
 .sb-status-head .dot.success {
   background-color: #10B981;
-  box-shadow: 0 0 6px #10B981;
+  animation: statusDotPulse 2s infinite ease-in-out;
 }
 
 .sb-status-head .status-text {
@@ -3673,6 +3718,15 @@ textarea:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  transition: transform 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease;
+  cursor: pointer;
+}
+
+.sb-ai-widget:hover {
+  transform: translateY(-2px);
+  border-color: #8B5CF6;
+  background-color: #162438;
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.25);
 }
 
 .sb-ai-left {
@@ -3681,12 +3735,23 @@ textarea:focus {
   gap: 0.5rem;
 }
 
+@keyframes aiDotGlow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 6px #8B5CF6;
+  }
+  50% {
+    transform: scale(1.4);
+    box-shadow: 0 0 12px #A855F7;
+  }
+}
+
 .sb-ai-dot-ping {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background-color: #8B5CF6;
-  box-shadow: 0 0 6px #8B5CF6;
+  animation: aiDotGlow 2.2s infinite ease-in-out;
 }
 
 .sb-ai-title {
