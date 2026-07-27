@@ -1,16 +1,37 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from src.database.core import get_db
+from src.database.models import (
+    Contract,
+    Activity,
+    Deadline,
+    ComplianceItem,
+    ReportHistory,
+)
+from src.users.controller import router as users_router
+from src.contracts.controller import router as contracts_router
 
-from src.api import api_router
-from src.logging import configure_logging
-from src.rate_limiter import init_rate_limiter
+from pydantic import BaseModel
+from datetime import date, datetime
 
-configure_logging()
+app = FastAPI()
 
-app = FastAPI(title="Server")
-app = init_rate_limiter(app)
-app.include_router(api_router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+app.include_router(
+    users_router,
+    prefix="/users",
+    tags=["Users"],
+)
 
-@app.get("/")
-def root():
-    return {"status": "ok"}
+app.include_router(contracts_router)

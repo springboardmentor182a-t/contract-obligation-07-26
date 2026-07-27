@@ -1,6 +1,9 @@
 # Node
 node_modules/
+dist/
 build/
+coverage/
+package-lock.json
 
 # Python
 __pycache__/
@@ -8,9 +11,19 @@ __pycache__/
 .venv/
 venv/
 
-# Env
+# Environment
 .env
+environment.ts
+environment.prod.ts
 
 # Editors
 .vscode/
 .idea/
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

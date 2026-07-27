@@ -1,5 +1,7 @@
-class AuthService:
-    """Business logic for authentication. Depends on domain entities only."""
+from .models import UserLogin, Token
 
-    def login(self, email: str, password: str) -> str:
-        return "stub-token"
+def authenticate_user(credentials: UserLogin) -> Token:
+    # Placeholder for database verification and JWT generation
+    if credentials.email and credentials.password:
+        return Token(access_token="simulated_jwt_token_12345", token_type="bearer")
+    return None

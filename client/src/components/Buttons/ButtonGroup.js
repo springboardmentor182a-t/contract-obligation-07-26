@@ -1,3 +1,11 @@
-export default function ButtonGroup(props) {
-  return null;
-}
+import React from 'react';
+
+const ButtonGroup = ({ children }) => {
+  return (
+    <div className="btn-group" style={{ display: 'flex', gap: '10px' }}>
+      {children}
+    </div>
+  );
+};
+
+export default ButtonGroup;

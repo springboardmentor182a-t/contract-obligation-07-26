@@ -1,14 +1,9 @@
-# Server
+# ContractIQ Backend
 
-FastAPI backend. Run with:
+## Setup
+1. `pip install -r requirements.txt`
+2. `pip install -r requirements-dev.txt`
+3. `uvicorn src.main:app --reload`
 
-```
-pip install -r requirements.txt
-uvicorn src.main:app --reload
-```
-
-Run tests with:
-
-```
-pytest
-```
+## Testing
+Run `pytest`
