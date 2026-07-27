@@ -3381,39 +3381,48 @@ button:focus {
     }
   }
 
-/* Layout Core CSS */
+/* Layout Core CSS - 1:1 Fixed Sidebar & Main Container */
 .app-shell {
   display: flex;
   min-height: 100vh;
   width: 100vw;
   background-color: #F8FAFC;
   overflow-x: hidden;
+  position: relative;
 }
 
 .sidebar {
-  width: 250px;
+  width: 260px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
   background-color: #08111F;
   color: #FFFFFF;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
-  min-height: 100vh;
-  position: sticky;
-  top: 0;
   border-right: 1px solid #1E293B;
-  z-index: 20;
+  z-index: 50;
+  overflow-y: auto;
 }
 
 .main-layout {
-  flex: 1;
+  margin-left: 260px;
+  width: calc(100vw - 260px);
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  min-height: 100vh;
   background-color: #F8FAFC;
 }
 
+.main-layout.sidebar-collapsed {
+  margin-left: 0;
+  width: 100vw;
+}
+
 .topbar {
+  position: sticky;
+  top: 0;
   height: 64px;
   background-color: #FFFFFF;
   border-bottom: 1px solid #E2E8F0;
@@ -3421,15 +3430,14 @@ button:focus {
   align-items: center;
   justify-content: space-between;
   padding: 0 1.5rem;
-  flex-shrink: 0;
-  z-index: 10;
+  z-index: 40;
 }
 
 .content-body {
   flex: 1;
   padding: 1.5rem;
-  overflow-y: auto;
   background-color: #F8FAFC;
+  min-width: 0;
 }
 
 /* Sidebar Details */
