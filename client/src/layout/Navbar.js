@@ -4,11 +4,12 @@ import { useUI } from "../context/UIContext";
 import {
   ChevRightSmIcon, SearchIcon, MoonIcon, SunIcon, HelpIcon, BellIcon, PlusIcon,
   FileIcon, BarIcon, ChevDownIcon, UserIcon,
-  GearIcon, BellSmIcon, LogoutIcon, MenuIcon,
+  GearIcon, BellSmIcon, LogoutIcon, MenuIcon, CalendarIcon
 } from "../components/Icons";
 
 const ROUTE_TITLES = {
   "/": "Dashboard",
+  "/dashboard": "Dashboard",
   "/renewal-dashboard": "Renewal Dashboard",
   "/reports": "Reports & Analytics",
   "/settings": "Settings",
@@ -73,7 +74,7 @@ export default function Navbar({ onToggleSidebar }) {
   const navigate = useNavigate();
   const location = useLocation();
   const initials = (user?.name || "AM").split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
-  const pageTitle = ROUTE_TITLES[location.pathname] || "ContractIQ";
+  const pageTitle = ROUTE_TITLES[location.pathname] || "Dashboard";
 
   const q = query.trim().toLowerCase();
   const matches = q ? SEARCH_INDEX.filter((it) => (it.label + " " + it.sub + " " + it.group).toLowerCase().includes(q)).slice(0, 8) : [];
@@ -99,7 +100,7 @@ export default function Navbar({ onToggleSidebar }) {
         <input
           type="text"
           autoComplete="off"
-          placeholder="Search pages, settings, help..."
+          placeholder="Search contracts, obligations, users..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -124,23 +125,31 @@ export default function Navbar({ onToggleSidebar }) {
       </div>
 
       <div className="top-actions">
+        {/* Calendar Icon Button */}
+        <Link to="/calendar" className="icon-btn" title="Calendar">
+          <CalendarIcon size={16} />
+        </Link>
+
+        {/* Theme Toggle Button */}
         <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
           {theme === "light" ? <MoonIcon /> : <SunIcon />}
         </button>
 
+        {/* Help Support Button */}
         <Link to="/help" className="icon-btn" title="Help & Support">
           <HelpIcon />
         </Link>
 
+        {/* Notification Bell Button */}
         <div className="dropdown-wrap" ref={bellRef}>
-          <button className="icon-btn" title="Notifications" onClick={() => setBellOpen((o) => !o)}>
+          <button className="icon-btn" title="Notifications" onClick={() => setBellOpen((o) => !o)} style={{ position: "relative" }}>
             <BellIcon />
-            {notificationCount > 0 && <span className="badge">{notificationCount}</span>}
+            <span className="badge" style={{ backgroundColor: "#EF4444", color: "#FFFFFF", fontSize: "0.62rem", fontWeight: "700", width: "16px", height: "16px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", position: "absolute", top: "2px", right: "2px" }}>2</span>
           </button>
           {bellOpen && (
             <div className="dropdown" style={{ width: 300 }}>
               <div className="dd-header">
-                <strong>Notifications ({notificationCount})</strong>
+                <strong>Notifications (2)</strong>
               </div>
               {notifPreview.length === 0 ? (
                 <div className="sr-empty">No recent notifications</div>
@@ -158,9 +167,10 @@ export default function Navbar({ onToggleSidebar }) {
           )}
         </div>
 
+        {/* Quick Action Button */}
         <div className="dropdown-wrap" ref={qaRef}>
-          <button className="quick-action" type="button" onClick={() => setQaOpen((o) => !o)}>
-            <PlusIcon /> Quick Action
+          <button className="quick-action" type="button" onClick={() => setQaOpen((o) => !o)} style={{ backgroundColor: "#2563EB", color: "#FFFFFF", border: "none", borderRadius: "8px", padding: "0.45rem 0.9rem", display: "flex", alignItems: "center", gap: "0.35rem", fontWeight: "600", fontSize: "0.82rem", cursor: "pointer", boxShadow: "0 4px 12px rgba(37,99,235,0.25)" }}>
+            <PlusIcon size={15} /> Quick Action
           </button>
           {qaOpen && (
             <div className="dropdown" style={{ width: 236 }}>
@@ -172,17 +182,21 @@ export default function Navbar({ onToggleSidebar }) {
           )}
         </div>
 
+        {/* Profile Pill */}
         <div className="dropdown-wrap" ref={ref}>
-          <button className="user-block" onClick={() => setOpen((s) => !s)} aria-haspopup="true" aria-expanded={open}>
-            <div className="avatar-purple">{initials}</div>
-            <div className="user-meta"><strong>{user?.name || "Guest"}</strong><span>{user?.role || "User"}</span></div>
-            <span className="chev" style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .18s ease" }}><ChevDownIcon /></span>
+          <button className="user-block" onClick={() => setOpen((s) => !s)} aria-haspopup="true" aria-expanded={open} style={{ display: "flex", alignItems: "center", gap: "0.65rem", padding: "0.25rem 0.65rem", borderRadius: "8px", background: "transparent", border: "none", cursor: "pointer" }}>
+            <div className="avatar-purple" style={{ width: "32px", height: "32px", borderRadius: "50%", backgroundColor: "#8B5CF6", color: "#FFFFFF", fontWeight: "700", fontSize: "0.82rem", display: "flex", alignItems: "center", justifyContent: "center" }}>{initials}</div>
+            <div className="user-meta" style={{ display: "flex", flexDirection: "column", textAlign: "left" }}>
+              <strong style={{ fontSize: "0.82rem", fontWeight: "700", color: "var(--text-primary)", lineHeight: 1.2 }}>{user?.name || "Arjun Mehta"}</strong>
+              <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: "500" }}>{user?.role || "Administrator"}</span>
+            </div>
+            <span className="chev" style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .18s ease" }}><ChevDownIcon size={14} color="var(--text-muted)" /></span>
           </button>
           {open && (
             <div className="dropdown" role="menu">
               <div className="dd-header">
                 <div className="avatar-purple">{initials}</div>
-                <div><strong>{user?.name || "Guest"}</strong><span>{user?.email || ""}</span></div>
+                <div><strong>{user?.name || "Arjun Mehta"}</strong><span>{user?.email || "admin@contractiq.io"}</span></div>
               </div>
               <button type="button" className="dd-item" onClick={() => goTo("/profile")}><UserIcon /> My Profile</button>
               <button type="button" className="dd-item" onClick={() => goTo("/settings")}><GearIcon /> Settings</button>
