@@ -24,37 +24,16 @@ app.add_middleware(
 )
 app.include_router(
     users_router,
-    prefix="/users",
+    prefix="/api/v1",
     tags=["Users"]
 )
 app.include_router(
-    contracts_router
+    contracts_router,
+    prefix="/api/v1",
+    tags=["Contracts"]
 )
 
-class ContractCreate(BaseModel):
-    name: str
-    party: str
-    status: str
-    start_date: date
-    end_date: date
-    value: float
-    department: str = "General" # --- NEW: Accepts department on creation ---
 
-@app.post("/api/v1/contracts")
-def create_contract(contract: ContractCreate, db: Session = Depends(get_db)):
-    db_contract = Contract(
-        name=contract.name,
-        party=contract.party,
-        status=contract.status,
-        start_date=contract.start_date,
-        end_date=contract.end_date,
-        value=contract.value,
-        department=contract.department
-    )
-    db.add(db_contract)
-    db.commit()
-    db.refresh(db_contract)
-    return db_contract
 
 @app.get("/api/v1/dashboard")
 def get_dashboard_data(db: Session = Depends(get_db)):
@@ -79,8 +58,8 @@ def get_dashboard_data(db: Session = Depends(get_db)):
         "deadlines": [{"title": d.title, "date": d.date} for d in deadlines],
         "contracts": [{
             "id": c.id,
-            "name": c.name,
-            "party": c.party,
+            "name": c.contract,
+            "party": c.company,
 
             # Existing keys (for frontend compatibility)
             "name": c.contract,
@@ -189,20 +168,7 @@ def delete_compliance_item(item_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Compliance item deleted successfully"}
 
-@app.delete("/api/v1/contracts/{contract_id}")
-def delete_contract(contract_id: int, db: Session = Depends(get_db)):
-    contract = (
-    db.query(Contract)
-    .filter(Contract.id == contract_id)
-    .first()
-)
-    
-    if not contract:
-        raise HTTPException(status_code=404, detail="Contract not found")
-    
-    db.delete(contract)
-    db.commit()
-    return {"message": "Contract deleted successfully"}
+
 
 class ReportCreate(BaseModel):
     name: str

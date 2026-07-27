@@ -1,18 +1,46 @@
-from sqlalchemy import Column, Integer, String, Date, Float, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date
 from .core import Base
 
 class Contract(Base):
     __tablename__ = "contracts"
-    __table_args__ = {'extend_existing': True} # --- NEW: Allows model merging ---
-    
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    party = Column(String)
+    __table_args__ = {"extend_existing": True}
+
+    id = Column(String, primary_key=True, index=True)
+
+    company = Column(String)
+    contract = Column(String)
+    category = Column(String)
+    value = Column(String)
+
+    owner = Column(String)
     status = Column(String)
-    start_date = Column(Date)
-    end_date = Column(Date)
-    value = Column(Float)
-    department = Column(String, default="General")
+    compliance = Column(Integer)
+    renewal = Column(String)
+
+    start_date = Column(String)
+    end_date = Column(String)
+
+    days_remaining = Column(Integer)
+    priority = Column(String)
+    description = Column(String)
+
+    paid_amount = Column(String)
+    outstanding = Column(String)
+    currency = Column(String)
+    payment_progress = Column(Integer)
+
+    renewal_type = Column(String)
+    notice_period = Column(String)
+    auto_renewal = Column(String)
+
+    created_on = Column(String)
+    effective_date = Column(String)
+    expiry_date = Column(String)
+    renewal_reminder = Column(String)
+
+    documents = Column(Integer)
+    obligations = Column(Integer)
+    tasks = Column(Integer)
 
 # -----------------------------
 # Activity Model
