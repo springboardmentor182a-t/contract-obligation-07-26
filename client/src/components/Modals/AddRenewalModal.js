@@ -1,20 +1,26 @@
 import React, { useState } from "react";
 import { addRenewal } from "../../services/renewalService";
 
-export default function AddRenewalModal({ onClose, onSuccess }) {
+export default function AddRenewalModal({
+  open,
+  onClose,
+  onSuccess,
+}) {
   const [form, setForm] = useState({
     contract_name: "",
+    renewal_type: "",
     renewal_date: "",
-    reminder_days: 30,
-    renewal_type: "Automatic",
-    status: "Pending",
+    reminder_days: "",
+    status: "",
   });
+
+  if (!open) return null;
 
   const handleChange = (e) => {
     setForm({
       ...form,
       [e.target.name]:
-        e.target.type === "number"
+        e.target.type === "number" && e.target.value !== ""
           ? Number(e.target.value)
           : e.target.value,
     });
@@ -22,19 +28,25 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
 
   const handleSubmit = async () => {
     try {
-      const response = await addRenewal(form);
+      await addRenewal(form);
 
-      console.log("Added:", response);
+      alert("Renewal added successfully!");
 
-      alert("Renewal added successfully");
-
-      if (onSuccess) {
-        await onSuccess();
-      }
+      if (onSuccess) onSuccess();
 
       onClose();
-    } catch (error) {
-      console.error(error);
+
+      // Clear form after saving
+      setForm({
+        contract_name: "",
+        renewal_type: "",
+        renewal_date: "",
+        reminder_days: "",
+        status: "",
+      });
+
+    } catch (err) {
+      console.error(err);
       alert("Failed to add renewal");
     }
   };
@@ -48,14 +60,15 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        zIndex: 999,
       }}
     >
       <div
         style={{
           background: "#fff",
+          width: 420,
           padding: 20,
-          borderRadius: 10,
-          width: 400,
+          borderRadius: 12,
         }}
       >
         <h2>Add Renewal</h2>
@@ -69,9 +82,24 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
           style={{
             width: "100%",
             marginBottom: 10,
-            padding: 8,
+            padding: 10,
           }}
         />
+
+        <select
+          name="renewal_type"
+          value={form.renewal_type}
+          onChange={handleChange}
+          style={{
+            width: "100%",
+            marginBottom: 10,
+            padding: 10,
+          }}
+        >
+          <option value="">Select Renewal Type</option>
+          <option value="Automatic">Automatic</option>
+          <option value="Manual">Manual</option>
+        </select>
 
         <input
           type="date"
@@ -81,7 +109,7 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
           style={{
             width: "100%",
             marginBottom: 10,
-            padding: 8,
+            padding: 10,
           }}
         />
 
@@ -94,23 +122,9 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
           style={{
             width: "100%",
             marginBottom: 10,
-            padding: 8,
+            padding: 10,
           }}
         />
-
-        <select
-          name="renewal_type"
-          value={form.renewal_type}
-          onChange={handleChange}
-          style={{
-            width: "100%",
-            marginBottom: 10,
-            padding: 8,
-          }}
-        >
-          <option value="Automatic">Automatic</option>
-          <option value="Manual">Manual</option>
-        </select>
 
         <select
           name="status"
@@ -119,9 +133,10 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
           style={{
             width: "100%",
             marginBottom: 20,
-            padding: 8,
+            padding: 10,
           }}
         >
+          <option value="">Select Status</option>
           <option value="Pending">Pending</option>
           <option value="Active">Active</option>
           <option value="Expired">Expired</option>
@@ -130,11 +145,11 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
         <button
           onClick={handleSubmit}
           style={{
-            padding: "10px 20px",
             background: "#6C4CFF",
             color: "#fff",
             border: "none",
-            borderRadius: 6,
+            padding: "10px 20px",
+            borderRadius: 8,
             cursor: "pointer",
           }}
         >
@@ -146,7 +161,6 @@ export default function AddRenewalModal({ onClose, onSuccess }) {
           style={{
             marginLeft: 10,
             padding: "10px 20px",
-            cursor: "pointer",
           }}
         >
           Cancel
