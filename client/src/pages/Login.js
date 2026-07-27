@@ -270,10 +270,11 @@ function Login() {
 
               {message && (
                 <div
-                  className={`auth-message ${messageType === "success"
+                  className={`auth-message ${
+                    messageType === "success"
                       ? "auth-message-success"
                       : "auth-message-error"
-                    }`}
+                  }`}
                   role="alert"
                 >
                   {message}

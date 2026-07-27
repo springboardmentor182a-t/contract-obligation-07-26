@@ -26,29 +26,15 @@ import Calendar from "./pages/Calendar";
 import RenewalDashboard from "./pages/RenewalDashboard";
 import Audit from "./pages/Audit";
 
+import "./assets/global.css";
+
 function App() {
   return (
-    <div className="app-container">
-      <Sidebar />
-      <div className="main-content">
-        <Navbar />
-        <PageContainer>
-          <Home />
-        </PageContainer>
-      </div>
-    </div>
     <BrowserRouter>
       <UIProvider>
         <Routes>
-          {/* Default and Auth routes */}
-          <Route
-            path="/"
-            element={
-              <PageContainer>
-                <Home />
-              </PageContainer>
-            }
-          />
+          {/* Auth routes */}
+          <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
