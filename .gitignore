@@ -1,12 +1,29 @@
+# Node
 node_modules/
 dist/
 build/
 coverage/
 package-lock.json
-environment.ts 
-environment.prod.ts
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment
 .env
+environment.ts
+environment.prod.ts
+
+# Editors
+.vscode/
+.idea/
+
+# Logs
 logs/
 *.log
+
+# OS files
 .DS_Store
 Thumbs.db
