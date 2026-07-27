@@ -1,26 +1,20 @@
 from datetime import date, datetime
-# from sqlalchemy.orm import Session
-# from pytest import Session
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from sqlalchemy.orm import Session
 from .models import Renewal
 from .repository import RenewalRepository
-
 
 class RenewalService:
 
     def __init__(self):
         self.repo = RenewalRepository()
 
+    def get_all(self, db: Session):
+        return self.repo.get_all(db)
 
-    
-    async def get_all(self, db: AsyncSession):
-        return await self.repo.get_all(db)
-
-    async def create(self, db: AsyncSession, data):
+    def create(self, db: Session, data):
         payload = data.dict() if hasattr(data, "dict") else data.model_dump()
         renewal = Renewal(**payload)
-        return await self.repo.create(db, renewal)
+        return self.repo.create(db, renewal)
 
     def _days_until(self, target_date):
         if not target_date:
@@ -29,8 +23,8 @@ class RenewalService:
             target_date = datetime.fromisoformat(target_date).date()
         return (target_date - date.today()).days
 
-    async def dashboard(self, db: AsyncSession):
-        renewals = await self.repo.get_all(db)
+    def dashboard(self, db: Session):
+        renewals = self.repo.get_all(db)
         total_contracts = len(renewals)
 
         expiring30 = 0
@@ -58,81 +52,25 @@ class RenewalService:
                 {
                     "id": renewal.id,
                     "contract_name": renewal.contract_name,
-                    "vendor": renewal.vendor,
-                    "status": renewal.status or "Upcoming",
-                    "approval_status": renewal.approval_status,
-                    "contract_value": renewal.contract_value,
-                    "confidence": renewal.confidence,
-                    "recommendation": renewal.recommendation,
-                    "expiry_date": renewal.expiry_date.isoformat() if renewal.expiry_date else None,
-                    "renewal_date": renewal.renewal_date.isoformat() if renewal.renewal_date else None,
-                    "department": renewal.department,
-                }
-            )
-
-        pipeline = [
-            {"month": "Jan", "contracts": 0},
-            {"month": "Feb", "contracts": 0},
-            {"month": "Mar", "contracts": 0},
-            {"month": "Apr", "contracts": 0},
-            {"month": "May", "contracts": 0},
-            {"month": "Jun", "contracts": 0},
-            {"month": "Jul", "contracts": 0},
-            {"month": "Aug", "contracts": 0},
-            {"month": "Sep", "contracts": 0},
-            {"month": "Oct", "contracts": 0},
-            {"month": "Nov", "contracts": 0},
-            {"month": "Dec", "contracts": 0},
-        ]
-
-        for renewal in renewals:
-            if renewal.expiry_date:
-                month_name = renewal.expiry_date.strftime("%b")
-                for entry in pipeline:
-                    if entry["month"] == month_name:
-                        entry["contracts"] += 1
-                        break
-
-        predictions = []
-        for renewal in renewals:
-            confidence = renewal.confidence or 0
-            if confidence >= 85:
-                badge = "High Confidence"
-            elif confidence >= 70:
-                badge = "Recommended"
-            else:
-                badge = "Moderate"
-            predictions.append(
-                {
-                    "id": f"CTR-{renewal.id:03d}",
-                    "title": renewal.recommendation or "Review renewal strategy",
-                    "confidence": confidence,
-                    "badge": badge,
-                }
-            )
-
-        if not predictions:
-            predictions.append(
-                {
-                    "id": "AUTO-001",
-                    "title": "Add a renewal record to start insights",
-                    "confidence": 0,
-                    "badge": "Pending",
+                    "vendor": getattr(renewal, "vendor", "N/A"),
+                    "contract_value": getattr(renewal, "contract_value", "N/A"),
+                    "expiry_date": str(getattr(renewal, "expiry_date", "N/A")),
+                    "auto_renew": getattr(renewal, "auto_renew", False),
+                    "days_left": days_left,
+                    "risk_score": getattr(renewal, "risk_score", "Low"),
+                    "status": getattr(renewal, "status", "Active"),
                 }
             )
 
         return {
-            "summary": {
-                "expiring30": expiring30,
-                "expiring60": expiring60,
-                "expiring90": expiring90,
-                "autoReminder": reminders,
-                "totalContracts": total_contracts,
+            "metrics": {
+                "total_contracts": total_contracts,
+                "expiring_30_days": expiring30,
+                "expiring_60_days": expiring60,
+                "expiring_90_days": expiring90,
+                "reminders_sent": reminders,
             },
-            "pipeline": pipeline,
-            "predictions": predictions,
             "contracts": contracts_payload,
         }
-
 
 service = RenewalService()

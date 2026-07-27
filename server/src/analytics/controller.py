@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy.orm import Session
+from sqlalchemy import select
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from src.database.core import get_db
@@ -12,7 +12,6 @@ class MetricResponse(BaseModel):
     label: str
     value: str
     trend: Optional[str] = None
-
     
     model_config = ConfigDict(from_attributes=True)
 
@@ -23,8 +22,8 @@ class MonthlyVolumeResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 @router.get("/metrics", response_model=List[MetricResponse])
-async def get_metrics(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(AnalyticsSnapshot).order_by(AnalyticsSnapshot.id.asc()))
+def get_metrics(db: Session = Depends(get_db)):
+    result = db.execute(select(AnalyticsSnapshot).order_by(AnalyticsSnapshot.id.asc()))
     items = result.scalars().all()
     return [
         MetricResponse(
@@ -36,8 +35,8 @@ async def get_metrics(db: AsyncSession = Depends(get_db)):
     ]
 
 @router.get("/monthly-volume", response_model=List[MonthlyVolumeResponse])
-async def get_monthly_volume(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(MonthlyVolume).order_by(MonthlyVolume.sort_order.asc()))
+def get_monthly_volume(db: Session = Depends(get_db)):
+    result = db.execute(select(MonthlyVolume).order_by(MonthlyVolume.sort_order.asc()))
     items = result.scalars().all()
     return [
         MonthlyVolumeResponse(

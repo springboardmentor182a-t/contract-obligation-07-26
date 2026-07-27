@@ -1,5 +1,5 @@
 import React from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 
 export default function MetricsCard({
   title,

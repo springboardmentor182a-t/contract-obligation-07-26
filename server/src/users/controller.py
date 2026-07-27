@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy.orm import Session
+from sqlalchemy import select
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
@@ -35,9 +35,9 @@ class UserResponse(BaseModel):
         orm_mode = True
 
 @router.get("", response_model=List[UserResponse])
-async def list_users(db: AsyncSession = Depends(get_db)):
-    result = db.execute(select(User).where(User.id == 1))
-    user = result.scalar_one_or_none()
+def list_users(db: Session = Depends(get_db)):
+    result = db.execute(select(User))
+    users = result.scalars().all()
     
     return [
         UserResponse(
@@ -52,11 +52,7 @@ async def list_users(db: AsyncSession = Depends(get_db)):
     ]
 
 @router.post("/invite", response_model=UserInviteResponse)
-async def invite_user(payload: UserInviteRequest, db: AsyncSession = Depends(get_db)):
-    # TODO: Connect API Endpoint here
-    # Sends an invitation link to the recipient via Email (SendGrid / Twilio Send API)
-    # INSERTS a row into "user_invitations" table
-    
+def invite_user(payload: UserInviteRequest, db: Session = Depends(get_db)):
     new_invitation = UserInvitation(
         email=payload.email,
         role=payload.role,
@@ -65,8 +61,8 @@ async def invite_user(payload: UserInviteRequest, db: AsyncSession = Depends(get
         status="Pending"
     )
     db.add(new_invitation)
-    await db.commit()
-    await db.refresh(new_invitation)
+    db.commit()
+    db.refresh(new_invitation)
     
     return UserInviteResponse(
         id=new_invitation.id,
@@ -78,8 +74,8 @@ async def invite_user(payload: UserInviteRequest, db: AsyncSession = Depends(get
     )
 
 @router.get("/invitations", response_model=List[UserInviteResponse])
-async def list_invitations(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(UserInvitation).order_by(UserInvitation.created_at.desc()))
+def list_invitations(db: Session = Depends(get_db)):
+    result = db.execute(select(UserInvitation).order_by(UserInvitation.created_at.desc()))
     invitations = result.scalars().all()
     
     return [

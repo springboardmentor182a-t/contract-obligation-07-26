@@ -109,7 +109,7 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
             <item.Icon size={16} />
             <span>{item.label}</span>
             {item.badgeKey === "notifications" ? (
-              <span className="sb-badge-red">2</span>
+              <span className="sb-badge-red">{notificationCount || 2}</span>
             ) : null}
           </NavLink>
         ))}

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy.orm import Session
+from sqlalchemy import select
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
@@ -49,19 +49,19 @@ class GatewayUpdate(BaseModel):
     renewalAlerts: bool
 
 @router.get("", response_model=SettingsResponse)
-async def get_settings(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(UserSetting).where(UserSetting.user_id == 1))
+def get_settings(db: Session = Depends(get_db)):
+    result = db.execute(select(UserSetting).where(UserSetting.user_id == 1))
     settings = result.scalars().first()
     if not settings:
         settings = UserSetting(user_id=1)
         db.add(settings)
-        await db.commit()
-        await db.refresh(settings)
+        db.commit()
+        db.refresh(settings)
     return settings
 
 @router.patch("", response_model=SettingsResponse)
-async def update_settings(payload: SettingsUpdate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(UserSetting).where(UserSetting.user_id == 1))
+def update_settings(payload: SettingsUpdate, db: Session = Depends(get_db)):
+    result = db.execute(select(UserSetting).where(UserSetting.user_id == 1))
     settings = result.scalars().first()
     if not settings:
         raise HTTPException(status_code=404, detail="Settings record not found")
@@ -84,43 +84,36 @@ async def update_settings(payload: SettingsUpdate, db: AsyncSession = Depends(ge
         settings.sso = payload.sso
 
     db.add(settings)
-    await db.commit()
-    await db.refresh(settings)
+    db.commit()
+    db.refresh(settings)
     return settings
 
-# ── POST /api/settings/notifications/gateways ──
 @router.post("/notifications/gateways")
-async def update_gateways(payload: GatewayUpdate, db: AsyncSession = Depends(get_db)):
-    # TODO: Connect API Endpoint here
-    # Integrates with SendGrid API for emailNotif, and Twilio REST APIs for smsNotif
-    result = await db.execute(select(UserSetting).where(UserSetting.user_id == 1))
+def update_gateways(payload: GatewayUpdate, db: Session = Depends(get_db)):
+    result = db.execute(select(UserSetting).where(UserSetting.user_id == 1))
     settings = result.scalars().first()
     if not settings:
         raise HTTPException(status_code=404, detail="Settings record not found")
         
     settings.email_notif = payload.emailNotif
     settings.renewal_alerts = payload.renewalAlerts
-    # Update Database setting for gateways
     db.add(settings)
-    await db.commit()
+    db.commit()
     return {"status": "success", "message": "Gateways configured successfully"}
 
-# ── POST /api/settings/security/apikeys ──
 @router.post("/security/apikeys", response_model=ApiKeyResponse)
-async def create_api_key(payload: ApiKeyCreate, db: AsyncSession = Depends(get_db)):
-    # TODO: Connect API Endpoint here
-    # Generates a hashed token and writes metadata to "api_keys" table
+def create_api_key(payload: ApiKeyCreate, db: Session = Depends(get_db)):
     import secrets
     raw_key = "ct_live_" + secrets.token_hex(16)
     
     new_key = ApiKey(
         user_id=1,
         name=payload.name,
-        key="ct_live_..." + raw_key[-4:] # Return masked key to view, but write to DB
+        key="ct_live_..." + raw_key[-4:]
     )
     db.add(new_key)
-    await db.commit()
-    await db.refresh(new_key)
+    db.commit()
+    db.refresh(new_key)
     
     return ApiKeyResponse(
         id=new_key.id,

@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from sqlalchemy.orm import Session
 from src.database.core import get_db
 from .schemas import RenewalCreate
 from .service import service
@@ -10,31 +9,27 @@ router = APIRouter(
     tags=["Renewals"]
 )
 
-
 @router.get("/")
-async def get_all(
-    db: AsyncSession = Depends(get_db)
+def get_all(
+    db: Session = Depends(get_db)
 ):
-    return await service.get_all(db)
-
+    return service.get_all(db)
 
 @router.post("/")
-async def create(
+def create(
     renewal: RenewalCreate,
-    db: AsyncSession = Depends(get_db)
+    db: Session = Depends(get_db)
 ):
-    return await service.create(db, renewal)
-
+    return service.create(db, renewal)
 
 @router.get("/raw")
-async def get_raw_renewals(
-    db: AsyncSession = Depends(get_db)
+def get_raw_renewals(
+    db: Session = Depends(get_db)
 ):
-    return await service.get_all(db)
-
+    return service.get_all(db)
 
 @router.get("/dashboard")
-async def dashboard(
-    db: AsyncSession = Depends(get_db)
+def dashboard(
+    db: Session = Depends(get_db)
 ):
-    return await service.dashboard(db)
+    return service.dashboard(db)
