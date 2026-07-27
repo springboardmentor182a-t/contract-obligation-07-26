@@ -48,25 +48,25 @@ export default function Home() {
 
         {/* Banner Right Metric Boxes */}
         <div style={styles.bannerRight} className="banner-right-layout">
-          <div style={styles.bannerBox}>
+          <div style={styles.bannerBox} className="banner-box-item">
             <Bell size={18} color="#93c5fd" />
             <div style={styles.bannerBoxVal}>2</div>
             <div style={styles.bannerBoxLabel}>Notifications</div>
           </div>
 
-          <div style={styles.bannerBox}>
+          <div style={styles.bannerBox} className="banner-box-item">
             <CheckSquare size={18} color="#fde047" />
             <div style={styles.bannerBoxVal}>5</div>
             <div style={styles.bannerBoxLabel}>Pending Actions</div>
           </div>
 
-          <div style={styles.bannerBox}>
+          <div style={styles.bannerBox} className="banner-box-item">
             <RefreshCw size={18} color="#f472b6" />
             <div style={styles.bannerBoxVal}>3</div>
             <div style={styles.bannerBoxLabel}>Renewals Due</div>
           </div>
 
-          <div style={styles.bannerBox}>
+          <div style={styles.bannerBox} className="banner-box-item">
             <ShieldCheck size={18} color="#34d399" />
             <div style={styles.bannerBoxVal}>84%</div>
             <div style={styles.bannerBoxLabel}>Compliance</div>
