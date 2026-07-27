@@ -130,39 +130,62 @@ body {
   background: #475569;
 }
 
-/* Animation Utilities */
+/* Premium Micro-Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.fade-in {
-  animation: fadeIn var(--transition-normal) forwards;
+@keyframes fadeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.fade-in, .banner-layout, .metrics-grid, .split-grid {
+  animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Hover effects */
 .hover-card {
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hover-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-lg);
 }
 
 .hover-scale {
-  transition: transform var(--transition-fast);
+  transition: transform 0.2s ease;
 }
 
 .hover-scale:hover {
-  transform: scale(1.03);
+  transform: scale(1.02);
+}
+
+.sb-badge-red {
+  animation: pulseGlow 2.5s infinite ease-in-out;
 }
 
 /* Common components classes */
