@@ -15,10 +15,7 @@ const AuthSidebar = ({ isOpen, closeSidebar }) => (
         <LogIn size={20} />
         <span>Login</span>
       </NavLink>
-      <NavLink to="/register" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={closeSidebar}>
-        <UserPlus size={20} />
-        <span>Register</span>
-      </NavLink>
+
       <NavLink to="/forgot-password" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={closeSidebar}>
         <KeyRound size={20} />
         <span>Forgot Password</span>

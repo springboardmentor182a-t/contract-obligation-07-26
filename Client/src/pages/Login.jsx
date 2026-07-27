@@ -93,7 +93,7 @@ const Login = () => {
 
           <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
             <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>
-              Don't have an account? <Link to="/register" style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none' }}>Request Access</Link>
+              Please contact your administrator to request an account.
             </p>
           </div>
           
