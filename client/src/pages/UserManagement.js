@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+import AddUser from "./AddUser";
 import {
   getUsers,
   deleteUser,
@@ -18,7 +17,6 @@ import UserSearchBar from "../components/UserSearchBar/UserSearchBar";
 import "../styles/userManagement.css";
 
 function UserManagement() {
-  const navigate = useNavigate();
 
   const [users, setUsers] = useState([]);
 
@@ -36,6 +34,7 @@ function UserManagement() {
 });
 
   const [selectedUser, setSelectedUser] = useState(null);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
 
   const fetchUsers = async () => {
   try {
@@ -238,7 +237,7 @@ switch (appliedFilters.sortBy) {
 
               <button
                 className="new-user-btn"
-                onClick={() => navigate("/add-user")}
+                onClick={() => setShowAddUserModal(true)}
               >
                 + Add User
               </button>
@@ -288,9 +287,16 @@ switch (appliedFilters.sortBy) {
             <UserActivity users={users} />
           </div>
         </div>
+        {showAddUserModal && (
+          <AddUser
+            onClose={() => setShowAddUserModal(false)}
+            onUserAdded={fetchUsers}
+          />
+        )}
       </div>
     </div>
   );
 }
+
 
 export default UserManagement;
