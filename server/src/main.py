@@ -22,6 +22,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+<<<<<<< HEAD
 app.include_router(users_router, prefix="/users", tags=["Users"])
 app.include_router(contracts_router)
 
@@ -45,6 +46,20 @@ def create_contract(contract: ContractCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_contract)
     return db_contract
+=======
+app.include_router(
+    users_router,
+    prefix="/api/v1",
+    tags=["Users"]
+)
+app.include_router(
+    contracts_router,
+    prefix="/api/v1",
+    tags=["Contracts"]
+)
+
+
+>>>>>>> 62bf7858f9a3264555a383f4eaa304140997c303
 
 @app.get("/api/v1/dashboard")
 def get_dashboard_data(db: Session = Depends(get_db)):
@@ -63,9 +78,30 @@ def get_dashboard_data(db: Session = Depends(get_db)):
         ],
         "deadlines": [{"title": d.title, "date": d.date} for d in deadlines],
         "contracts": [{
+<<<<<<< HEAD
             "id": c.id, "name": c.name, "party": c.party, "company": c.party,
             "contract": c.name, "category": "General", "owner": "System",
             "status": c.status, "startDate": c.start_date, "endDate": c.end_date, "value": c.value
+=======
+            "id": c.id,
+            "name": c.contract,
+            "party": c.company,
+
+            # Existing keys (for frontend compatibility)
+            "name": c.contract,
+            "party": c.company,
+
+            # Additional keys
+            "company": c.company,
+            "contract": c.contract,
+            "category": c.category,
+            "owner": c.owner,
+
+            "status": c.status,
+            "startDate": c.start_date,
+            "endDate": c.end_date,
+            "value": c.value
+>>>>>>> 62bf7858f9a3264555a383f4eaa304140997c303
         } for c in contracts],
         "activities": [{"description": a.description, "time": a.time} for a in activities]
     }
@@ -132,6 +168,7 @@ def delete_compliance_item(item_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Compliance item deleted successfully"}
 
+<<<<<<< HEAD
 @app.delete("/api/v1/contracts/{contract_id}")
 def delete_contract(contract_id: int, db: Session = Depends(get_db)):
     contract = db.query(Contract).filter(Contract.id == contract_id).first()
@@ -139,6 +176,9 @@ def delete_contract(contract_id: int, db: Session = Depends(get_db)):
     db.delete(contract)
     db.commit()
     return {"message": "Contract deleted successfully"}
+=======
+
+>>>>>>> 62bf7858f9a3264555a383f4eaa304140997c303
 
 class ReportCreate(BaseModel):
     name: str

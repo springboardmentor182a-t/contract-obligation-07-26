@@ -1,13 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import Sidebar from "../components/Sidebar/Sidebar";
-import Header from "../components/Header/Header";
+import "../styles/addUser.css";
 import { createUser } from "../services/userServices";
 
-function AddUser() {
-  const navigate = useNavigate();
-
+function AddUser({ onClose, onUserAdded }) {
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -24,89 +19,106 @@ function AddUser() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    await createUser(user);
+    try {
+      await createUser(user);
 
-    alert("User added successfully!");
+      alert("User added successfully!");
 
-    navigate("/users");
-  } catch (error) {
-    console.error(error);
-    alert("Failed to add user.");
-  }
-};
+      onUserAdded(); // Refresh user table
+
+      onClose(); // Close modal
+    } catch (error) {
+      console.error(error);
+      alert("Failed to add user.");
+    }
+  };
 
   return (
-    <div className="user-management">
-      <Sidebar />
-
-      <div className="main-content">
-        <Header />
-
-        <div style={{ padding: "30px" }}>
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="add-user-card">
           <h1>Add User</h1>
+          <p>Create a new user account.</p>
 
           <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              name="name"
-              placeholder="Name"
-              value={user.name}
-              onChange={handleChange}
-              required
-            />
+            <div className="form-group">
+              <label>Name</label>
+              <input
+                type="text"
+                name="name"
+                value={user.name}
+                onChange={handleChange}
+                placeholder="Enter full name"
+                required
+              />
+            </div>
 
-            <br /><br />
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                name="email"
+                value={user.email}
+                onChange={handleChange}
+                placeholder="Enter email"
+                required
+              />
+            </div>
 
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={user.email}
-              onChange={handleChange}
-              required
-            />
+            <div className="form-group">
+              <label>Role</label>
+              <input
+                type="text"
+                name="role"
+                value={user.role}
+                onChange={handleChange}
+                placeholder="Enter role"
+                required
+              />
+            </div>
 
-            <br /><br />
+            <div className="form-group">
+              <label>Department</label>
+              <input
+                type="text"
+                name="department"
+                value={user.department}
+                onChange={handleChange}
+                placeholder="Enter department"
+                required
+              />
+            </div>
 
-            <input
-              type="text"
-              name="role"
-              placeholder="Role"
-              value={user.role}
-              onChange={handleChange}
-              required
-            />
+            <div className="form-group">
+              <label>Status</label>
+              <select
+                name="status"
+                value={user.status}
+                onChange={handleChange}
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
 
-            <br /><br />
+            <div className="button-group">
+              <button
+                type="button"
+                className="cancel-btn"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
 
-            <input
-              type="text"
-              name="department"
-              placeholder="Department"
-              value={user.department}
-              onChange={handleChange}
-              required
-            />
-
-            <br /><br />
-
-            <select
-              name="status"
-              value={user.status}
-              onChange={handleChange}
-            >
-              <option>Active</option>
-              <option>Inactive</option>
-            </select>
-
-            <br /><br />
-
-            <button type="submit">
-              Save User
-            </button>
+              <button
+                type="submit"
+                className="save-btn"
+              >
+                Save User
+              </button>
+            </div>
           </form>
         </div>
       </div>
