@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.api import api_router
 from src.logging import configure_logging
 from src.rate_limiter import init_rate_limiter
-
+from src.contract_repository.controller import router as contract_repository_router
 configure_logging()
 
 app = FastAPI(title="ContractIQ")
@@ -28,7 +28,10 @@ app.add_middleware(
 )
 
 app.include_router(api_router)
-
+app.include_router(
+    contract_repository_router,
+    prefix="/api",
+)
 
 @app.get("/")
 def root():

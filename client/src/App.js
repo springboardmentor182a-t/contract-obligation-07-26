@@ -2,8 +2,9 @@ import "./assets/global.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UIProvider } from "./context/UIContext";
 import PageContainer from "./layout/PageContainer";
-import Obligations from "./pages/Obligations";
 
+import ContractRepository from "./pages/ContractRepository";
+import Obligations from "./pages/Obligations";
 // Auth pages
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -38,6 +39,7 @@ function AppShell() {
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/quick-actions" element={<QuickActions />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/contract-repository" element={<ContractRepository />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/help" element={<Help />} />
         <Route path="/calendar" element={<Calendar />} />

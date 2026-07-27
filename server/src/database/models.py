@@ -1,3 +1,4 @@
+from src.contract_repository.models import Contract
 from sqlalchemy import (
     Boolean,
     Column,
@@ -104,10 +105,11 @@ class Notification(Base):
 
     user_id = Column(
         Integer,
-        ForeignKey(
-            "public.users.id",
-            ondelete="CASCADE",
-        ),
+        # ForeignKey(
+        #     "public.users.id",
+        #     ondelete="CASCADE",
+        # ),
+        ForeignKey("public.users.id", ondelete="CASCADE"),
         nullable=False,
     )
 
@@ -128,15 +130,6 @@ class Notification(Base):
     )
 
 
-class ContractModel(Base):
-    __tablename__ = "contracts"
-    __table_args__ = {"schema": "public"}
-
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
-    description = Column(String, nullable=True)
-    contract_type = Column(String, nullable=True)
-    status = Column(String, nullable=True)
 class ObligationModel(Base):
     __tablename__ = "obligations"
     __table_args__ = {"schema": "public"}
@@ -156,10 +149,7 @@ class ObligationModel(Base):
 
     contract_id = Column(
         Integer,
-        ForeignKey(
-            "public.contracts.id",
-            ondelete="CASCADE",
-        ),
+        ForeignKey("public.contracts.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -208,7 +198,7 @@ class ObligationModel(Base):
     )
 
     contract = relationship(
-        "ContractModel",
+        "Contract",
         backref="obligations",
     )
 
