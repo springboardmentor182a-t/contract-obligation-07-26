@@ -15,6 +15,7 @@ import {
   GearIcon,
   ChevDownIcon,
   CalendarIcon,
+  ChevLeftIcon
 } from "../components/Icons";
 
 const MENU = [
@@ -63,32 +64,35 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
   return (
     <aside className={"sidebar" + (mobileOpen ? " mobile-open" : "")} aria-label="Main navigation">
       {/* Brand Header */}
-      <div className="sb-brand" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1.25rem 1.25rem 0.75rem 1.25rem" }}>
-        <div className="mark" style={{ width: "36px", height: "36px", borderRadius: "10px", backgroundColor: "#10B981", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="sb-brand">
+        <div className="mark">
           <ShieldIcon size={18} color="#fff" />
         </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <h1 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#FFFFFF", lineHeight: 1.2 }}>ContractIQ</h1>
-          <span style={{ fontSize: "0.68rem", color: "#64748B", fontWeight: "500" }}>AI-Powered Platform</span>
+        <div className="sb-brand-text">
+          <h1>ContractIQ</h1>
+          <span>AI-Powered Platform</span>
         </div>
+        <button type="button" className="sb-collapse-btn" title="Collapse Sidebar">
+          <ChevLeftIcon size={16} color="#64748B" />
+        </button>
       </div>
 
       {/* Org Selector Box */}
-      <div style={{ margin: "0.85rem 1rem", padding: "0.65rem 0.85rem", backgroundColor: "#111B2A", border: "1px solid #1E293B", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }} onClick={() => setOrgOpen(!orgOpen)}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
-          <div style={{ width: "28px", height: "28px", borderRadius: "50%", backgroundColor: "#2563EB", color: "#FFFFFF", fontWeight: "700", fontSize: "0.78rem", display: "flex", alignItems: "center", justifyContent: "center" }}>A</div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: "0.82rem", fontWeight: "700", color: "#FFFFFF", lineHeight: 1.2 }}>Acme Corp</span>
-            <span style={{ fontSize: "0.68rem", color: "#64748B" }}>Enterprise Plan</span>
+      <div className="sb-org" onClick={() => setOrgOpen(!orgOpen)}>
+        <div className="sb-org-left">
+          <div className="sb-org-avatar">A</div>
+          <div className="sb-org-meta">
+            <strong>Acme Corp</strong>
+            <span>Enterprise Plan</span>
           </div>
         </div>
         <ChevDownIcon size={14} color="#64748B" />
       </div>
 
-      <div className="sb-divider" style={{ margin: "0.5rem 1rem", height: "1px", backgroundColor: "#1E293B" }} />
+      <div className="sb-divider" />
 
       {/* Main Menu Label */}
-      <div className="sb-menu-label" style={{ padding: "0.5rem 1.25rem 0.25rem 1.25rem", fontSize: "0.65rem", fontWeight: "700", letterSpacing: "0.1em", color: "#475569" }}>MAIN MENU</div>
+      <div className="sb-menu-label">MAIN MENU</div>
 
       {/* Navigation Links */}
       <div className="sb-nav">
@@ -102,17 +106,17 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
               "sb-item" + (isActive && item.implemented ? " active" : "")
             }
           >
-            <item.Icon size={15} />
+            <item.Icon size={16} />
             <span>{item.label}</span>
             {item.badgeKey === "notifications" ? (
-              <span className="sb-badge" style={{ backgroundColor: "#EF4444", color: "#FFFFFF", fontSize: "0.68rem", fontWeight: "700", borderRadius: "50%", width: "18px", height: "18px", display: "flex", alignItems: "center", justifyContent: "center", marginLeft: "auto" }}>2</span>
+              <span className="sb-badge-red">2</span>
             ) : null}
           </NavLink>
         ))}
       </div>
 
       {/* Sidebar Footer Widgets */}
-      <div style={{ marginTop: "auto", padding: "1rem" }}>
+      <div className="sb-footer">
         {/* System Operational widget */}
         <div className="sb-status">
           <button
@@ -151,12 +155,12 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
         </div>
 
         {/* AI Assistant Widget */}
-        <div style={{ marginTop: "0.65rem", padding: "0.6rem 0.85rem", backgroundColor: "#111B2A", border: "1px solid #1E293B", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#8B5CF6", boxShadow: "0 0 6px #8B5CF6" }} />
-            <span style={{ fontSize: "0.78rem", fontWeight: "600", color: "#C084FC" }}>AI Assistant</span>
+        <div className="sb-ai-widget">
+          <div className="sb-ai-left">
+            <span className="sb-ai-dot-ping" />
+            <span className="sb-ai-title">AI Assistant</span>
           </div>
-          <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#8B5CF6" }} />
+          <span className="sb-ai-dot-solid" />
         </div>
       </div>
     </aside>
