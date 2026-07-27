@@ -31,7 +31,7 @@ export default function Home() {
 
         {/* Banner Left Info */}
         <div style={styles.bannerLeft}>
-          <span style={styles.greeting}>Good morning 👋</span>
+          <span style={styles.greeting}>Good evening 👋</span>
           <h1 style={styles.welcomeText}>Welcome back, Arjun.</h1>
           <p style={styles.bannerSub}>
             You have <strong style={{ color: "#fff" }}>2 unread notifications</strong>, <strong style={{ color: "#fff" }}>5 pending actions</strong>, and <strong style={{ color: "#fff" }}>3 upcoming renewals</strong> this week.
