@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import HeroShield from '../components/HeroShield';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -8,6 +9,7 @@ const Login = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -26,7 +28,7 @@ const Login = () => {
       }
 
       const data = await response.json();
-      localStorage.setItem('token', data.access_token);
+      login(data.access_token);
       navigate('/dashboard'); // Redirect to dashboard on success
     } catch (err) {
       setError(err.message);
@@ -84,7 +86,7 @@ const Login = () => {
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-600">
-            Don't have an enterprise account? <Link to="/signup" className="text-[#1E3A8A] font-semibold hover:underline">Request Access</Link>
+            Don't have an account? <Link to="/signup" className="text-[#1E3A8A] font-semibold hover:underline">Sign up</Link>
           </div>
         </div>
       </div>
