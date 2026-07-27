@@ -1,13 +1,21 @@
-import React from 'react';
+import React from "react";
 
-const FormInput = ({ label, type, value, onChange, placeholder, required }) => {
+const FormInput = ({
+  label,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+  required,
+}) => {
   return (
     <div className="form-group">
       {label && <label>{label}</label>}
+
       <input
-        type={type || 'text'}
+        type={type}
         value={value}
-        onChange={onChange}
+        onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
         className="form-control"

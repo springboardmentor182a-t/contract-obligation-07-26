@@ -14,3 +14,11 @@ export const CONTRACT_STATUS = {
   EXPIRED: 'Expired',
   TERMINATED: 'Terminated'
 };
+
+export const OBLIGATION_TYPE_OPTIONS = [
+  { value: "Payment", label: "Payment" },
+  { value: "Renewal", label: "Renewal" },
+  { value: "Compliance", label: "Compliance" },
+  { value: "Reporting", label: "Reporting" },
+  { value: "Other", label: "Other" },
+];
