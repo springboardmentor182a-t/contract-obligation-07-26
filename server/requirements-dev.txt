@@ -7,3 +7,4 @@ pytest-cov
 httpx
 black
 flake8
+flake8

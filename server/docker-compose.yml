@@ -9,3 +9,4 @@ services:
       - .:/app
     environment:
       - ENVIRONMENT=development
+      - ENVIRONMENT=development

@@ -13,4 +13,8 @@ class TodoResponse(TodoBase):
     id: int
 
     class Config:
+<<<<<<< HEAD
         from_attributes = True
+=======
+        from_attributes = True
+>>>>>>> origin/main-group-D

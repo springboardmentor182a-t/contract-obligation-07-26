@@ -13,4 +13,8 @@ const Signup = () => {
   );
 };
 
+<<<<<<< HEAD
 export default Signup;
+=======
+export default Signup;
+>>>>>>> origin/main-group-D

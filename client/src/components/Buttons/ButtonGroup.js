@@ -8,4 +8,8 @@ const ButtonGroup = ({ children }) => {
   );
 };
 
+<<<<<<< HEAD
 export default ButtonGroup;
+=======
+export default ButtonGroup;
+>>>>>>> origin/main-group-D

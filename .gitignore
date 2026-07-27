@@ -19,10 +19,26 @@ dist/
 build/
 coverage/
 package-lock.json
-environment.ts 
-environment.prod.ts
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Environment
 .env
+environment.ts
+environment.prod.ts
+
+# Editors
+.vscode/
+.idea/
+
+# Logs
 logs/
 *.log
+
+# OS files
 .DS_Store
+Thumbs.db
 Thumbs.db

@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Settings from './pages/Settings';
 import AddUser from "./pages/AddUser";
+import Obligations from "./pages/Obligations";
 
 import ContractRepository from './pages/ContractRepository/ContractRepository';
 import ContractDetails from './pages/ContractDetails/ContractDetails';
@@ -27,6 +28,7 @@ function App() {
           <Route path="/dashboard" element={<Home />} />
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/obligations" element={<Obligations />} />
           <Route path="/contracts" element={<ContractRepository />} />
           <Route path="/contracts/:contractId" element={<ContractDetails />} />
           <Route path="/contracts/add" element={<AddContract />} />
@@ -34,6 +36,7 @@ function App() {
           <Route path="/add-user" element={<AddUser />} />
           <Route path="/compliance" element={<Compliance />} />
            
+
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/settings" element={<Settings />} />

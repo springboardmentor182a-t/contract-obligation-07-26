@@ -80,3 +80,4 @@ def delete_management_user(user_id: int):
         )
 
     return {"message": "User deleted successfully"}
+    return {"message": "User deleted successfully"}

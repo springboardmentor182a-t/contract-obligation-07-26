@@ -111,3 +111,4 @@ def delete_user_db(user_id: int):
 
     finally:
         db.close()
+        db.close()

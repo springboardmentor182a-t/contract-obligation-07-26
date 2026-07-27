@@ -4,7 +4,6 @@ import { Link, useLocation } from 'react-router-dom';
 const Sidebar = () => {
   const location = useLocation();
 
-  // Dynamically grab user info from local storage
   const storedUser = JSON.parse(localStorage.getItem('user'));
   const displayName = storedUser?.name || 'Guest User';
   const displayRole = storedUser?.role || 'Member';
@@ -56,6 +55,10 @@ const Sidebar = () => {
           </li>
 
          
+
+          <li className={location.pathname === '/calendar' ? 'active' : ''}>
+            <Link to="/calendar" style={linkStyle}>Calendar</Link>
+          </li>
 
           <li className={location.pathname === '/documents' ? 'active' : ''}>
             <Link to="/documents" style={linkStyle}>

@@ -12,3 +12,4 @@ def rate_limit(request: Request):
             raise HTTPException(status_code=429, detail="Too many requests")
     
     requests[client_ip] = current_time
+    requests[client_ip] = current_time

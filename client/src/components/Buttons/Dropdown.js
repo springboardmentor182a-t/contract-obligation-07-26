@@ -12,4 +12,8 @@ const Dropdown = ({ options, onSelect }) => {
   );
 };
 
+<<<<<<< HEAD
 export default Dropdown;
+=======
+export default Dropdown;
+>>>>>>> origin/main-group-D

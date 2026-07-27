@@ -50,3 +50,4 @@ class UserManagementResponse(UserManagementBase):
 
     class Config:
         from_attributes = True
+        from_attributes = True
