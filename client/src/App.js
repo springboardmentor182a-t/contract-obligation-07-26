@@ -1,9 +1,4 @@
 import React from "react";
-import Sidebar from "./layout/Sidebar";
-import Navbar from "./layout/Navbar";
-import PageContainer from "./layout/PageContainer";
-import Home from "./pages/Home";
-import "./assets/global.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UIProvider } from "./context/UIContext";
 import PageContainer from "./layout/PageContainer";
@@ -15,7 +10,6 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
 // Dashboard pages
-import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
@@ -33,15 +27,8 @@ function App() {
     <BrowserRouter>
       <UIProvider>
         <Routes>
-          {/* Default and Auth routes */}
-          <Route
-            path="/"
-            element={
-              <PageContainer>
-                <Home />
-              </PageContainer>
-            }
-          />
+          {/* Auth routes */}
+          <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -52,7 +39,7 @@ function App() {
             path="/dashboard"
             element={
               <PageContainer>
-                <Home />
+                <RenewalDashboard />
               </PageContainer>
             }
           />
@@ -135,3 +122,4 @@ function App() {
 }
 
 export default App;
+

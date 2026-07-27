@@ -22,8 +22,6 @@ import {
 } from "lucide-react";
 
 export default function Home() {
-  const userName = localStorage.getItem("name") || sessionStorage.getItem("name") || "User";
-
   return (
     <div style={styles.container}>
 
@@ -34,7 +32,7 @@ export default function Home() {
         {/* Banner Left Info */}
         <div style={styles.bannerLeft}>
           <span style={styles.greeting}>Good morning 👋</span>
-          <h1 style={styles.welcomeText}>Welcome back, {userName}.</h1>
+          <h1 style={styles.welcomeText}>Welcome back, Arjun.</h1>
           <p style={styles.bannerSub}>
             You have <strong style={{ color: "#fff" }}>2 unread notifications</strong>, <strong style={{ color: "#fff" }}>5 pending actions</strong>, and <strong style={{ color: "#fff" }}>3 upcoming renewals</strong> this week.
           </p>
@@ -176,133 +174,133 @@ export default function Home() {
 
     </div>
   );
-// Not currently routed (Dashboard.js serves "/" — see App.js). Kept in sync
-// with Dashboard's content so it's ready if this project ever wants a
-// separate marketing/landing "Home" distinct from the authenticated
-// Dashboard.
-import Dashboard from "./Dashboard";
+  // Not currently routed (Dashboard.js serves "/" — see App.js). Kept in sync
+  // with Dashboard's content so it's ready if this project ever wants a
+  // separate marketing/landing "Home" distinct from the authenticated
+  // Dashboard.
+  import Dashboard from "./Dashboard";
 
-export default function Home() {
-  return <Dashboard />;
-}
+  export default function Home() {
+    return <Dashboard />;
+  }
 
-const styles = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1.5rem",
-    width: "100%",
-  },
-  banner: {
-    background: "linear-gradient(135deg, #090e1a 0%, #171d34 100%)",
-    borderRadius: "var(--radius-lg)",
-    padding: "2rem",
-    color: "#ffffff",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    position: "relative",
-    overflow: "hidden",
-    boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-    flexWrap: "wrap",
-    gap: "2rem",
-  },
-  bannerGridPattern: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.08,
-    backgroundImage: `radial-gradient(circle, #ffffff 1px, transparent 1px)`,
-    backgroundSize: "20px 20px",
-    pointerEvents: "none",
-  },
-  bannerLeft: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.5rem",
-    zIndex: 1,
-    maxWidth: "550px",
-    textAlign: "left",
-  },
-  greeting: {
-    fontSize: "0.85rem",
-    fontWeight: "600",
-    color: "#34d399",
-    letterSpacing: "0.3px",
-  },
-  welcomeText: {
-    fontSize: "1.75rem",
-    fontWeight: "700",
-    lineHeight: "1.2",
-  },
-  bannerSub: {
-    fontSize: "0.85rem",
-    color: "#94a3b8",
-    lineHeight: "1.5",
-  },
-  badgeRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    marginTop: "0.5rem",
-  },
-  aiBadge: {
-    display: "flex",
-    alignItems: "center",
-    background: "linear-gradient(90deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%)",
-    border: "1px solid rgba(139, 92, 246, 0.3)",
-    borderRadius: "var(--radius-full)",
-    padding: "3px 10px",
-    fontSize: "0.65rem",
-    fontWeight: "700",
-    color: "#d8b4fe",
-    letterSpacing: "0.5px",
-  },
-  updatedText: {
-    fontSize: "0.75rem",
-    color: "#64748b",
-  },
-  bannerRight: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "12px",
-    zIndex: 1,
-    minWidth: "400px",
-    width: "45%",
-  },
-  bannerBox: {
-    backgroundColor: "rgba(255, 255, 255, 0.03)",
-    border: "1px solid rgba(255, 255, 255, 0.05)",
-    borderRadius: "12px",
-    padding: "1rem 0.75rem",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "6px",
-    transition: "background-color 0.2s",
-  },
-  bannerBoxVal: {
-    fontSize: "1.5rem",
-    fontWeight: "700",
-  },
-  bannerBoxLabel: {
-    fontSize: "0.65rem",
-    color: "#64748b",
-    textTransform: "uppercase",
-    fontWeight: "600",
-    letterSpacing: "0.3px",
-  },
-  rightStack: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1.5rem",
-    height: "100%",
-  },
-  widgetWrapper: {
-    width: "100%",
-    height: "100%",
-  },
-};
+  const styles = {
+    container: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "1.5rem",
+      width: "100%",
+    },
+    banner: {
+      background: "linear-gradient(135deg, #090e1a 0%, #171d34 100%)",
+      borderRadius: "var(--radius-lg)",
+      padding: "2rem",
+      color: "#ffffff",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      position: "relative",
+      overflow: "hidden",
+      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+      flexWrap: "wrap",
+      gap: "2rem",
+    },
+    bannerGridPattern: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      opacity: 0.08,
+      backgroundImage: `radial-gradient(circle, #ffffff 1px, transparent 1px)`,
+      backgroundSize: "20px 20px",
+      pointerEvents: "none",
+    },
+    bannerLeft: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "0.5rem",
+      zIndex: 1,
+      maxWidth: "550px",
+      textAlign: "left",
+    },
+    greeting: {
+      fontSize: "0.85rem",
+      fontWeight: "600",
+      color: "#34d399",
+      letterSpacing: "0.3px",
+    },
+    welcomeText: {
+      fontSize: "1.75rem",
+      fontWeight: "700",
+      lineHeight: "1.2",
+    },
+    bannerSub: {
+      fontSize: "0.85rem",
+      color: "#94a3b8",
+      lineHeight: "1.5",
+    },
+    badgeRow: {
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+      marginTop: "0.5rem",
+    },
+    aiBadge: {
+      display: "flex",
+      alignItems: "center",
+      background: "linear-gradient(90deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%)",
+      border: "1px solid rgba(139, 92, 246, 0.3)",
+      borderRadius: "var(--radius-full)",
+      padding: "3px 10px",
+      fontSize: "0.65rem",
+      fontWeight: "700",
+      color: "#d8b4fe",
+      letterSpacing: "0.5px",
+    },
+    updatedText: {
+      fontSize: "0.75rem",
+      color: "#64748b",
+    },
+    bannerRight: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4, 1fr)",
+      gap: "12px",
+      zIndex: 1,
+      minWidth: "400px",
+      width: "45%",
+    },
+    bannerBox: {
+      backgroundColor: "rgba(255, 255, 255, 0.03)",
+      border: "1px solid rgba(255, 255, 255, 0.05)",
+      borderRadius: "12px",
+      padding: "1rem 0.75rem",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "6px",
+      transition: "background-color 0.2s",
+    },
+    bannerBoxVal: {
+      fontSize: "1.5rem",
+      fontWeight: "700",
+    },
+    bannerBoxLabel: {
+      fontSize: "0.65rem",
+      color: "#64748b",
+      textTransform: "uppercase",
+      fontWeight: "600",
+      letterSpacing: "0.3px",
+    },
+    rightStack: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "1.5rem",
+      height: "100%",
+    },
+    widgetWrapper: {
+      width: "100%",
+      height: "100%",
+    },
+  };

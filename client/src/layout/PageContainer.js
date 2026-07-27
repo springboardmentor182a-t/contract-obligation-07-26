@@ -1,7 +1,3 @@
-import React from "react";
-
-export default function PageContainer({ children }) {
-  return <main className="page-container fade-in">{children}</main>;
 import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
