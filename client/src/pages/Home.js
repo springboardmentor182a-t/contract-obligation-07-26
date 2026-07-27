@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 
 export default function Home() {
+  const userName = localStorage.getItem("name") || sessionStorage.getItem("name") || "User";
+
   return (
     <div style={styles.container}>
 
@@ -32,7 +34,7 @@ export default function Home() {
         {/* Banner Left Info */}
         <div style={styles.bannerLeft}>
           <span style={styles.greeting}>Good morning 👋</span>
-          <h1 style={styles.welcomeText}>Welcome back, Arjun.</h1>
+          <h1 style={styles.welcomeText}>Welcome back, {userName}.</h1>
           <p style={styles.bannerSub}>
             You have <strong style={{ color: "#fff" }}>2 unread notifications</strong>, <strong style={{ color: "#fff" }}>5 pending actions</strong>, and <strong style={{ color: "#fff" }}>3 upcoming renewals</strong> this week.
           </p>

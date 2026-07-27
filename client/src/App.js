@@ -33,8 +33,15 @@ function App() {
     <BrowserRouter>
       <UIProvider>
         <Routes>
-          {/* Auth routes */}
-          <Route path="/" element={<Login />} />
+          {/* Default and Auth routes */}
+          <Route
+            path="/"
+            element={
+              <PageContainer>
+                <Home />
+              </PageContainer>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
