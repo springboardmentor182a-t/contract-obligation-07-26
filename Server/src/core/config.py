@@ -1,12 +1,11 @@
-from typing import List
-from pathlib import Path
-from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
 
 
 class Setting(BaseSettings):
+    DATABASE_URL: str
+    SECRET_KEY: str
 
     API_PREFIX: str = "/api"
     DEBUG: bool = False
@@ -20,11 +19,12 @@ class Setting(BaseSettings):
     ALGORITHM: str = ""
     ACCESS_TOKEN_EXPIRE_MINUTES: int = ""
 
+
     # Send Mail
     EMAIL_BACKEND: str = ""
     EMAIL_HOST: str = ""
-    EMAIL_USE_TLS: bool = True
     EMAIL_PORT: int = 587
+    EMAIL_USE_TLS: bool = True
     EMAIL_HOST_USER: str = ""
     EMAIL_HOST_PASSWORD: str = ""
 
@@ -33,18 +33,14 @@ class Setting(BaseSettings):
     VECTOR_DB: str = "./vector_db/contracts.index"
     CHUNKS_FILE: str = "./vector_db/chunks.pkl"
 
-    @field_validator("ALLOWED_ORIGINS", mode="before")
-    @classmethod
-    def parse_allowed_origins(cls, v):
-        if isinstance(v, str):
-            return [i.strip() for i in v.split(",")]
-        return v
+    # Chatbot
+    MODEL_PATH: str = "Qwen/Qwen2.5-1.5B-Instruct"
+    VECTOR_DB: str = "./vector_db/contracts.index"
+    CHUNKS_FILE: str = "./vector_db/chunks.pkl"
 
     model_config = SettingsConfigDict(
-        env_file=ENV_FILE,
-        env_file_encoding="utf-8",
-        case_sensitive=True,
+        env_file=".env",
+        extra="ignore"
     )
-
 
 settings = Setting()

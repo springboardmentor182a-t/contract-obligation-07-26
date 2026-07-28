@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 
-from entities.user import User
+from src.entities.user import User
 
 
 class NotificaionCreate(BaseModel):

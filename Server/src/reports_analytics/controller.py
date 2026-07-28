@@ -5,19 +5,19 @@ from sqlalchemy.sql import func
 import os
 from fastapi.responses import FileResponse
 
-from database.core import get_db
-from reports_analytics.service import ReportService
-from users.service import admin_required
-from entities.user import User
-from entities.report import Report
-from entities.contract import Contract
-from entities.renewal import Renewal
-from entities.audit_logs import AuditLog
-from entities.obligation import Obligation
-from entities.compliance import Compliance
-from reports_analytics.generate_pdf import create_pdf
-from reports_analytics.generate_csv import create_csv
-from reports_analytics.models import ReportRequest, ReportResponse
+from src.database.core import get_db
+from src.reports_analytics.service import ReportService
+from src.users.service import admin_required
+from src.entities.user import User
+from src.entities.report import Report
+from src.entities.contract import Contract
+from src.entities.renewal import Renewal
+from src.entities.audit_logs import AuditLog
+from src.entities.obligation import Obligation
+from src.entities.compliance import Compliance
+from src.reports_analytics.generate_pdf import create_pdf
+from src.reports_analytics.generate_csv import create_csv
+from src.reports_analytics.models import ReportRequest, ReportResponse
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
 

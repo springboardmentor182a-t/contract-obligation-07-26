@@ -2,13 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 
-from database.core import get_db
-from entities.notification import Notification
-from entities.user import User
-from users.service import admin_required
-from auth.service import verify_token
-from notifications.models import NotificationResponse, NotificaionCreate
-from notifications.service import create_notification
+from src.database.core import get_db
+from src.entities.notification import Notification
+from src.entities.user import User
+from src.users.service import admin_required
+from src.auth.service import verify_token
+from src.notifications.models import NotificationResponse, NotificaionCreate
+from src.notifications.service import create_notification
 
 router = APIRouter(
     prefix="/notification",

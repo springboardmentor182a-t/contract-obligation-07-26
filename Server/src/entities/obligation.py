@@ -10,7 +10,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
 
-from database.core import Base
+from src.database.core import Base
 
 
 class Obligation(Base):
