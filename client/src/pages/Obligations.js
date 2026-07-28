@@ -164,7 +164,24 @@ export default function Obligations() {
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h3 style={{ margin: 0 }}>All Obligations</h3>
-          <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
+          <button
+            onClick={() => setShowAddModal(true)}
+            style={{
+              background: "#6D28D9",
+              color: "#fff",
+              border: "none",
+              borderRadius: "10px",
+              padding: "10px 20px",
+              fontWeight: "600",
+              fontSize: "14px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              transition: "0.3s",
+              boxShadow: "0 6px 15px rgba(109,40,217,0.25)"
+            }}
+          >
             + Add Obligation
           </button>
         </div>
@@ -218,9 +235,21 @@ export default function Obligations() {
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
-          <button className="btn btn-outline" onClick={clearFilters}>
-            Clear
-          </button>
+          <button
+              onClick={clearFilters}
+              style={{
+                background: "#F3F4F6",
+                color: "#374151",
+                border: "1px solid #D1D5DB",
+                borderRadius: "10px",
+                padding: "10px 18px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "0.3s"
+              }}
+            >
+              Clear Filters
+            </button>
         </div>
 
         {loading ? (
@@ -249,7 +278,7 @@ export default function Obligations() {
         )}
       </div>
 
-      <Modal open={showAddModal} onClose={() => setShowAddModal(false)} title="Add Obligation">
+      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add Obligation">
         <ObligationForm
           contracts={contracts}
           onCancel={() => setShowAddModal(false)}

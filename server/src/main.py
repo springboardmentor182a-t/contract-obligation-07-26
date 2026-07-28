@@ -5,6 +5,7 @@ from src.database.core import get_db
 from src.database.models import Contract, Activity, Deadline, ComplianceItem, ReportHistory, Document, AppNotification, User
 from src.users.controller import router as users_router
 from src.contracts.controller import router as contracts_router
+from src.calendar.controller import router as calendar_router
 
 from pydantic import BaseModel
 from datetime import date, datetime, timedelta 
@@ -57,7 +58,11 @@ app.include_router(
     prefix="/api/v1",
     tags=["Contracts"]
 )
-
+app.include_router(
+    calendar_router,
+    prefix="/api/v1",
+    tags=["Calendar"]
+)
 
 >>>>>>> 62bf7858f9a3264555a383f4eaa304140997c303
 
