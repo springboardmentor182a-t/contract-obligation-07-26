@@ -20,8 +20,11 @@ import {
   RefreshCw,
   Sparkles
 } from "lucide-react";
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export default function Home() {
+  
+
  const [dashboard, setDashboard] = useState({
   totalUsers: 0,
   totalContracts: 0,
@@ -34,7 +37,7 @@ export default function Home() {
 });
 
 useEffect(() => {
-  fetch("http://127.0.0.1:8000/api/contracts/dashboard")
+  fetch(`${BASE_URL}/api/contracts/dashboard`)
     .then((res) => res.json())
     .then((data) => setDashboard(data))
     .catch((err) => console.error(err));

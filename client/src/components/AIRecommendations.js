@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Sparkles, ArrowRight } from "lucide-react";
 
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 export default function AIRecommendations() {
   const [recommendations, setRecommendations] = useState([]);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/contracts/ai-recommendations")
+    fetch(`${BASE_URL}/api/contracts/ai-recommendations`)
       .then((res) => res.json())
       .then((data) => setRecommendations(data))
       .catch((err) => console.error(err));

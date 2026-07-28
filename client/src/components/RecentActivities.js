@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 export default function RecentActivities() {
   const [activities, setActivities] = useState([]);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/contracts/recent-activities")
+    fetch(`${BASE_URL}/api/contracts/recent-activities`)
       .then((res) => res.json())
       .then((data) => setActivities(data))
       .catch((err) => console.error("Error fetching activities:", err));
@@ -36,7 +38,9 @@ export default function RecentActivities() {
         ))}
 
         {activities.length === 0 && (
-          <p className="activity-description">No recent activities available.</p>
+          <p className="activity-description">
+            No recent activities available.
+          </p>
         )}
       </div>
     </div>

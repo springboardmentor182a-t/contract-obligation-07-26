@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 export default function ContractActivityChart() {
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [activePoints, setActivePoints] = useState([]);
   const [newPoints, setNewPoints] = useState([]);
 
 useEffect(() => {
-  fetch("http://127.0.0.1:8000/api/contracts/activity-chart")
+ fetch(`${BASE_URL}/api/contracts/activity-chart`)
     .then((res) => res.json())
     .then((data) => {
       setActivePoints(data.activePoints);

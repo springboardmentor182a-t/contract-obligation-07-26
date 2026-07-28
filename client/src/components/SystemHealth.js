@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Zap } from "lucide-react";
 
+const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 export default function SystemHealth() {
   const [health, setHealth] = useState([]);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/contracts/system-health")
+    fetch(`${BASE_URL}/api/contracts/system-health`)
       .then((res) => res.json())
       .then((data) => setHealth(data))
       .catch((err) => console.error(err));
