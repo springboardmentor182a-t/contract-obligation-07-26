@@ -7,14 +7,11 @@ ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
 
 class Setting(BaseSettings):
     DATABASE_URL: str
-    SECRET_KEY: str
 
     API_PREFIX: str = "/api"
     DEBUG: bool = False
 
     ALLOWED_ORIGINS: List[str] = []
-
-    DATABASE_URL: str = ""
 
     # JWT
     SECRET_KEY: str = ""
