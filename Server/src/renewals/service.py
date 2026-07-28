@@ -4,7 +4,7 @@ from sqlalchemy import func as sql_func
 
 
 
-from entities.renewal import (
+from src.entities.renewal import (
     Renewal,
     RenewalApproval,
     RenewalReminder,
@@ -12,7 +12,7 @@ from entities.renewal import (
     RenewalStatus,
     ApprovalStatus,
 )
-from audit_logs.service import create_audit_log
+from src.audit_logs.service import create_audit_log
 
 
 

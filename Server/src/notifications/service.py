@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from entities.notification import Notification
+from src.entities.notification import Notification
 
 
 def create_notification(db: Session, user_id: int, title: str, message: str):

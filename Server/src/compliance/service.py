@@ -2,7 +2,8 @@ from datetime import date, datetime
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case
-from entities.compliance import Compliance
+
+from src.entities.compliance import Compliance
 
 def get_dashboard_summary(db: Session) -> Dict[str, Any]:
     """

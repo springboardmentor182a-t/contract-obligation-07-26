@@ -4,11 +4,11 @@ from datetime import datetime, timedelta
 from sqlalchemy import extract
 
 
-from entities.contract import Contract
-from entities.obligation import Obligation
-from entities.renewal import Renewal
-from entities.compliance import Compliance, ComplianceStatus, RiskLevel
-from entities.audit_logs import AuditLog
+from src.entities.contract import Contract
+from src.entities.obligation import Obligation
+from src.entities.renewal import Renewal
+from src.entities.compliance import Compliance, ComplianceStatus, RiskLevel
+from src.entities.audit_logs import AuditLog
 
 
 class ReportService:

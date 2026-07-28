@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from entities.organization import Organization
-from database.core import get_db
-from entities.user import User
-from users.service import admin_required
-from organization.models import (
+from src.entities.organization import Organization
+from src.database.core import get_db
+from src.entities.user import User
+from src.users.service import admin_required
+from src.organization.models import (
     OrganizationResponse,
     OrganizationUpdate,
     OrganizationCreate,

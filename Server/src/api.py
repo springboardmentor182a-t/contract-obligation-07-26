@@ -1,16 +1,16 @@
 from fastapi import APIRouter
 
 
-from auth import controller as auth_controller
-from users import controller as user_controller
-from audit_logs import controller as audit_logs_controller
-from reports_analytics import controller as report_analytics_controller
-from organization import controller as organization_controller
-from user_setting import controller as user_setting_contraller
-from notifications import controller as notification_controller
-from compliance import controller as compliance_controller
-from dashboards import controller as dashboard_controller
-from renewals import controller as renewal_controller
+from src.auth import controller as auth_controller
+from src.users import controller as user_controller
+from src.audit_logs import controller as audit_logs_controller
+from src.reports_analytics import controller as report_analytics_controller
+from src.compliance import controller as compliance_controller
+from src.organization import controller as organization_controller
+from src.renewals import controller as renewal_controller
+from src.user_setting import controller as user_setting_contraller
+from src.notifications import controller as notification_controller
+from src.compliance import controller as compliance_controller
 
 router = APIRouter()
 

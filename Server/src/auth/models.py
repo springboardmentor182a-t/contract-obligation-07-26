@@ -1,11 +1,10 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel
 
 
-
-from entities.user import UserRole
+from src.entities.user import UserRole
 
 
 class Token(BaseModel):
@@ -74,6 +73,7 @@ class UserUpdate(BaseModel):
 
 
 class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
 
     user_id: int
     role: str
@@ -90,6 +90,3 @@ class UserResponse(BaseModel):
     join_date: datetime
 
     is_active: bool
-
-    class Config:
-        from_attributes = True
