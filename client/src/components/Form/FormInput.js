@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 import React from 'react';
-=======
 import React from "react";
->>>>>>> origin/main-group-D
 
 const FormInput = ({
   label,
@@ -28,8 +25,5 @@ const FormInput = ({
   );
 };
 
-<<<<<<< HEAD
 export default FormInput;
-=======
 export default FormInput;
->>>>>>> origin/main-group-D

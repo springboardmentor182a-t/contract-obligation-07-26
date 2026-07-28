@@ -12,8 +12,4 @@ def login(credentials: UserLogin):
             status_code=status.HTTP_401_UNAUTHORIZED, 
             detail="Invalid credentials"
         )
-<<<<<<< HEAD
     return token
-=======
-    return token
->>>>>>> origin/main-group-D

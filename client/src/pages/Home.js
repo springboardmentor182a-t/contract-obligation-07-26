@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import React, { useState, useEffect } from "react";
 import PageContainer from "../layout/PageContainer";
 import Navbar from "../layout/Navbar";
@@ -8,12 +8,8 @@ import "react-calendar/dist/Calendar.css";
 import { API_BASE_URL } from "../data/constants";
 
 import ContractStatusChart from "../components/Charts/ContractStatusChart";
-
-=======
-<<<<<<< HEAD
 import React from "react";
 import QuickActions from "../components/QuickActions";
->>>>>>> origin/main-group-D
 import MetricsCard from "../components/MetricsCard";
 import ContractActivityChart from "../components/ContractActivityChart";
 import RiskDistributionChart from "../components/RiskDistributionChart";
@@ -23,9 +19,7 @@ import QuickActions from "../components/QuickActions";
 import NewContractModal from "../components/Modals/NewContractModal";
 import AddRenewalModal from "../components/Modals/AddRenewalModal";
 
-<<<<<<< HEAD
 import { getRenewals } from "../services/renewalService";
-=======
 export default function Home() {
   return (
     <div style={styles.container}>
@@ -301,7 +295,6 @@ const styles = {
     height: "100%",
   },
 };
-=======
 import React, { useState, useEffect } from 'react';
 import PageContainer from '../layout/PageContainer';
 import ContractStatusChart from '../components/Charts/ContractStatusChart';
@@ -310,7 +303,6 @@ import 'react-calendar/dist/Calendar.css';
 import { API_BASE_URL } from '../data/constants';
 import Navbar from '../layout/Navbar';
 import NewContractModal from '../components/Modals/NewContractModal';
->>>>>>> origin/main-group-D
 
 const Home = () => {
   
@@ -515,7 +507,7 @@ const Home = () => {
         </div>
       </div>
 
-<<<<<<< HEAD
+
       {/* Renewal Metrics */}
 
       <div
@@ -835,7 +827,4 @@ const Home = () => {
 }
 
 export default Home;
-=======
-export default Home;
->>>>>>> origin/main-group-D
->>>>>>> origin/main-group-D
+

@@ -13,8 +13,5 @@ def get_todos() -> List[TodoResponse]:
     return [
         TodoResponse(id=1, title="Review Master Services Agreement", completed=False),
         TodoResponse(id=2, title="Complete Insurance Renewal", completed=True)
-<<<<<<< HEAD
     ]
-=======
-    ]
->>>>>>> origin/main-group-D
+    

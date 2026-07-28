@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 import React from 'react';
-=======
 import React from "react";
->>>>>>> origin/main-group-D
 
 const FormSelect = ({ label, options, value, onChange, required }) => {
   return (
@@ -35,8 +32,5 @@ const FormSelect = ({ label, options, value, onChange, required }) => {
   );
 };
 
-<<<<<<< HEAD
 export default FormSelect;
-=======
 export default FormSelect;
->>>>>>> origin/main-group-D

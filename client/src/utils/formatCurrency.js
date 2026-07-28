@@ -4,8 +4,4 @@ export const formatCurrency = (amount) => {
     style: 'currency',
     currency: 'USD',
   }).format(amount);
-<<<<<<< HEAD
-};
-=======
-};
->>>>>>> origin/main-group-D
+}:

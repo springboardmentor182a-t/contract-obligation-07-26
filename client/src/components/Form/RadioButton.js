@@ -16,8 +16,5 @@ const RadioButton = ({ label, name, value, checked, onChange, id }) => {
   );
 };
 
-<<<<<<< HEAD
 export default RadioButton;
-=======
 export default RadioButton;
->>>>>>> origin/main-group-D

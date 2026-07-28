@@ -47,8 +47,4 @@ const Settings = () => {
   );
 };
 
-<<<<<<< HEAD
 export default Settings;
-=======
-export default Settings;
->>>>>>> origin/main-group-D

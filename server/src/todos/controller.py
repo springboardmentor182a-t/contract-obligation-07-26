@@ -11,8 +11,4 @@ def add_todo(todo: TodoCreate):
 
 @router.get("/", response_model=List[TodoResponse])
 def read_todos():
-<<<<<<< HEAD
     return get_todos()
-=======
-    return get_todos()
->>>>>>> origin/main-group-D

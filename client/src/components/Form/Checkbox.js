@@ -14,8 +14,5 @@ const Checkbox = ({ label, checked, onChange, id }) => {
   );
 };
 
-<<<<<<< HEAD
 export default Checkbox;
-=======
 export default Checkbox;
->>>>>>> origin/main-group-D

@@ -9,8 +9,6 @@ export const formatDate = (dateString) => {
 
   return new Date(dateString).toLocaleDateString("en-US", options);
 };
-<<<<<<< HEAD
-=======
 
 export const daysRemaining = (dateString) => {
   if (!dateString) return 0;
@@ -26,4 +24,3 @@ export const daysRemaining = (dateString) => {
 
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 };
->>>>>>> origin/main-group-D
