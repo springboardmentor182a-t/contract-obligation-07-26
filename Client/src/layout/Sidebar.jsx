@@ -100,7 +100,7 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
           <Settings size={20} />
           <span>Settings</span>
         </NavLink>
-        <button className="nav-item logout-btn" onClick={logout}>
+        <button className="nav-item nav-item-danger logout-btn" onClick={logout}>
           <LogOut size={20} />
           <span>Logout</span>
         </button>

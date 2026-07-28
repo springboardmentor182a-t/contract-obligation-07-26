@@ -128,6 +128,16 @@
   color: #fca5a5;
 }
 
+.logout-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  margin-top: 0.25rem;
+}
+
 /* ===== Header / Navbar ===== */
 .header {
   height: 70px;

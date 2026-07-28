@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import ChatBot from '../components/chatbot/ChatBot';
 import './Layout.css';
 
 const PageContainer = () => {
@@ -34,6 +35,7 @@ const PageContainer = () => {
           <Outlet />
         </main>
       </div>
+      <ChatBot />
     </div>
   );
 };

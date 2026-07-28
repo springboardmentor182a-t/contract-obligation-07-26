@@ -3,12 +3,11 @@ from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
 
 
 class Setting(BaseSettings):
-    
+
     API_PREFIX: str = "/api"
     DEBUG: bool = False
 
@@ -21,7 +20,6 @@ class Setting(BaseSettings):
     ALGORITHM: str = ""
     ACCESS_TOKEN_EXPIRE_MINUTES: int = ""
 
-
     # Send Mail
     EMAIL_BACKEND: str = ""
     EMAIL_HOST: str = ""
@@ -29,6 +27,11 @@ class Setting(BaseSettings):
     EMAIL_PORT: int = 587
     EMAIL_HOST_USER: str = ""
     EMAIL_HOST_PASSWORD: str = ""
+
+    # Chatbot
+    MODEL_PATH: str = "Qwen/Qwen2.5-1.5B-Instruct"
+    VECTOR_DB: str = "./vector_db/contracts.index"
+    CHUNKS_FILE: str = "./vector_db/chunks.pkl"
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod

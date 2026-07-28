@@ -6,6 +6,8 @@ import { getUserNotifications, getAdminNotifications } from '../features/notific
 
 const Header = ({ toggleSidebar }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [toast, setToast] = useState(null);
   const { userProfile, logout, role, changeRole } = useAuth();
   const dropdownRef = useRef(null);
   const prevNotifsRef = useRef([]);
