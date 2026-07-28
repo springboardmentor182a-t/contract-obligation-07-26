@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract, case
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from entities.user import User
 from entities.contract import Contract
@@ -19,7 +19,7 @@ class DashboardService:
         active_contracts = db.query(Contract).filter(Contract.status == "Active").count()
         
         # Expiring in 90 days
-        expiry_date = datetime.utcnow() + timedelta(days=90)
+        expiry_date = datetime.now(timezone.utc) + timedelta(days=90)
         expiring_contracts = db.query(Contract).filter(
             Contract.status == "Active",
             Contract.effective_date<= expiry_date
@@ -30,7 +30,7 @@ class DashboardService:
         compliance_percentage = round((completed_compliances / total_compliances) * 100, 1) if total_compliances else 100.0
 
         # Monthly Contract Volume (Last 6 months)
-        six_months_ago = datetime.utcnow() - timedelta(days=180)
+        six_months_ago = datetime.now(timezone.utc) - timedelta(days=180)
         volume_data = (
             db.query(
                 extract("year", Contract.create_at).label("year"),
@@ -86,8 +86,8 @@ class DashboardService:
         draft_contracts = db.query(Contract).filter(Contract.status == "Draft").count()
         
         upcoming_renewals = db.query(Renewal).filter(
-            Renewal.expiry_date >= datetime.utcnow(),
-            Renewal.expiry_date <= datetime.utcnow() + timedelta(days=60)
+            Renewal.expiry_date >= datetime.now(timezone.utc),
+            Renewal.expiry_date <= datetime.now(timezone.utc) + timedelta(days=60)
         ).count()
 
         # Contract Status Breakdown
@@ -137,7 +137,7 @@ class DashboardService:
         compliance_score = round((completed_compliances / total_compliances) * 100, 1) if total_compliances else 100.0
 
         pending_obligations = db.query(Obligation).filter(Obligation.completed == False).count()
-        missed_deadlines = db.query(Obligation).filter(Obligation.completed == False, Obligation.due_date < datetime.utcnow()).count()
+        missed_deadlines = db.query(Obligation).filter(Obligation.completed == False, Obligation.due_date < datetime.now(timezone.utc)).count()
         
         high_risk_contracts = db.query(Compliance).filter(Compliance.risk_level == RiskLevel.HIGH.name).count()
 
@@ -157,7 +157,7 @@ class DashboardService:
             })
 
         # Compliance Score Trend (real - last 6 months)
-        six_months_ago = datetime.utcnow() - timedelta(days=180)
+        six_months_ago = datetime.now(timezone.utc) - timedelta(days=180)
         trend_data = db.query(
             extract("year", Compliance.created_at).label("year"),
             extract("month", Compliance.created_at).label("month"),
@@ -205,14 +205,14 @@ class DashboardService:
         draft_contracts = db.query(Contract).filter(Contract.status == "Draft").count()
         pending_reviews = db.query(Contract).filter(Contract.status == "Under Review").count()
         
-        expiry_date = datetime.utcnow() + timedelta(days=90)
+        expiry_date = datetime.now(timezone.utc) + timedelta(days=90)
         expiring_contracts = db.query(Contract).filter(
             Contract.status == "Active",
             Contract.expiry_date <= expiry_date
         ).count()
 
         # Portfolio Growth (real cumulative growth over 6 months)
-        six_months_ago = datetime.utcnow() - timedelta(days=180)
+        six_months_ago = datetime.now(timezone.utc) - timedelta(days=180)
         growth_data = db.query(
             extract("year", Contract.create_at).label("year"),
             extract("month", Contract.create_at).label("month"),
