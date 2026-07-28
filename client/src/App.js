@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Settings from './pages/Settings';
 import AddUser from "./pages/AddUser";
+import Documents from './pages/Documents'; // --- NEW: Imported the Documents page ---
 import Obligations from "./pages/Obligations";
 
 import ContractRepository from './pages/ContractRepository/ContractRepository';
@@ -34,6 +35,9 @@ function App() {
 
           <Route path="/users" element={<UserManagement />} />
           <Route path="/add-user" element={<AddUser />} />
+          
+          {/* --- NEW: Added the route for Documents --- */}
+          <Route path="/documents" element={<Documents />} /> 
 
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />

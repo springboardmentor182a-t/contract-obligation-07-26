@@ -1,8 +1,9 @@
 from datetime import date, timedelta
 from src.database.core import engine, SessionLocal
-from src.database.models import Base, Contract, Activity, Deadline, ComplianceItem, ReportHistory
+# --- UPDATED: Imported Document ---
+from src.database.models import Base, Contract, Activity, Deadline, ComplianceItem, ReportHistory, Document
 
-# Drop and recreate tables to ensure the new ComplianceItem and ReportHistory tables exist
+# Drop and recreate tables to ensure the new ComplianceItem, ReportHistory, and Document tables exist
 Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 
@@ -92,10 +93,25 @@ def seed_db():
     ]
     db.add_all(compliance_items)
 
+    # --- 5. NEW: Documents ---
+    documents = [
+        Document(is_folder=True, name="Master Service Agreements", sub="12 files", type="Folder", contract_id="-", contract_name="", uploader="Ananya Sharma", date="Jun 20, 2025", time="10:30 AM", size="-"),
+        Document(is_folder=True, name="Insurance Documents", sub="8 files", type="Folder", contract_id="-", contract_name="", uploader="Rahul Mehta", date="Jun 18, 2025", time="02:15 PM", size="-"),
+        Document(is_folder=False, name="Master Services Agreement.pdf", sub="Agreement", type="PDF", type_color="#e74c3c", contract_id="CON-2024-001", contract_name="Master Services Agreement", uploader="Ananya Sharma", date="Jun 20, 2025", time="10:30 AM", size="2.4 MB"),
+        Document(is_folder=False, name="SOW - Project Alpha.docx", sub="Statement of Work", type="DOCX", type_color="#3498db", contract_id="CON-2024-001", contract_name="Master Services Agreement", uploader="Rahul Mehta", date="Jun 19, 2025", time="11:20 AM", size="1.8 MB"),
+        Document(is_folder=False, name="Insurance Certificate.pdf", sub="Certificate", type="PDF", type_color="#e74c3c", contract_id="CON-2024-003", contract_name="Insurance Coverage", uploader="Neha Kapoor", date="Jun 18, 2025", time="09:45 AM", size="1.2 MB"),
+        Document(is_folder=False, name="Payment Schedule.xlsx", sub="Payment", type="XLSX", type_color="#2ecc71", contract_id="CON-2024-002", contract_name="Software License Agreement", uploader="Arjun Mehta", date="Jun 17, 2025", time="04:50 PM", size="512 KB"),
+        Document(is_folder=False, name="NDA_signed.pdf", sub="Agreement", type="PDF", type_color="#e74c3c", contract_id="CON-2024-004", contract_name="NDA Agreement", uploader="Pooja Singh", date="Jun 16, 2025", time="03:30 PM", size="890 KB"),
+        Document(is_folder=False, name="Compliance Training Deck.pptx", sub="Presentation", type="PPTX", type_color="#e67e22", contract_id="-", contract_name="", uploader="Ananya Sharma", date="Jun 15, 2025", time="01:10 PM", size="3.6 MB"),
+        Document(is_folder=True, name="Audit Reports", sub="15 files", type="Folder", contract_id="-", contract_name="", uploader="Rahul Mehta", date="Jun 14, 2025", time="10:00 AM", size="-"),
+        Document(is_folder=False, name="Vendor Evaluation Report.pdf", sub="Report", type="PDF", type_color="#e74c3c", contract_id="CON-2024-005", contract_name="Vendor Agreement", uploader="Neha Kapoor", date="Jun 13, 2025", time="05:25 PM", size="1.5 MB"),
+    ]
+    db.add_all(documents)
+
     # Save everything to PostgreSQL
     db.commit()
     db.close()
-    print("Database successfully wiped, tables recreated, and seeded with fresh data including Report History!")
+    print("Database successfully wiped, tables recreated, and seeded with fresh data including Documents and Report History!")
 
 if __name__ == "__main__":
     seed_db()
