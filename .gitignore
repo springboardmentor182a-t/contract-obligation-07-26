@@ -33,6 +33,9 @@ environment.prod.ts
 # Editors
 .vscode/
 .idea/
+# Python
+__pycache__/
+*.pyc
 
 # Logs
 logs/
@@ -41,4 +44,7 @@ logs/
 # OS files
 .DS_Store
 Thumbs.db
+Thumbs.db
+# OS Files
+.DS_Store
 Thumbs.db

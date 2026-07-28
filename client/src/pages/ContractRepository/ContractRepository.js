@@ -1,7 +1,6 @@
-import BASE_URL from "../../config/api";
+import { API_BASE_URL } from "../../data/constants";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+import AddContract from "../AddContract/AddContract";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
 import SearchBar from "../../components/SearchBar/SearchBar";
@@ -19,7 +18,6 @@ import "../../styles/repository.css";
 
 
 function ContractRepository() {
-  const navigate = useNavigate();
   const [contracts, setContracts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [vendor, setVendor] = useState("");
@@ -27,24 +25,25 @@ function ContractRepository() {
   const [owner, setOwner] = useState("");
   const [status, setStatus] = useState("");
   const [activeTab, setActiveTab] = useState("All");
+  const [showAddContractModal, setShowAddContractModal] = useState(false);
 
-  useEffect(() => {
   const fetchContracts = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/contracts`);
+  try {
+    const response = await fetch(`${API_BASE_URL}/contracts`);
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch contracts");
-      }
-
-      const data = await response.json();
-      setContracts(data);
-    } catch (error) {
-      console.error("Error fetching contracts:", error);
-      alert(error.message);
+    if (!response.ok) {
+      throw new Error("Failed to fetch contracts");
     }
-  };
 
+    const data = await response.json();
+    setContracts(data);
+  } catch (error) {
+    console.error("Error fetching contracts:", error);
+    alert(error.message);
+  }
+};
+
+useEffect(() => {
   fetchContracts();
 }, []);
   const totalContracts = contracts.length;
@@ -250,7 +249,7 @@ const filteredContracts = contracts.filter((contract) => {
 
               <button
                 className="new-contract"
-                onClick={() => navigate("/add-contract")}
+                onClick={() => setShowAddContractModal(true)}
               >
                 + New Contract
               </button>
@@ -274,6 +273,12 @@ const filteredContracts = contracts.filter((contract) => {
 
           <ContractTable contracts={filteredContracts} />
         </div>
+        {showAddContractModal && (
+          <AddContract
+            onClose={() => setShowAddContractModal(false)}
+            onContractAdded={fetchContracts}
+          />
+        )}
       </div>
     </div>
   );

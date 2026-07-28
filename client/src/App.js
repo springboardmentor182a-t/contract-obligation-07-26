@@ -29,9 +29,12 @@ function App() {
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/obligations" element={<Obligations />} />
+
           <Route path="/contracts" element={<ContractRepository />} />
           <Route path="/contracts/:contractId" element={<ContractDetails />} />
           <Route path="/contracts/add" element={<AddContract />} />
+          <Route path="/edit-contract/:id" element={<AddContract />} />
+
           <Route path="/users" element={<UserManagement />} />
           <Route path="/add-user" element={<AddUser />} />
           <Route path="/compliance" element={<Compliance />} />
