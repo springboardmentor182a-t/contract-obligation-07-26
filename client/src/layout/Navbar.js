@@ -37,6 +37,7 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
             setLiveNotifications(complianceNotifs);
           }
         } else if (location.pathname === '/reports') {
+          // Fetch Report Insights for the Reports page
           const response = await fetch(`${API_BASE_URL}/reports`);
           if (response.ok) {
             const data = await response.json();
@@ -45,6 +46,17 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
               date: insight.subtext,
             }));
             setLiveNotifications(reportNotifs);
+          }
+        } else if (location.pathname === '/documents') {
+          // --- NEW: Fetch live Document Notifications ---
+          const response = await fetch(`${API_BASE_URL}/notifications`);
+          if (response.ok) {
+            const data = await response.json();
+            const docsNotifs = data.map(n => ({
+              title: n.message,
+              date: n.time
+            }));
+            setLiveNotifications(docsNotifs);
           }
         } else {
           const response = await fetch(`${API_BASE_URL}/dashboard`);
@@ -60,6 +72,14 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
 
     fetchNotifications();
   }, [location.pathname]);
+
+    // Set up polling for the Documents page to keep notifications extremely live
+    let interval;
+    if (location.pathname === '/documents') {
+      interval = setInterval(fetchNotifications, 5000);
+    }
+    return () => clearInterval(interval);
+  }, [location.pathname]); 
 
   return (
     <header className="navbar">
@@ -137,6 +157,13 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
                   : location.pathname === '/reports'
                   ? 'Report Alerts'
                   : 'Deadlines'}
+            <div className="dropdown-menu" style={{
+              position: 'absolute', top: '120%', right: '-50px', background: 'white', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '10px 0', minWidth: '250px', zIndex: 1000
+            }}>
+              <div style={{ padding: '10px 20px', borderBottom: '1px solid #eee', fontWeight: 'bold', color: 'black' }}>
+                {location.pathname === '/compliance' ? 'Upcoming Reviews' : 
+                 location.pathname === '/reports' ? 'Report Alerts' : 
+                 location.pathname === '/documents' ? 'Recent Activity' : 'Deadlines'}
               </div>
 
               {liveNotifications.length > 0 ? (
@@ -186,7 +213,7 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
                 Mark all as read
               </div>
             </div>
-          )}
+          )
         </div>
 
         <div
@@ -257,5 +284,4 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
     </header>
   );
 };
-
 export default Navbar;
