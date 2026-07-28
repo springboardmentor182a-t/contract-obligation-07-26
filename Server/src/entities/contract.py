@@ -10,11 +10,11 @@ from sqlalchemy import (
 )
 
 
-from database.core import Base
-from entities.compliance import Compliance
-from entities.user import User
-from entities.obligation import Obligation
-from entities.renewal import Renewal
+from src.database.core import Base
+from src.entities.compliance import Compliance
+from src.entities.user import User
+from src.entities.obligation import Obligation
+from src.entities.renewal import Renewal
 
 
 class ContractStatus(str, Enum):

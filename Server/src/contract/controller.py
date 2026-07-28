@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 
-from database.core import get_db
-from entities.contract import Contract
-from entities.user import User
-from users.service import admin_required
-from auth.service import verify_token
+from src.database.core import get_db
+from src.entities.contract import Contract
+from src.entities.user import User
+from src.users.service import admin_required
+from src.auth.service import verify_token
 
 router = APIRouter(
     prefix="/contract",

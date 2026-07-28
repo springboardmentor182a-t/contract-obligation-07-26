@@ -5,7 +5,7 @@ from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 
 
-from core.config import settings
+from src.core.config import settings
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")

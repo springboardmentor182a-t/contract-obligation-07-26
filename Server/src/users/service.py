@@ -1,10 +1,10 @@
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from entities.user import UserRole
-from database.core import get_db
-from entities.user import User
-from auth.service import verify_token
+from src.entities.user import UserRole
+from src.database.core import get_db
+from src.entities.user import User
+from src.auth.service import verify_token
 
 
 def admin_required(

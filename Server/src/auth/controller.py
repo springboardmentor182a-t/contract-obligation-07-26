@@ -5,19 +5,20 @@ import random
 from sqlalchemy.exc import IntegrityError
 
 
-from database.core import get_db
-from entities.user import User
-from entities.otp import OTP
-from audit_logs.service import create_audit_log
-from auth.mail import send_otp
-from auth.mail import send_otp
-from auth.service import (
+from src.auth.service import verify_password
+from src.database.core import get_db
+from src.entities.user import User
+from src.entities.otp import OTP
+from src.audit_logs.service import create_audit_log
+from src.auth.mail import send_otp
+from src.auth.mail import send_otp
+from src.auth.service import (
     hash_password,
     verify_password,
     create_access_token,
     verify_token,
 )
-from auth.models import (
+from src.auth.models import (
     UserResponse,
     UserLogin,
     UserCreate,

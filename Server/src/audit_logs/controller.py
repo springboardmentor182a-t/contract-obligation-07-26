@@ -5,11 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
-from database.core import get_db
-from entities.audit_logs import AuditLog
-from entities.user import User
-from users.service import admin_required
-from audit_logs.service import (
+from src.database.core import get_db
+from src.entities.audit_logs import AuditLog
+from src.entities.user import User
+from src.users.service import admin_required
+from src.audit_logs.service import (
     ensure_audit_schema,
     export_logs,
     query_logs,
