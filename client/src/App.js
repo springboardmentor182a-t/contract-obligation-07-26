@@ -8,7 +8,8 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Settings from './pages/Settings';
 import AddUser from "./pages/AddUser";
-import Documents from './pages/Documents'; // --- NEW: Imported the Documents page ---
+import Documents from './pages/Documents';
+import Notifications from './pages/Notifications';
 import Obligations from "./pages/Obligations";
 
 import ContractRepository from './pages/ContractRepository/ContractRepository';
@@ -40,6 +41,7 @@ function App() {
           
           {/* --- NEW: Added the route for Documents --- */}
           <Route path="/documents" element={<Documents />} /> 
+          <Route path="/notifications" element={<Notifications />} />
 
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />

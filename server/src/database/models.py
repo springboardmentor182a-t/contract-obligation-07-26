@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, Float
 from .core import Base
 
 class Contract(Base):
@@ -8,44 +8,36 @@ class Contract(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     party = Column(String)
-    __table_args__ = {"extend_existing": True}
-
-    id = Column(String, primary_key=True, index=True)
-
-    company = Column(String)
-    contract = Column(String)
-    category = Column(String)
-    value = Column(String)
-
-    owner = Column(String)
     status = Column(String)
-    compliance = Column(Integer)
-    renewal = Column(String)
+    start_date = Column(Date)
+    end_date = Column(Date)
+    value = Column(Float)
+    department = Column(String, default="General")
 
-    start_date = Column(String)
-    end_date = Column(String)
-
-    days_remaining = Column(Integer)
-    priority = Column(String)
-    description = Column(String)
-
-    paid_amount = Column(String)
-    outstanding = Column(String)
-    currency = Column(String)
-    payment_progress = Column(Integer)
-
-    renewal_type = Column(String)
-    notice_period = Column(String)
-    auto_renewal = Column(String)
-
-    created_on = Column(String)
-    effective_date = Column(String)
-    expiry_date = Column(String)
-    renewal_reminder = Column(String)
-
-    documents = Column(Integer)
-    obligations = Column(Integer)
-    tasks = Column(Integer)
+    # --- Extended fields merged safely ---
+    company = Column(String, nullable=True)
+    contract = Column(String, nullable=True)
+    category = Column(String, nullable=True)
+    owner = Column(String, nullable=True)
+    compliance = Column(Integer, nullable=True)
+    renewal = Column(String, nullable=True)
+    days_remaining = Column(Integer, nullable=True)
+    priority = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    paid_amount = Column(String, nullable=True)
+    outstanding = Column(String, nullable=True)
+    currency = Column(String, nullable=True)
+    payment_progress = Column(Integer, nullable=True)
+    renewal_type = Column(String, nullable=True)
+    notice_period = Column(String, nullable=True)
+    auto_renewal = Column(String, nullable=True)
+    created_on = Column(String, nullable=True)
+    effective_date = Column(String, nullable=True)
+    expiry_date = Column(String, nullable=True)
+    renewal_reminder = Column(String, nullable=True)
+    documents = Column(Integer, nullable=True)
+    obligations = Column(Integer, nullable=True)
+    tasks = Column(Integer, nullable=True)
 
 class Activity(Base):
     __tablename__ = "activities"
