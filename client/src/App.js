@@ -33,6 +33,7 @@ function App() {
           <Route path="/contracts/:contractId" element={<ContractDetails />} />
           <Route path="/contracts/add" element={<AddContract />} />
           <Route path="/edit-contract/:id" element={<AddContract />} />
+
           <Route path="/users" element={<UserManagement />} />
           <Route path="/add-user" element={<AddUser />} />
 
