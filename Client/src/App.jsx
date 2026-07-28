@@ -22,6 +22,7 @@ import RenewalDetail from './pages/renewals/RenewalDetail';
 import AuditLogs from './pages/auditLogs/AuditLogs';
 import Settings from './pages/settings/Settings';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import NotificationEngine from './features/notifications/NotificationEngine';
 
 
 const ProtectedRoute = ({ children }) => {
@@ -98,6 +99,7 @@ const PlaceholderPage = ({ title }) => (
 function App() {
   return (
     <AuthProvider>
+      <NotificationEngine />
       <BrowserRouter>
         <Routes>
           {/* Default Route */}

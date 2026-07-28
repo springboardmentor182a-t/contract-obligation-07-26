@@ -136,6 +136,11 @@ const OrganizationManagement = () => {
     
     try {
       await createOrganization(newOrg);
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Organization Created', message: `Organization ${newOrg.company_name} was created.` });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
       alert('Organization added successfully!');
       setIsAddOrgModalOpen(false);
       fetchOrganizations();
@@ -151,6 +156,11 @@ const OrganizationManagement = () => {
         ...editingOrg,
         join_date: editingOrg.join_date || new Date().toISOString()
       });
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Organization Updated', message: `Organization ${editingOrg.company_name} was updated.` });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
       alert('Organization updated successfully!');
       setEditingOrg(null);
       fetchOrganizations();
@@ -162,6 +172,11 @@ const OrganizationManagement = () => {
   const handleToggleOrgStatus = async (orgToToggle) => {
     try {
       await deactivateOrganization(orgToToggle.organization_id);
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Organization Status Changed', message: `Organization ${orgToToggle.company_name} status toggled.` });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
       fetchOrganizations();
     } catch (err) {
       alert(err.message || "Failed to change organization status.");
@@ -172,6 +187,11 @@ const OrganizationManagement = () => {
     if (window.confirm("Are you sure you want to remove this organization?")) {
       try {
         await deleteOrganization(id);
+        try {
+          const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+          await createNotification({ title: 'Organization Deleted', message: `Organization ${id} was deleted.` });
+          window.dispatchEvent(new Event('notification-created'));
+        } catch (err) { console.error(err); }
         fetchOrganizations();
       } catch (err) {
         alert(err.message || "Failed to delete organization.");
