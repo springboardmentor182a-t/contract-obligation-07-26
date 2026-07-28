@@ -1,3 +1,5 @@
+from pathlib import Path
+from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
@@ -27,11 +29,6 @@ class Setting(BaseSettings):
     EMAIL_USE_TLS: bool = True
     EMAIL_HOST_USER: str = ""
     EMAIL_HOST_PASSWORD: str = ""
-
-    # Chatbot
-    MODEL_PATH: str = "Qwen/Qwen2.5-1.5B-Instruct"
-    VECTOR_DB: str = "./vector_db/contracts.index"
-    CHUNKS_FILE: str = "./vector_db/chunks.pkl"
 
     # Chatbot
     MODEL_PATH: str = "Qwen/Qwen2.5-1.5B-Instruct"
