@@ -18,13 +18,10 @@ from src.database.models import Contract, Activity, Deadline, ComplianceItem, Re
 from src.users.controller import router as users_router
 from src.contracts.controller import router as contracts_router
 from src.calendar.controller import router as calendar_router
-
 from pydantic import BaseModel
 from datetime import date, datetime, timedelta 
 from typing import Optional 
-
 app = FastAPI()
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -35,10 +32,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 app.include_router(users_router, prefix="/users", tags=["Users"])
 app.include_router(contracts_router)
-
 class ContractCreate(BaseModel):
     name: str
     party: str
@@ -47,7 +42,6 @@ class ContractCreate(BaseModel):
     end_date: date
     value: float
     department: str = "General" 
-
 @app.post("/api/v1/contracts")
 def create_contract(contract: ContractCreate, db: Session = Depends(get_db)):
     db_contract = Contract(
@@ -64,7 +58,6 @@ app.include_router(
     prefix="/users",
     tags=["Users"],
 )
-
 app.include_router(renewals_router)
 class ContractCreate(BaseModel):
     name: str
@@ -73,7 +66,7 @@ class ContractCreate(BaseModel):
     start_date: date
     end_date: date
     value: float
-    department: str = "General" # --- NEW: Accepts department on creation ---
+    department: str = "General" 
     prefix="/api/v1",
     tags=["Users"]
 )
@@ -87,17 +80,13 @@ app.include_router(
     prefix="/api/v1",
     tags=["Calendar"]
 )
-
-
 @app.get("/api/v1/dashboard")
 def get_dashboard_data(db: Session = Depends(get_db)):
     contracts = db.query(Contract).all()
     activities = db.query(Activity).all()
     deadlines = db.query(Deadline).all()
-    
     active_count = sum(1 for c in contracts if c.status == "Active")
     expiring_count = sum(1 for c in contracts if c.status == "Expiring Soon")
-    
     return {
         "kpi": { "total": len(contracts), "active": active_count, "expiring": expiring_count, "overdue": 0 },
         "chartData": [
@@ -127,11 +116,10 @@ def get_dashboard_data(db: Session = Depends(get_db)):
             "startDate": c.start_date,
             "endDate": c.end_date,
             "value": c.value
->>>>>>> 62bf7858f9a3264555a383f4eaa304140997c303
+
         } for c in contracts],
         "activities": [{"description": a.description, "time": a.time} for a in activities]
     }
-
 class ComplianceCreate(BaseModel):
     item_name: str
     description: str
@@ -141,7 +129,6 @@ class ComplianceCreate(BaseModel):
     risk_level: str
     next_review: date
     owner_name: str
-
 @app.post("/api/v1/compliance")
 def create_compliance_item(item: ComplianceCreate, db: Session = Depends(get_db)):
     db_item = ComplianceItem(
@@ -153,7 +140,6 @@ def create_compliance_item(item: ComplianceCreate, db: Session = Depends(get_db)
     db.commit()
     db.refresh(db_item)
     return db_item
-
 @app.get("/api/v1/compliance")
 def get_compliance_data(db: Session = Depends(get_db)):
     items = db.query(ComplianceItem).all()
@@ -162,10 +148,8 @@ def get_compliance_data(db: Session = Depends(get_db)):
     at_risk_count = sum(1 for i in items if i.status == "At Risk")
     non_compliant_count = sum(1 for i in items if i.status == "Non-Compliant")
     pending_count = sum(1 for i in items if i.status == "Pending Review")
-    
     overall_score = round((compliant_count / total_items * 100)) if total_items > 0 else 0
     upcoming_reviews = sorted([i for i in items if i.next_review and i.status != "Compliant"], key=lambda x: x.next_review)[:5]
-
     return {
         "kpi": { "score": overall_score, "compliant": compliant_count, "atRisk": at_risk_count, "nonCompliant": non_compliant_count, "pending": pending_count },
         "issueBreakdown": [
@@ -185,7 +169,6 @@ def get_compliance_data(db: Session = Depends(get_db)):
             "nextReview": i.next_review.strftime("%d %b %Y") if i.next_review else "-", "owner": i.owner_name
         } for i in items]
     }
-
 @app.delete("/api/v1/compliance/{item_id}")
 def delete_compliance_item(item_id: int, db: Session = Depends(get_db)):
     item = db.query(ComplianceItem).filter(ComplianceItem.id == item_id).first()
@@ -193,8 +176,6 @@ def delete_compliance_item(item_id: int, db: Session = Depends(get_db)):
     db.delete(item)
     db.commit()
     return {"message": "Compliance item deleted successfully"}
-
-
 @app.delete("/api/v1/contracts/{contract_id}")
 def delete_contract(contract_id: int, db: Session = Depends(get_db)):
     contract = db.query(Contract).filter(Contract.id == contract_id).first()
@@ -202,9 +183,6 @@ def delete_contract(contract_id: int, db: Session = Depends(get_db)):
     db.delete(contract)
     db.commit()
     return {"message": "Contract deleted successfully"}
-
-
-
 class ReportCreate(BaseModel):
     name: str
     type: str
