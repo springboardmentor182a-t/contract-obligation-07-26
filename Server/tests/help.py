@@ -13,3 +13,5 @@
 # pip freeze > requirements.txt
 
 # pip install pytest
+# cd Server
+# uvicorn src.main:app --reload

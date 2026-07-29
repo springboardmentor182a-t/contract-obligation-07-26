@@ -8,7 +8,7 @@ from reportlab.pdfgen import canvas
 from sqlalchemy import inspect, or_, text
 from sqlalchemy.orm import Session
 
-from entities.audit_logs import Activity, AuditLog
+from src.entities.audit_logs import Activity, AuditLog
 
 def create_audit_log(
     db: Session,
