@@ -127,7 +127,7 @@ def get_dashboard_data(db: Session = Depends(get_db)):
             "startDate": c.start_date,
             "endDate": c.end_date,
             "value": c.value
->>>>>>> 62bf7858f9a3264555a383f4eaa304140997c303
+
         } for c in contracts],
         "activities": [{"description": a.description, "time": a.time} for a in activities]
     }
