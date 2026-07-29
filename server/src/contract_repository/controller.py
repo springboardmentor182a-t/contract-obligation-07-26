@@ -1,7 +1,7 @@
 from pathlib import Path
 from uuid import uuid4
 import shutil
-
+from datetime import datetime
 from fastapi import (
     APIRouter,
     Depends,
@@ -97,6 +97,9 @@ def update_contract(
 
     for key, value in update_data.items():
         setattr(contract, key, value)
+
+    # Update timestamp whenever a contract is modified
+    contract.updated_at = datetime.utcnow()
 
     db.commit()
     db.refresh(contract)
