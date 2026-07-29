@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Mail, Lock, Phone, Building, Briefcase, BadgeCheck, MapPin, Users, Calendar, Hash, ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import FormInput from '../../../components/Form/FormInput';
+import { getOrganizations } from '../../organizations/services/organizationAPI';
 
 const rolesList = [
   { id: 'Admin', title: 'Admin', desc: 'System setup & management', icon: <User size={24} /> },
@@ -9,12 +10,13 @@ const rolesList = [
   { id: 'Contract Manager', title: 'Contract Manager', desc: 'Handle contract lifecycles', icon: <Building size={24} /> },
 ];
 
-const SignupForm = ({ onSubmit, disabled }) => {
+const SignupForm = ({ onSubmit, disabled, hideAdminRole = false }) => {
   const [step, setStep] = useState(1);
+  const [organizations, setOrganizations] = useState([]);
   const [formData, setFormData] = useState({
     role: '',
     name: '', employeeId: '', email: '', phone: '', password: '', confirmPassword: '',
-    companyName: '', department: '', designation: '', officeLocation: '',
+    organization_id: '', companyName: '', department: '', designation: '', officeLocation: '',
     superAdmin: 'No', permissionGroup: 'Global',
     barRegistrationNumber: '', yearsOfExperience: '', specialization: '',
     complianceCertification: '',
@@ -22,6 +24,18 @@ const SignupForm = ({ onSubmit, disabled }) => {
     departmentName: '', numberOfTeamMembers: '',
     dateOfJoining: '', reportingManager: ''
   });
+
+  useEffect(() => {
+    const fetchOrgs = async () => {
+      try {
+        const data = await getOrganizations();
+        setOrganizations(data || []);
+      } catch (err) {
+        console.error("Failed to load organizations:", err);
+      }
+    };
+    fetchOrgs();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -75,8 +89,10 @@ const SignupForm = ({ onSubmit, disabled }) => {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
-        {rolesList.map(r => {
-          const isSelected = formData.role === r.id;
+        {rolesList
+          .filter(r => hideAdminRole ? r.id !== 'Admin' : true)
+          .map(r => {
+            const isSelected = formData.role === r.id;
           return (
             <div 
               key={r.id}
@@ -185,15 +201,45 @@ const SignupForm = ({ onSubmit, disabled }) => {
           <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--color-text)', borderBottom: '2px solid var(--color-bg)', paddingBottom: '0.5rem' }}>Organization Details</h3>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
-          {formData.role === 'Admin' && (
-            <div className="input-group" style={{ marginBottom: 0 }}>
-              <label className="input-label">Company Name</label>
-              <div className="input-with-icon">
-                <Building size={18} className="input-icon" />
-                <FormInput type="text" name="companyName" value={formData.companyName} onChange={handleChange} placeholder="Your Company" required style={{ width: '100%', paddingLeft: '2.5rem' }} />
-              </div>
+          <div className="input-group" style={{ marginBottom: 0 }}>
+            <label className="input-label">Organization</label>
+            <div className="input-with-icon">
+              <Building size={18} className="input-icon" />
+              <select 
+                name="organization_id" 
+                value={formData.organization_id} 
+                onChange={(e) => {
+                  const selectedOrg = organizations.find(org => org.organization_id.toString() === e.target.value);
+                  setFormData({
+                    ...formData, 
+                    organization_id: e.target.value,
+                    companyName: selectedOrg ? selectedOrg.company_name : ''
+                  });
+                }}
+                required
+                className="form-input"
+                style={{ 
+                  width: '100%', 
+                  paddingLeft: '2.5rem', 
+                  backgroundColor: 'var(--color-surface)', 
+                  border: '1px solid var(--color-border)', 
+                  borderRadius: 'var(--radius-md)', 
+                  padding: '0.6rem 0.6rem 0.6rem 2.5rem', 
+                  outline: 'none',
+                  fontSize: '0.95rem',
+                  color: 'var(--color-text)',
+                  appearance: 'none'
+                }}
+              >
+                <option value="" disabled>Select Organization</option>
+                {organizations.map(org => (
+                  <option key={org.organization_id} value={org.organization_id}>
+                    {org.company_name}
+                  </option>
+                ))}
+              </select>
             </div>
-          )}
+          </div>
           <div className="input-group" style={{ marginBottom: 0 }}>
             <label className="input-label">Department</label>
             <div className="input-with-icon">

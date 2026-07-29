@@ -8,6 +8,7 @@ export const updateUser = async (userData) => {
         email: userData.email,
         phone: userData.phone || "0000000000",
         employee_id: userData.employee_id || "EMP000",
+        organization_id: userData.organization_id ? parseInt(userData.organization_id) : null,
         company_name: userData.company_name || "",
         department: userData.department || "",
         designation: userData.designation || "",
