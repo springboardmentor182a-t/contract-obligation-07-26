@@ -2,7 +2,7 @@ import torch
 from transformers import AutoTokenizer
 from transformers import AutoModelForCausalLM
 
-from core.config import settings
+from src.core.config import settings
 
 tokenizer = AutoTokenizer.from_pretrained(settings.MODEL_PATH, trust_remote_code=True)
 

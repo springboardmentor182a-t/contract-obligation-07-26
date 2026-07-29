@@ -3,7 +3,7 @@ import faiss
 import numpy as np
 import os
 
-from chatbot.embedding import embedding_model
+from src.chatbot.embedding import embedding_model
 
 def retrieve(question):
 
