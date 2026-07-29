@@ -1,11 +1,11 @@
 """Database session and connection pool setup. Hidden from domain entities."""
 
+
 def get_db():
     """Placeholder DB dependency. Yields nothing until a real DB is wired in."""
     yield None
 
 
-# Dummy database
 mock_db = {
     "contracts": [
         {
@@ -15,7 +15,7 @@ mock_db = {
             "status": "Active",
             "value": "$50,000",
             "owner": "Jane Doe",
-            "date": "Jul 12, 2026"
+            "date": "Jul 12, 2026",
         },
         {
             "id": "CTR-2026-002",
@@ -24,7 +24,7 @@ mock_db = {
             "status": "Pending",
             "value": "$120,000",
             "owner": "John Smith",
-            "date": "Jul 10, 2026"
+            "date": "Jul 10, 2026",
         },
         {
             "id": "CTR-2026-003",
@@ -33,7 +33,7 @@ mock_db = {
             "status": "Active",
             "value": "$85,000",
             "owner": "Jane Doe",
-            "date": "Jul 05, 2026"
+            "date": "Jul 05, 2026",
         },
         {
             "id": "CTR-2026-004",
@@ -42,7 +42,7 @@ mock_db = {
             "status": "Expired",
             "value": "$10,000",
             "owner": "Alice Wong",
-            "date": "Jun 28, 2026"
+            "date": "Jun 28, 2026",
         },
         {
             "id": "CTR-2026-005",
@@ -51,8 +51,8 @@ mock_db = {
             "status": "Active",
             "value": "$25,000",
             "owner": "John Smith",
-            "date": "Jun 15, 2026"
-        }
+            "date": "Jun 15, 2026",
+        },
     ],
-    "users": []
+    "users": [],
 }

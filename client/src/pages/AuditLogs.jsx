@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const AuditLogs = () => {
-  const logs = [
-    { time: '2026-07-12 09:42 AM', user: 'Admin User', action: 'Login', target: 'System', ip: '192.168.1.45' },
-    { time: '2026-07-11 14:22 PM', user: 'Jane Doe', action: 'Uploaded Contract', target: 'CTR-2026-001', ip: '10.0.0.12' },
-    { time: '2026-07-10 11:05 AM', user: 'John Smith', action: 'Approved', target: 'CTR-2026-002', ip: '172.16.0.4' },
-    { time: '2026-07-09 16:45 PM', user: 'System', action: 'Automated Scan', target: 'All Active', ip: 'localhost' },
-  ];
+  const [logs, setLogs] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/audit-logs')
+      .then(res => res.json())
+      .then(data => setLogs(data))
+      .catch(console.error);
+  }, []);
 
   return (
     <div>

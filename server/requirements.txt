@@ -5,3 +5,6 @@ uvicorn[standard]
 uvicorn
 >>>>>>> e4b4e4e0c29f6c8156d879c7524be11fe270caa9
 pydantic
+sqlalchemy
+psycopg2-binary
+python-dotenv

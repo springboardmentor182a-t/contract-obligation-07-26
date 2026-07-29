@@ -1,22 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { jsPDF } from 'jspdf';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
-const mockData = [
-  { name: 'Jan', value: 4200 },
-  { name: 'Feb', value: 3800 },
-  { name: 'Mar', value: 5100 },
-  { name: 'Apr', value: 4700 },
-  { name: 'May', value: 6300 },
-  { name: 'Jun', value: 5900 },
-];
-
 const Reports = () => {
+  const [mockData, setMockData] = useState([]);
+  const [reportDetails, setReportDetails] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/reports/mockData')
+      .then(res => res.json())
+      .then(data => setMockData(data))
+      .catch(console.error);
+
+    fetch('/api/reports/details')
+      .then(res => res.json())
+      .then(data => setReportDetails(data))
+      .catch(console.error);
+  }, []);
+
   const handleDownload = (type) => {
+    if (!reportDetails) return;
     if (type === 'pdf') {
       const doc = new jsPDF();
       doc.setFontSize(22);
-      doc.setTextColor(139, 92, 246); // Vibrant Purple
+      doc.setTextColor(139, 92, 246);
       doc.text("ContractIQ - Report Analytics", 20, 20);
       doc.setFontSize(14);
       doc.setTextColor(50, 50, 50);
@@ -24,14 +31,13 @@ const Reports = () => {
       
       doc.setFontSize(12);
       doc.text("This document serves as an overview of your contract lifecycle.", 20, 45);
-      doc.text("1. Total Contract Value: $30,000", 20, 55);
-      doc.text("2. Upcoming Renewals: 34", 20, 65);
-      doc.text("3. Compliance Score: 98.5%", 20, 75);
+      doc.text(`1. Total Contract Value: ${reportDetails.totalValue}`, 20, 55);
+      doc.text(`2. Upcoming Renewals: ${reportDetails.renewals}`, 20, 65);
+      doc.text(`3. Compliance Score: ${reportDetails.compliance}`, 20, 75);
       
       doc.save("contract-report.pdf");
     } else {
-      const content = 'id,name,value\n1,Contract A,4200\n2,Contract B,3800\n3,Contract C,5100';
-      const blob = new Blob([content], { type: 'text/csv' });
+      const blob = new Blob([reportDetails.csvData], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

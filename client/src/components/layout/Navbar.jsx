@@ -1,11 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const [userName, setUserName] = useState('Admin User');
 
-  const handleLogout = () => {
+  useEffect(() => {
+    const storedName = localStorage.getItem('userName');
+    if (storedName) {
+      setUserName(storedName);
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error(e);
+    }
     localStorage.removeItem('token');
+    localStorage.removeItem('userName');
     navigate('/login');
   };
 
@@ -15,7 +29,13 @@ const Navbar = () => {
         <div className="w-8 h-8 bg-gradient-to-br from-[#1E3A8A] to-[#3b82f6] rounded-lg flex items-center justify-center mr-3 shadow-md shadow-blue-500/20">
           <i className="fa-solid fa-file-signature text-white text-sm"></i>
         </div>
-        <h2 className="m-0 text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#1E3A8A] to-[#3b82f6]">ContractIQ</h2>
+        <h2 className="m-0 text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#1E3A8A] to-[#3b82f6] mr-8">ContractIQ</h2>
+        
+        <div className="hidden md:flex gap-4">
+          <button onClick={() => navigate('/dashboard')} className="text-sm font-semibold text-slate-600 hover:text-[#1E3A8A] transition-colors">Dashboard</button>
+          <button onClick={() => navigate('/transactions')} className="text-sm font-semibold text-slate-600 hover:text-[#1E3A8A] transition-colors">Transactions</button>
+          <button onClick={() => navigate('/tax-estimators')} className="text-sm font-semibold text-slate-600 hover:text-[#1E3A8A] transition-colors">Tax Estimators</button>
+        </div>
       </div>
       
       <div className="flex items-center gap-6">
@@ -31,7 +51,7 @@ const Navbar = () => {
             AD
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-slate-700 leading-none">Admin User</span>
+            <span className="text-sm font-bold text-slate-700 leading-none">{userName}</span>
             <span className="text-[10px] text-emerald-500 font-semibold uppercase tracking-wider">Online</span>
           </div>
         </div>

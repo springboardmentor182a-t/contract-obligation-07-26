@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const ObligationTracker = () => {
-  const [obligations, setObligations] = useState([
-    { id: 'OBL-001', contract: 'Acme Corp NDA', description: 'Submit Q3 Financials', dueDate: 'Jul 15, 2026', status: 'Pending', priority: 'High' },
-    { id: 'OBL-002', contract: 'TechFlow MSA', description: 'Renew SLA terms', dueDate: 'Jul 20, 2026', status: 'In Progress', priority: 'Medium' },
-    { id: 'OBL-003', contract: 'Global Logistics SLA', description: 'Quarterly compliance audit', dueDate: 'Jun 30, 2026', status: 'Completed', priority: 'High' },
-    { id: 'OBL-004', contract: 'CloudSystems Vendor', description: 'Update security certificates', dueDate: 'Jul 02, 2026', status: 'Overdue', priority: 'Critical' },
-  ]);
+  const [obligations, setObligations] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/obligations')
+      .then(res => res.json())
+      .then(data => setObligations(data))
+      .catch(console.error);
+  }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({

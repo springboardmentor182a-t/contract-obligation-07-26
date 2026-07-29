@@ -2,32 +2,42 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../assets/theme.css';
 
-const Signup = () => {
+const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSignup = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
+    }
+    
     try {
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name, email, password, confirm_password: confirmPassword })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to create account. Email might be in use.');
+        throw new Error(data.detail || 'Failed to create account.');
       }
 
-      // On successful signup, redirect to login
-      navigate('/login');
+      // On successful registration, redirect to dashboard
+      localStorage.setItem('token', data.access_token || 'fake-jwt-token');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -43,7 +53,7 @@ const Signup = () => {
         
         {error && <div className="error-message">{error}</div>}
 
-        <form onSubmit={handleSignup}>
+        <form onSubmit={handleRegister}>
           <div className="form-group">
             <label className="form-label">Full Name</label>
             <input 
@@ -78,6 +88,18 @@ const Signup = () => {
               minLength="8"
             />
           </div>
+          <div className="form-group">
+            <label className="form-label">Confirm Password</label>
+            <input 
+              type="password" 
+              className="premium-input" 
+              placeholder="Confirm your password" 
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required 
+              minLength="8"
+            />
+          </div>
           <button type="submit" className="premium-button" disabled={isLoading}>
             {isLoading ? 'Creating account...' : 'Create Account'}
           </button>
@@ -91,4 +113,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default Register;

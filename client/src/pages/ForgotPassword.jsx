@@ -6,7 +6,6 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
@@ -25,9 +24,8 @@ const ForgotPassword = () => {
       
       if (response.ok) {
         setIsSubmitted(true);
-        if (data.preview_url) {
-          setPreviewUrl(data.preview_url);
-        }
+        // In a real SMTP configuration, we just rely on the backend sending the email.
+        // We do not set any preview URL for security reasons.
       } else {
         setError(data.detail || "Failed to send reset link.");
       }
@@ -76,20 +74,6 @@ const ForgotPassword = () => {
               We've sent a password reset link to <strong style={{color: 'var(--primary-color)'}}>{email}</strong>.
             </p>
 
-            {previewUrl && (
-              <div style={{ marginTop: '24px', padding: '20px', backgroundColor: 'rgba(99,91,255,0.1)', borderRadius: '12px', border: '1px solid rgba(99,91,255,0.2)' }}>
-                <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 500 }}>
-                  <i className="fa-solid fa-flask" style={{ color: 'var(--secondary-color)', marginRight: '8px' }}></i>
-                  Test Mode Active
-                </p>
-                <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  Since you don't have a real SMTP provider configured, we intercepted the email using <strong>Ethereal Email</strong>.
-                </p>
-                <a href={previewUrl} target="_blank" rel="noreferrer" className="premium-button" style={{ display: 'inline-block', textDecoration: 'none', padding: '10px 20px', width: 'auto', fontSize: '14px' }}>
-                  Open Ethereal Inbox
-                </a>
-              </div>
-            )}
           </div>
         )}
 

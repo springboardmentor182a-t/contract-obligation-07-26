@@ -21,12 +21,16 @@ const Login = () => {
         body: JSON.stringify({ email, password })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Invalid email or password');
+        throw new Error(data.detail || 'Invalid email or password');
       }
 
-      const data = await response.json();
       localStorage.setItem('token', data.access_token);
+      if (data.user && data.user.name) {
+        localStorage.setItem('userName', data.user.name);
+      }
       navigate('/dashboard'); // Redirect to dashboard on success
     } catch (err) {
       setError(err.message);
@@ -84,7 +88,7 @@ const Login = () => {
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-600">
-            Don't have an enterprise account? <Link to="/signup" className="text-[#1E3A8A] font-semibold hover:underline">Request Access</Link>
+            Don't have an enterprise account? <Link to="/register" className="text-[#1E3A8A] font-semibold hover:underline">Request Access</Link>
           </div>
         </div>
       </div>

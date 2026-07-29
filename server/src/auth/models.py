@@ -16,3 +16,4 @@ class SignupRequest(BaseModel):
     name: Optional[str] = None
     email: str
     password: str
+    confirm_password: str

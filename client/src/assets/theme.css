@@ -21,6 +21,22 @@
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
   --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
   --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  --border-color: #e5e7eb;
+}
+
+.dark-theme {
+  --primary-color: #3b82f6; /* Lighter blue for dark mode */
+  --secondary-color: #60a5fa;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94a3b8;
+  --background-light: #0B1121;
+  --background-white: #0f172a;
+  --glass-bg: rgba(15, 23, 42, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.3);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.4);
+  --border-color: #334155;
 }
 
 body {
@@ -88,7 +104,7 @@ body {
 .premium-input {
   width: 100%;
   padding: 14px 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 15px;
   transition: all 0.2s ease;
@@ -186,7 +202,7 @@ body {
   border-radius: 12px;
   padding: 24px;
   box-shadow: var(--shadow-sm);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   transition: transform 0.2s, box-shadow 0.2s;
@@ -256,7 +272,7 @@ body {
   background: var(--background-white);
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   overflow: hidden;
   animation: slideUp 0.6s ease-out;
 }
