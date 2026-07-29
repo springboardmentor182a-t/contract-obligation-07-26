@@ -1,0 +1,20 @@
+[
+  {
+    "id": "tool_1",
+    "name": "Document Parser",
+    "description": "Extracts key clauses from uploaded PDF contracts.",
+    "enabled": true
+  },
+  {
+    "id": "tool_2",
+    "name": "Deadline Tracker",
+    "description": "Automatically syncs contract end dates with the calendar.",
+    "enabled": true
+  },
+  {
+    "id": "tool_3",
+    "name": "Compliance Checker",
+    "description": "Cross-references obligations against regulatory frameworks.",
+    "enabled": false
+  }
+]

@@ -1,0 +1,23 @@
+# Node
+node_modules/
+dist/
+build/
+coverage/
+package-lock.json
+
+# Environment
+.env
+environment.ts
+environment.prod.ts
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+logs/
+*.log
+
+# OS Files
+.DS_Store
+Thumbs.db

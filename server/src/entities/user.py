@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from sqlalchemy import Column,Integer,String
 
 from src.database.core import Base
@@ -15,3 +16,6 @@ class User(Base):
     password=Column(String(255))
 
     role=Column(String(50))
+=======
+from src.database.models import User as UserEntity
+>>>>>>> origin/main-group-D
