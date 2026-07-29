@@ -5,9 +5,9 @@ from datetime import date, datetime, timedelta
 # Add the server's root directory to python path if run directly
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from database.core import SessionLocal, engine
-from entities.compliance import Base, Compliance
-from entities.contract import Contract, ContractCategories, ContractStatus
+from src.database.core import SessionLocal, engine
+from src.entities.compliance import Base, Compliance
+from src.entities.contract import Contract, ContractCategories, ContractStatus
 
 def seed_db():
     print("Initializing database schema...")

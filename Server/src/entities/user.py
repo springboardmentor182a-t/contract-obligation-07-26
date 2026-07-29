@@ -12,9 +12,10 @@ from sqlalchemy import (
 )
 
 
-from database.core import Base
-from entities.organization import Organization
-
+from src.database.core import Base
+from src.entities.organization import Organization
+from src.entities.notification import Notification
+from src.entities.users_settings import UserSettings
 
 class UserRole(str, Enum):
     

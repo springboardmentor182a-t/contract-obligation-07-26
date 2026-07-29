@@ -1,15 +1,72 @@
-# Open: src/entities/todo.py
-from sqlalchemy import Column, String
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+from enum import Enum
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Enum as SQLEnum,
+)
 
-class TodoEntity:
-    __tablename__ = "todos"  # Keep the table name as todos so database migrations don't break
 
-    id = Column(String, primary_key=True, index=True)
-    title = Column(String, nullable=False)        # Contract Title
-    vendor = Column(String, nullable=False)       # Vendor Name
-    todo_type = Column(String, nullable=False)    # Type (e.g., Cloud Services)
-    value = Column(String, nullable=False)        # Contract Value (e.g., $2.40M)
-    end_date = Column(String, nullable=False)     # Expiration Date
-    owner = Column(String, nullable=False)        # Manager/Owner
-    status = Column(String, default="Active")     # Active / Renewal Due
-    compliance = Column(String, default="high")   # high / medium / low
+from src.database.core import Base
+from src.entities.compliance import Compliance
+from src.entities.user import User
+from src.entities.obligation import Obligation
+from src.entities.renewal import Renewal
+
+
+class ContractStatus(str, Enum):
+    
+    DRAFT = "Draft"
+    PENDING = "Pending"
+    UNDER_REVIEW = "Under Review"
+    ACTIVE = "Active"
+    RENEWAL_DUE = "Renewal Due"
+    EXPIRED = "Expired"
+    TERMINATED = "Terminated"
+
+
+class ContractCategories(str, Enum):
+    
+    EMPLOYMENT_CONTRACTS = "Employment Contracts"
+    VENDOR_CONTRACTS = "Vendor Contracts"
+    SERVICE_AGREEMENTS = "Service Agreements"
+    LEASE_AGREEMENTS = "Lease Agreements"
+    PURCHASE_AGREEMENTS = "Purchase Agreements"
+    PARTNERSHIP_AGREEMENTS = "Partnership Agreements"
+    CONFIDENTIALITY_AGREEMENTS = "Confidentiality Agreements"
+
+
+class Contract(Base):
+    
+    __tablename__ = "contracts"
+
+    contract_id = Column(Integer, primary_key=True, index=True)
+    
+    titile = Column(SQLEnum(ContractCategories), nullable=False)
+    category = Column(SQLEnum(ContractCategories), nullable=False)
+    department = Column(String(200), nullable=False)
+    company_name = Column(String(200), nullable=False)
+    vendor_name = Column(String(200), nullable=False)
+    responsible_person = Column(String(250), nullable=False)
+    contract_value = Column(Integer, nullable=False)
+    description = Column(String(500), nullable=False)
+    status = Column(String(100), default=ContractStatus.PENDING, nullable=False)
+
+    approval_date = Column(DateTime, nullable=True)
+    sent_review_date = Column(DateTime, nullable=True)
+    expiry_date = Column(DateTime, nullable=False)
+    effective_date = Column(DateTime, nullable=False)
+    create_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    obligations = relationship(
+        "Obligation", back_populates="contract", cascade="all, delete-orphan"
+    )
+    
+    compliances = relationship(
+        "Compliance", back_populates="contract", cascade="all, delete-orphan"
+    )
+
+

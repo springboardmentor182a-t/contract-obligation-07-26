@@ -11,3 +11,5 @@
 # uvicorn main:app --reload
 # pip install -r requirements.txt
 # pip freeze > requirements.txt
+
+# pip install pytest

@@ -3,11 +3,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import extract
 from sqlalchemy.sql import func
 
-from entities.user import User
-from entities.users_settings import UserSettings
-from user_setting.models import SettingsUpdate
-from database.core import get_db
-from users.service import verify_token
+from src.entities.user import User
+from src.entities.users_settings import UserSettings
+from src.user_setting.models import SettingsUpdate
+from src.database.core import get_db
+from src.users.service import verify_token
 
 router = APIRouter(prefix="/user_setting", tags=["User Setting"])
 
