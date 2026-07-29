@@ -30,7 +30,7 @@ const MENU = [
     to: "/repository",
     label: "Contract Repository",
     Icon: FileIcon,
-    implemented: false,
+    implemented: true,
   },
   {
     to: "/obligations",
@@ -140,17 +140,23 @@ export default function Sidebar({
 
       <div className="sb-divider" />
 
-      <div className="sb-menu-label">NAVIGATION</div>
+      <div className="sb-menu-label">
+        NAVIGATION
+      </div>
 
       <div className="sb-nav">
         {MENU.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
-            onClick={(event) => handleItemClick(event, item)}
+            onClick={(event) =>
+              handleItemClick(event, item)
+            }
             className={({ isActive }) =>
               `sb-item${
-                isActive && item.implemented ? " active" : ""
+                isActive && item.implemented
+                  ? " active"
+                  : ""
               }`
             }
           >
@@ -173,15 +179,20 @@ export default function Sidebar({
           type="button"
           className="sb-status-head"
           onClick={() =>
-            setStatusCollapsed((currentValue) => !currentValue)
+            setStatusCollapsed(
+              (currentValue) => !currentValue
+            )
           }
         >
           <span
-            className={`dot ${getOverallDotClass(health.status)}`}
+            className={`dot ${getOverallDotClass(
+              health.status
+            )}`}
           />
 
           <span className="status-text">
-            System {getOverallStatusText(health.status)}
+            System{" "}
+            {getOverallStatusText(health.status)}
           </span>
 
           <span

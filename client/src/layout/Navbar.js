@@ -36,6 +36,7 @@ const ROUTE_TITLES = {
   "/renewal-dashboard": "Renewal Dashboard",
   "/obligations": "Obligation Tracker",
   "/compliance": "Compliance",
+  "/contract-repository": "Contract Repository",
   "/reports": "Reports & Analytics",
   "/settings": "Settings",
   "/notifications": "Notifications",
@@ -100,6 +101,14 @@ const SEARCH_INDEX = [
     sub: "Compliance milestones & renewals calendar",
     to: "/calendar",
   },
+  { group: "Pages", label: "Reports & Analytics", sub: "Data visualization & KPIs", to: "/reports" },
+  { group: "Pages", label: "Notifications", sub: "Alert feed & history", to: "/notifications" },
+  { group: "Pages", label: "Quick Actions", sub: "Instant operations grid", to: "/quick-actions" },
+  { group: "Pages", label: "My Profile", sub: "Personal settings & authority", to: "/profile" },
+  { group: "Pages", label: "Settings", sub: "App configuration & billing", to: "/settings" },
+  { group: "Pages", label: "Help & Support", sub: "FAQs & ticket submission", to: "/help" },
+  { group: "Pages", label: "Calendar", sub: "Compliance milestones & renewals calendar", to: "/calendar" },
+  {group: "Pages",label: "Contract Repository",sub: "Manage and search contracts",to: "/repository"},
 ];
 
 function useOutsideClick(ref, handler) {
