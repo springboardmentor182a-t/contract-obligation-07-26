@@ -14,6 +14,7 @@ export const signupService = async (userData) => {
       phone: userData.phone,
       password: userData.password,
       employee_id: userData.employeeId,
+      organization_id: userData.organization_id ? parseInt(userData.organization_id) : null,
       company_name: userData.companyName || "",
       department: userData.department,
       designation: userData.designation,

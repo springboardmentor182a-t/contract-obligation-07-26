@@ -5,7 +5,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PageContainer from './layout/PageContainer';
 import AuthLayout from './layout/AuthLayout';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import DashboardRouter from './pages/dashboards/DashboardRouter';
 import UserManagement from './pages/users/UserManagement';
@@ -108,7 +107,6 @@ function App() {
           {/* Auth Routes */}
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
           

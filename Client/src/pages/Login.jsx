@@ -8,8 +8,6 @@ import { loginService } from '../features/authentication/services/login';
 import { useAuth } from '../context/AuthContext';
 
 
-import { createNotification } from '../features/notifications/services/notificationAPI';
-
 const Login = () => {
 
   const navigate = useNavigate();
@@ -31,12 +29,6 @@ const Login = () => {
     try {
       await loginService(credentials);
       await refreshProfile();
-      try {
-        await createNotification({ title: 'Login Successful', message: 'Welcome back to ContractIQ!' });
-        window.dispatchEvent(new Event('notification-created'));
-      } catch (notifErr) {
-        console.error('Failed to create login notification', notifErr);
-      }
       // Only navigate if login is fully successful
       navigate('/dashboard');
     } catch (err) {
@@ -101,7 +93,7 @@ const Login = () => {
 
           <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
             <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>
-              Don't have an account? <Link to="/register" style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none' }}>Request Access</Link>
+              Please contact your administrator to request an account.
             </p>
           </div>
           
