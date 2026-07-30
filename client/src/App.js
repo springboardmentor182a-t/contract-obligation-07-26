@@ -14,9 +14,7 @@ import ContractDetails from './pages/ContractDetails/ContractDetails';
 import AddContract from './pages/AddContract/AddContract';
 import UserManagement from './pages/UserManagement';
 import Calendar from './pages/Calendar';
-
-import Renewals from "./pages/Renewals";
-
+import Renewals from './pages/Renewals';
 function App() {
   return (
     <Router>

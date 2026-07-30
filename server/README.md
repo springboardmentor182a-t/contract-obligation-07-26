@@ -7,4 +7,3 @@
 
 ## Testing
 Run `pytest`
-Run `pytest`

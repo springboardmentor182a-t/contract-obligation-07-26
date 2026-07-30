@@ -18,12 +18,6 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
-
-
-# -----------------------------
-# User Management Models
-# -----------------------------
-
 class UserManagementBase(BaseModel):
     email: EmailStr
     name: str
@@ -49,5 +43,4 @@ class UserManagementResponse(UserManagementBase):
     is_active: bool
 
     class Config:
-        from_attributes = True
         from_attributes = True

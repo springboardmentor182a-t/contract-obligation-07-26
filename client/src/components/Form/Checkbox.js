@@ -15,4 +15,4 @@ const Checkbox = ({ label, checked, onChange, id }) => {
 };
 
 export default Checkbox;
-export default Checkbox;
+

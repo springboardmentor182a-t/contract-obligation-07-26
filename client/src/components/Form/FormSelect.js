@@ -1,6 +1,4 @@
 import React from 'react';
-import React from "react";
-
 const FormSelect = ({ label, options, value, onChange, required }) => {
   return (
     <div className="form-group">
@@ -33,4 +31,4 @@ const FormSelect = ({ label, options, value, onChange, required }) => {
 };
 
 export default FormSelect;
-export default FormSelect;
+

@@ -1,6 +1,4 @@
 import React from 'react';
-import React from "react";
-
 const FormInput = ({
   label,
   type = "text",
@@ -25,5 +23,4 @@ const FormInput = ({
   );
 };
 
-export default FormInput;
 export default FormInput;

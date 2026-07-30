@@ -2,7 +2,7 @@ import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const ComplianceScoreChart = () => {
-  // Mock historical data for the 6-month trend
+  
   const trendData = [
     { month: 'Mar', score: 65 },
     { month: 'Apr', score: 72 },

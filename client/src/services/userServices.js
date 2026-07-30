@@ -1,7 +1,4 @@
 import { API_BASE_URL } from "../data/constants";
-
-/* ---------------- GET ALL USERS ---------------- */
-
 export const getUsers = async () => {
   const response = await fetch(`${API_BASE_URL}/users`);
 
@@ -11,9 +8,6 @@ export const getUsers = async () => {
 
   return await response.json();
 };
-
-/* ---------------- GET USER BY ID ---------------- */
-
 export const getUserById = async (id) => {
   const response = await fetch(`${API_BASE_URL}/users/db/${id}`);
 
@@ -23,9 +17,6 @@ export const getUserById = async (id) => {
 
   return await response.json();
 };
-
-/* ---------------- CREATE USER ---------------- */
-
 export const createUser = async (userData) => {
   const response = await fetch(`${API_BASE_URL}/users/create`, {
     method: "POST",
@@ -41,9 +32,6 @@ export const createUser = async (userData) => {
 
   return await response.json();
 };
-
-/* ---------------- UPDATE USER ---------------- */
-
 export const updateUser = async (id, userData) => {
   const response = await fetch(`${API_BASE_URL}/users/update/${id}`, {
     method: "PUT",
@@ -59,9 +47,6 @@ export const updateUser = async (id, userData) => {
 
   return await response.json();
 };
-
-/* ---------------- DELETE USER ---------------- */
-
 export const deleteUser = async (id) => {
   const response = await fetch(`${API_BASE_URL}/users/delete/${id}`, {
     method: "DELETE",

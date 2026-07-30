@@ -76,7 +76,7 @@ class ContractCreate(BaseModel):
     department: str = "General" # --- NEW: Accepts department on creation ---
     prefix="/api/v1",
     tags=["Users"]
-)
+
 app.include_router(
     contracts_router,
     prefix="/api/v1",
@@ -106,6 +106,7 @@ def get_dashboard_data(db: Session = Depends(get_db)):
         ],
         "deadlines": [{"title": d.title, "date": d.date} for d in deadlines],
         "contracts": [{
+        
             "id": c.id, "name": c.name, "party": c.party, "company": c.party,
             "contract": c.name, "category": "General", "owner": "System",
             "status": c.status, "startDate": c.start_date, "endDate": c.end_date, "value": c.value
@@ -127,11 +128,13 @@ def get_dashboard_data(db: Session = Depends(get_db)):
             "startDate": c.start_date,
             "endDate": c.end_date,
             "value": c.value
-
-        } for c in contracts],
+        
+        } 
+        
+        for c in contracts,
         "activities": [{"description": a.description, "time": a.time} for a in activities]
     }
-
+   
 class ComplianceCreate(BaseModel):
     item_name: str
     description: str
@@ -394,3 +397,4 @@ def add_document(doc: DocumentCreate, db: Session = Depends(get_db)):
 def get_notifications(db: Session = Depends(get_db)):
     notifs = db.query(AppNotification).order_by(AppNotification.id.desc()).limit(5).all()
     return [{"id": n.id, "message": n.message, "time": n.time, "isRead": n.is_read} for n in notifs]
+}
