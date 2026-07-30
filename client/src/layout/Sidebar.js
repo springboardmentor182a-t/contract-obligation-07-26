@@ -3,22 +3,32 @@ import { NavLink } from "react-router-dom";
 import { useUI } from "../context/UIContext";
 import { useHealthCheck } from "../hooks/useHealthCheck";
 import {
-  GridIcon, FileIcon, ClipboardIcon, RepeatIcon, ShieldIcon, BarIcon,
-  BellIcon, BookIcon, UsersIcon, GearIcon, ChevDownIcon, CalendarIcon,
+  GridIcon,
+  FileIcon,
+  ClipboardIcon,
+  RepeatIcon,
+  ShieldIcon,
+  BarIcon,
+  BellIcon,
+  BookIcon,
+  UsersIcon,
+  GearIcon,
+  ChevDownIcon,
+  CalendarIcon,
 } from "../components/Icons";
 
 const MENU = [
-  { to: "/dashboard",       label: "Dashboard",           Icon: GridIcon,      implemented: true },
-  { to: "/repository",      label: "Contract Repository", Icon: FileIcon,      implemented: false },
-  { to: "/obligations",     label: "Obligation Tracker",  Icon: ClipboardIcon, implemented: false },
-  { to: "/renewal-dashboard", label: "Renewal Dashboard", Icon: RepeatIcon,    implemented: true },
-  { to: "/compliance",      label: "Compliance",          Icon: ShieldIcon,    implemented: true },
-  { to: "/reports",         label: "Reports & Analytics", Icon: BarIcon,       implemented: true },
-  { to: "/notifications",   label: "Notifications",       Icon: BellIcon,      badgeKey: "notifications", implemented: true },
-  { to: "/calendar",        label: "Calendar",            Icon: CalendarIcon,  implemented: true },
-  { to: "/audit",           label: "Audit Logs",          Icon: BookIcon,      implemented: true },
-  { to: "/user-management", label: "User Management",     Icon: UsersIcon,     implemented: true },
-  { to: "/settings",        label: "Settings",            Icon: GearIcon,      implemented: true },
+  { to: "/dashboard",          label: "Dashboard",           Icon: GridIcon,      implemented: true },
+  { to: "/repository",         label: "Contract Repository", Icon: FileIcon,      implemented: true },
+  { to: "/obligations",        label: "Obligation Tracker",  Icon: ClipboardIcon, implemented: true },
+  { to: "/renewal-dashboard",  label: "Renewal Dashboard",   Icon: RepeatIcon,    implemented: true },
+  { to: "/compliance",         label: "Compliance",          Icon: ShieldIcon,    implemented: true },
+  { to: "/reports",            label: "Reports & Analytics", Icon: BarIcon,       implemented: true },
+  { to: "/notifications",      label: "Notifications",       Icon: BellIcon,      badgeKey: "notifications", implemented: true },
+  { to: "/calendar",           label: "Calendar",            Icon: CalendarIcon,  implemented: true },
+  { to: "/audit",              label: "Audit Logs",          Icon: BookIcon,      implemented: true },
+  { to: "/user-management",    label: "User Management",     Icon: UsersIcon,     implemented: true },
+  { to: "/settings",           label: "Settings",            Icon: GearIcon,      implemented: true },
 ];
 
 export default function Sidebar({ collapsed = false, mobileOpen = false }) {
@@ -50,8 +60,7 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
   };
 
   return (
-    <aside className={"sidebar" + (mobileOpen ? " mobile-open" : "")} aria-label="Main navigation">
-      {/* Brand Header */}
+    <aside className={`sidebar${mobileOpen ? " mobile-open" : ""}`} aria-label="Main navigation">
       <div className="sb-brand">
         <div className="mark">
           <ShieldIcon size={14} color="#fff" />
@@ -62,7 +71,6 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
       <div className="sb-divider" />
       <div className="sb-menu-label">MAIN MENU</div>
 
-      {/* Navigation Links */}
       <div className="sb-nav">
         {MENU.map((item) => (
           <NavLink
@@ -71,7 +79,7 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
             end={item.to === "/dashboard"}
             onClick={(e) => handleItemClick(e, item)}
             className={({ isActive }) =>
-              "sb-item" + (isActive && item.implemented ? " active" : "")
+              `sb-item${isActive && item.implemented ? " active" : ""}`
             }
           >
             <item.Icon size={14} />
@@ -83,7 +91,7 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
         ))}
       </div>
 
-      {/* System Status */}
+      {/* Live System Operational Widget */}
       <div className="sb-status">
         <button
           type="button"
@@ -92,10 +100,11 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
         >
           <span className={`dot ${getOverallDotClass(health.status)}`} />
           <span className="status-text">System {getOverallStatusText(health.status)}</span>
-          <span className={"chev" + (statusCollapsed ? " collapsed" : "")}>
+          <span className={`chev${statusCollapsed ? " collapsed" : ""}`}>
             <ChevDownIcon size={12} />
           </span>
         </button>
+
         {!statusCollapsed && (
           <div className="sb-status-body">
             <div className="sb-status-row">

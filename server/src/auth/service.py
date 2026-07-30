@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from src.audit.service import create_audit_log
 from src.auth.jwt import create_access_token
 from src.auth.models import (
     ForgotPasswordRequest,
@@ -58,6 +59,15 @@ class AuthService:
                 detail="Unable to create the account.",
             )
 
+        create_audit_log(
+            db=db,
+            user_id=new_user.id,
+            event_type="create",
+            action="User registered",
+            module="Authentication",
+            description=f"{new_user.email} created a new account",
+        )
+
         return {
             "message": "User registered successfully",
             "user_id": new_user.id,
@@ -112,6 +122,15 @@ class AuthService:
             }
         )
 
+        create_audit_log(
+            db=db,
+            user_id=user.id,
+            event_type="security",
+            action="User logged in",
+            module="Authentication",
+            description=f"{user.email} logged in successfully",
+        )
+
         display_name = (
             user.full_name
             or user.name
@@ -149,6 +168,15 @@ class AuthService:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Your account is inactive.",
             )
+
+        create_audit_log(
+            db=db,
+            user_id=user.id,
+            event_type="security",
+            action="Password reset requested",
+            module="Authentication",
+            description=f"{user.email} requested a password reset",
+        )
 
         return {
             "message": (
@@ -193,6 +221,15 @@ class AuthService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Unable to reset the password.",
             )
+
+        create_audit_log(
+            db=db,
+            user_id=user.id,
+            event_type="security",
+            action="Password reset",
+            module="Authentication",
+            description=f"{user.email} reset their password",
+        )
 
         return {
             "message": "Password reset successfully."
