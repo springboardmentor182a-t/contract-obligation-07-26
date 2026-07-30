@@ -20,6 +20,9 @@ app.add_middleware(
         "http://127.0.0.1:3001",
         "http://localhost:3002",
         "http://127.0.0.1:3002",
+
+        # Render frontend
+        "https://contract-obligation-frontend-group-c.onrender.com",
     ],
     allow_origin_regex=r"https://.*\.app\.github\.dev",
     allow_credentials=True,
