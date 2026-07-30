@@ -16,7 +16,7 @@ import {
 
 import AuthLeftPanel from "../components/AuthLeftPanel";
 import "../styles/Auth.css";
-
+import { API_BASE } from "../config/api";
 function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -73,7 +73,7 @@ function ResetPassword() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/reset-password", {
+      const response = await fetch(`${API_BASE}/auth/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

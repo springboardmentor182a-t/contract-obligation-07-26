@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
+import { API_BASE } from "../config/api";
 
 const UIContext = createContext(null);
 
@@ -16,7 +16,7 @@ export function UIProvider({ children }){
   useEffect(() => {
     async function loadUserProfile() {
       try {
-        const res = await fetch("/api/profile");
+        const res = await fetch(`${API_BASE}/profile`);
         if (res.ok) {
           const data = await res.json();
           setUser({ name: data.full_name, role: data.role, email: data.email });

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./Profile.css";
-
+import { API_BASE } from "../config/api";
 import { useUI } from "../context/UIContext";
 import {
   UserIcon, LockIcon, GearIcon, EditIcon, CameraIcon, BellIcon
@@ -81,7 +81,7 @@ export default function Profile() {
   useEffect(() => {
     async function loadProfile() {
       try {
-        const res = await fetch("/api/profile");
+        const res = await fetch(`${API_BASE}/profile`);
         if (res.ok) {
           const data = await res.json();
           setUser(prev => ({ ...prev, ...data }));
@@ -116,7 +116,7 @@ export default function Profile() {
     };
     setGlobalUser({ name: user.full_name, role: user.role, email: user.email });
     try {
-      await fetch("/api/profile", {
+      await fetch(`${API_BASE}/profile`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

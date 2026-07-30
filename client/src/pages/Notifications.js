@@ -6,7 +6,7 @@ import {
   FileIcon, ShieldIcon, RepeatIcon, ClipboardIcon, AlertTriIcon, CheckIcon, GearIcon,
   TrashIcon, CheckCircleIcon
 } from "../components/Icons";
-
+import { API_BASE } from "../config/api";
 const NOTIF_CAT_STYLE = {
   Contracts: { color: "#3B82F6", Icon: FileIcon },
   Compliance: { color: "#10B981", Icon: ShieldIcon },
@@ -30,8 +30,8 @@ export default function Notifications() {
     async function loadNotifications() {
       try {
         const [resNotifs, resRenewals] = await Promise.all([
-          fetch("/api/notifications"),
-          fetch("/api/upcoming-renewals")
+          fetch(`${API_BASE}/notifications`),
+          fetch(`${API_BASE}/upcoming-renewals`)
         ]);
         if (resNotifs.ok) {
           const data = await resNotifs.json();
@@ -85,7 +85,7 @@ export default function Notifications() {
   async function handleMarkAllRead() {
     setNotifs(prev => prev.map(n => ({ ...n, isRead: true, is_read: true })));
     try {
-      await fetch("/api/notifications/mark-all-read", { method: "POST" });
+      await fetch(`${API_BASE}/notifications/mark-all-read`, { method: "POST" });
     } catch (e) {
       console.warn("Could not sync bulk read state");
     }

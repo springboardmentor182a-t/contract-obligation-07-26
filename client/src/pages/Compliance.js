@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ShieldIcon, DownloadIcon } from "../components/Icons";
 import "./Compliance.css";
-
+import { API_BASE } from "../config/api";
 export default function Compliance() {
   const [controls, setControls] = useState([]);
   const [selectedControl, setSelectedControl] = useState(null);
@@ -10,7 +10,7 @@ export default function Compliance() {
   useEffect(() => {
     async function fetchControls() {
       try {
-        const response = await fetch("/api/compliance/controls");
+        const response = await fetch(`${API_BASE}/compliance/controls`);
         if (response.ok) {
           const data = await response.json();
           setControls(data);

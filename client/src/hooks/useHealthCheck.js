@@ -18,7 +18,7 @@ export function useHealthCheck(intervalMs = 30000) {
         const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
         
         const start = Date.now();
-        const res = await fetch("/api/health", { signal: controller.signal });
+        const res = await fetch(`${API_BASE}/health`, { signal: controller.signal });
         clearTimeout(timeoutId);
 
         if (!active) return;

@@ -14,8 +14,8 @@ import {
   X,
 } from "lucide-react";
 import "./Audit.css";
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || "";
+import { API_BASE } from "../config/api";
+const API_BASE_URL = API_BASE;
 
 const FILTER_OPTIONS = [
   { key: "all", label: "All" },

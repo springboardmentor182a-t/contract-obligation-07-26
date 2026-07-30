@@ -11,7 +11,7 @@ import {
 } from "react-router-dom";
 
 import { useUI } from "../context/UIContext";
-
+import { API_BASE } from "../config/api";
 import {
   ChevRightSmIcon,
   SearchIcon,
@@ -170,9 +170,7 @@ export default function Navbar({
   useEffect(() => {
     async function loadNotifs() {
       try {
-        const response = await fetch(
-          "/api/notifications"
-        );
+        const response = await fetch(`${API_BASE}/notifications`);
 
         if (response.ok) {
           const data = await response.json();
