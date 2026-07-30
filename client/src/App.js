@@ -10,6 +10,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
 // Dashboard pages
+import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
@@ -22,25 +23,29 @@ import UserManagement from "./pages/UserManagement";
 import Audit from "./pages/Audit";
 import Compliance from "./pages/Compliance";
 
-
 function AppShell() {
   return (
     <PageContainer>
       <Routes>
-        <Route path="/" element={<Navigate to="/renewal-dashboard" replace />} />
+        {/* Default → Dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<Home />} />
+
+        {/* Core pages */}
         <Route path="/renewal-dashboard" element={<RenewalDashboard />} />
-        <Route path="/dashboard" element={<RenewalDashboard />} />
         <Route path="/user-management" element={<UserManagement />} />
-        <Route path="/audit" element={<Audit />} />
-        <Route path="/reports" element={<Reports />} />
         <Route path="/compliance" element={<Compliance />} />
+        <Route path="/reports" element={<Reports />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/quick-actions" element={<QuickActions />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/audit" element={<Audit />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/help" element={<Help />} />
-        <Route path="/calendar" element={<Calendar />} />
-        <Route path="*" element={<Navigate to="/renewal-dashboard" replace />} />
+
+        {/* Catch-all → Dashboard */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </PageContainer>
   );

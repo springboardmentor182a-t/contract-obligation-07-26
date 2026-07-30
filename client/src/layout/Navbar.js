@@ -3,13 +3,16 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUI } from "../context/UIContext";
 import {
   ChevRightSmIcon, SearchIcon, MoonIcon, SunIcon, HelpIcon, BellIcon, PlusIcon,
-  FileIcon, BarIcon, ChevDownIcon, UserIcon,
+  FileIcon, BarIcon, ChevDownIcon, UserIcon, CalendarIcon,
   GearIcon, BellSmIcon, LogoutIcon, MenuIcon,
 } from "../components/Icons";
 
+
 const ROUTE_TITLES = {
   "/": "Dashboard",
+  "/dashboard": "Dashboard",
   "/renewal-dashboard": "Renewal Dashboard",
+  "/compliance": "Compliance",
   "/reports": "Reports & Analytics",
   "/settings": "Settings",
   "/notifications": "Notifications",
@@ -17,6 +20,8 @@ const ROUTE_TITLES = {
   "/profile": "My Profile",
   "/quick-actions": "Quick Actions",
   "/help": "Help & Support",
+  "/audit": "Audit Logs",
+  "/user-management": "User Management",
 };
 
 const NOTIF_COLORS = {
@@ -30,6 +35,9 @@ const NOTIF_COLORS = {
 };
 
 const SEARCH_INDEX = [
+  { group: "Pages", label: "Dashboard", sub: "Overview, KPIs & charts", to: "/dashboard" },
+  { group: "Pages", label: "Renewal Dashboard", sub: "Contract renewals tracking", to: "/renewal-dashboard" },
+  { group: "Pages", label: "Compliance", sub: "Compliance controls & risk", to: "/compliance" },
   { group: "Pages", label: "Reports & Analytics", sub: "Data visualization & KPIs", to: "/reports" },
   { group: "Pages", label: "Notifications", sub: "Alert feed & history", to: "/notifications" },
   { group: "Pages", label: "Quick Actions", sub: "Instant operations grid", to: "/quick-actions" },
@@ -37,6 +45,8 @@ const SEARCH_INDEX = [
   { group: "Pages", label: "Settings", sub: "App configuration & billing", to: "/settings" },
   { group: "Pages", label: "Help & Support", sub: "FAQs & ticket submission", to: "/help" },
   { group: "Pages", label: "Calendar", sub: "Compliance milestones & renewals calendar", to: "/calendar" },
+  { group: "Pages", label: "Audit Logs", sub: "System audit trail", to: "/audit" },
+  { group: "Pages", label: "User Management", sub: "Manage users & roles", to: "/user-management" },
 ];
 
 function useOutsideClick(ref, handler) {
@@ -130,6 +140,10 @@ export default function Navbar({ onToggleSidebar }) {
       </div>
 
       <div className="top-actions">
+        <Link to="/calendar" className="icon-btn" title="Calendar">
+          <CalendarIcon size={16} />
+        </Link>
+
         <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
           {theme === "light" ? <MoonIcon /> : <SunIcon />}
         </button>
@@ -189,7 +203,7 @@ export default function Navbar({ onToggleSidebar }) {
               <button type="button" className="dd-item" onClick={() => goTo("/notifications")}><BellSmIcon /> Notifications</button>
               <button type="button" className="dd-item" onClick={() => goTo("/help")}><HelpIcon /> Help & Support</button>
               <div className="dd-sep" />
-              <button type="button" className="dd-item red" onClick={() => goTo("/reports")}><LogoutIcon /> Logout</button>
+              <button type="button" className="dd-item red" onClick={() => goTo("/login")}><LogoutIcon /> Logout</button>
             </div>
           )}
         </div>
