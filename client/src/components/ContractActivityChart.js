@@ -30,7 +30,6 @@ export default function ContractActivityChart() {
 
   const maxVal = Math.max(...rawValues, 1);
   const chartH = 210; // chart area height (from y=50 to y=260)
-  const chartTop = 50;
   const chartBottom = 260;
   const xStart = 50;
   const xEnd = 650;

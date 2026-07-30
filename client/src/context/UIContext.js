@@ -6,11 +6,12 @@ const UIContext = createContext(null);
 export function UIProvider({ children }){
   const [notificationCount, setNotificationCount] = useState(0);
   const [user, setUser] = useState({ name: '', role: '', email: '' });
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
   const [toast, setToast] = useState({ visible: false, message: "" });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   useEffect(() => {
