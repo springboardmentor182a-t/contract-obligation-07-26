@@ -27,7 +27,7 @@ from src.auth.models import (
     VerifyOTPRequest,
     NewPassword,
 )
-
+from src.users.service import admin_required
 
 router = APIRouter(
     prefix="/auth",
@@ -39,6 +39,7 @@ router = APIRouter(
 def register_user(
     user_data: UserCreate,
     response: Response,
+    current_user: User = Depends(admin_required),
     db: Session = Depends(get_db),
 ):
     user = User(
@@ -79,10 +80,10 @@ def register_user(
 @router.get("/user/{user_id}", response_model=UserResponse)
 def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.user_id == user_id).first()
-    
+
     if not user:
         raise HTTPException(status_code=404, detail="User not exist!!")
-    
+
     return user
 
 
@@ -103,7 +104,7 @@ def login_user(request: UserLogin, response: Response, db: Session = Depends(get
             module="Authentication",
             description="User your login password.but Incorect password!!",
         )
-        
+
         raise HTTPException(status_code=404, detail="Incorect password!!")
 
     create_audit_log(
@@ -125,7 +126,7 @@ def login_user(request: UserLogin, response: Response, db: Session = Depends(get
 @router.get("/profile", response_model=UserResponse)
 def get_profile(payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload["sub"]).first()
-    
+
     return user
 
 
@@ -136,7 +137,7 @@ def update_user(
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.email == payload["sub"]).first()
-    
+
     if not user:
         raise HTTPException(status_code=404, detail="User not exist!!")
 
@@ -168,7 +169,7 @@ def update_user(
 
 @router.get("/logout")
 def logout_user(response: Response):
-    
+
     response.delete_cookie("access_token")
 
     return {"message": "Logout successful"}
@@ -230,7 +231,7 @@ async def change_password(
     db.add(otp_data)
     db.commit()
     await send_otp(user.full_name, user.email, otp=generatedOTP)
-    
+
     create_audit_log(
         db=db,
         user_id=user.user_id,
@@ -287,8 +288,7 @@ def change_password(
 
     if not user:
         raise HTTPException(status_code=404, detail="User not exist!!")
-    
-    
+
     create_audit_log(
         db=db,
         user_id=user.user_id,
