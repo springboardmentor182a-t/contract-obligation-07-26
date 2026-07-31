@@ -41,6 +41,6 @@ async def create_ticket(payload: TicketCreate, db: AsyncSession = Depends(get_db
         status="Open"
     )
     db.add(ticket)
-    await db.commit()
+    db.commit()
     await db.refresh(ticket)
     return {"id": ticket.id, "status": "created"}

@@ -258,14 +258,15 @@ class AnalyticsSnapshot(Base):
     __table_args__ = {"schema": "public"}
 
     id = Column(Integer, primary_key=True, index=True)
+    metric_key = Column(String(100), nullable=False)
     label = Column(String(255), nullable=False)
     value = Column(String(255), nullable=False)
     trend = Column(String(50), nullable=True)
 
-    created_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-    )
+    recorded_at = Column(
+    DateTime(timezone=True),
+    server_default=func.now(),
+)
 
 
 class MonthlyVolume(Base):

@@ -44,7 +44,7 @@ async def list_quick_actions(db: AsyncSession = Depends(get_db)):
 
 @router.get("/logs", response_model=List[QuickActionLogResponse])
 async def get_logs(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(
+    result = db.execute(
         select(QuickActionLog)
         .options(selectinload(QuickActionLog.action))
         .order_by(QuickActionLog.id.desc())
@@ -77,8 +77,8 @@ async def execute_action(payload: ExecutePayload, db: AsyncSession = Depends(get
         status="Success"
     )
     db.add(log)
-    await db.commit()
-    await db.refresh(log)
+    db.commit()
+    db.refresh(log)
 
     return QuickActionLogResponse(
         id=log.id,

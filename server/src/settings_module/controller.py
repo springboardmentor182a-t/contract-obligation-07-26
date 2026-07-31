@@ -55,8 +55,8 @@ async def get_settings(db: AsyncSession = Depends(get_db)):
     if not settings:
         settings = UserSetting(user_id=1)
         db.add(settings)
-        await db.commit()
-        await db.refresh(settings)
+        db.commit()
+        db.refresh(settings)
     return settings
 
 @router.patch("", response_model=SettingsResponse)
@@ -84,8 +84,8 @@ async def update_settings(payload: SettingsUpdate, db: AsyncSession = Depends(ge
         settings.sso = payload.sso
 
     db.add(settings)
-    await db.commit()
-    await db.refresh(settings)
+    db.commit()
+    db.refresh(settings)
     return settings
 
 # ── POST /api/settings/notifications/gateways ──
@@ -102,7 +102,7 @@ async def update_gateways(payload: GatewayUpdate, db: AsyncSession = Depends(get
     settings.renewal_alerts = payload.renewalAlerts
     # Update Database setting for gateways
     db.add(settings)
-    await db.commit()
+    db.commit()
     return {"status": "success", "message": "Gateways configured successfully"}
 
 # ── POST /api/settings/security/apikeys ──
@@ -119,8 +119,8 @@ async def create_api_key(payload: ApiKeyCreate, db: AsyncSession = Depends(get_d
         key="ct_live_..." + raw_key[-4:] # Return masked key to view, but write to DB
     )
     db.add(new_key)
-    await db.commit()
-    await db.refresh(new_key)
+    db.commit()
+    db.refresh(new_key)
     
     return ApiKeyResponse(
         id=new_key.id,
