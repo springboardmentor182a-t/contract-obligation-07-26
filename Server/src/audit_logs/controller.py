@@ -16,7 +16,7 @@ router = APIRouter(prefix="/audit_logs", tags=["Audit Logs"])
 
 def prepared_db(db):
     ensure_audit_schema(db)
-    seed_audit_data(db)
+    #seed_audit_data(db)
     return db
 
 
