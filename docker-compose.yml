@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: contract_iq_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: contract_iq
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./Server
+      dockerfile: Dockerfile
+    container_name: contract_iq_backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://postgres:postgrespassword@db:5432/contract_iq
+      - ALLOWED_ORIGINS=["http://localhost","http://localhost:5173","http://127.0.0.1:5173","http://localhost:80"]
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./Client
+      dockerfile: Dockerfile
+    container_name: contract_iq_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
