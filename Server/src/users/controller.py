@@ -105,15 +105,5 @@ def delete_user(
 
     db.delete(user)
     db.commit()
-
-    create_audit_log(
-        db=db,
-        user_id=user.user_id,
-        user_name=user.full_name,
-        action="change password",
-        status="success",
-        module="Users",
-        description="User deleted successfully.by admin",
-    )
-
+    
     return {"message": "User deleted successfully"}
