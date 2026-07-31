@@ -1,8 +1,13 @@
 from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
+
+from jose import JWTError, jwt as jose_jwt
+
+from src.auth.jwt import SECRET_KEY, ALGORITHM
 from src.database.core import get_db
 from src.database.models import (
     AnalyticsSnapshot, MonthlyVolume, User, Notification
@@ -10,19 +15,19 @@ from src.database.models import (
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+
 
 class MetricResponse(BaseModel):
     label: str
     value: str
     trend: Optional[str] = None
-
     model_config = ConfigDict(from_attributes=True)
 
 
 class MonthlyVolumeResponse(BaseModel):
     month: str
     value: int
-
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -41,16 +46,26 @@ class DashboardSummaryResponse(BaseModel):
     user_role: str
 
 
+def _get_user_from_token(token: Optional[str], db: Session) -> Optional[User]:
+    """Return the User matching the JWT token, or None."""
+    if not token:
+        return None
+    try:
+        payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = int(payload.get("sub", 0))
+        if user_id:
+            return db.execute(select(User).where(User.id == user_id)).scalars().first()
+    except (JWTError, ValueError):
+        pass
+    return None
+
+
 @router.get("/metrics", response_model=List[MetricResponse])
 def get_metrics(db: Session = Depends(get_db)):
     result = db.execute(select(AnalyticsSnapshot).order_by(AnalyticsSnapshot.id.asc()))
     items = result.scalars().all()
     return [
-        MetricResponse(
-            label=item.label,
-            value=item.value,
-            trend=item.trend
-        )
+        MetricResponse(label=item.label, value=item.value, trend=item.trend)
         for item in items
     ]
 
@@ -59,54 +74,59 @@ def get_metrics(db: Session = Depends(get_db)):
 def get_monthly_volume(db: Session = Depends(get_db)):
     result = db.execute(select(MonthlyVolume).order_by(MonthlyVolume.sort_order.asc()))
     items = result.scalars().all()
-    return [
-        MonthlyVolumeResponse(
-            month=item.month,
-            value=item.value
-        )
-        for item in items
-    ]
+    return [MonthlyVolumeResponse(month=item.month, value=item.value) for item in items]
 
 
 @router.get("/dashboard-summary", response_model=DashboardSummaryResponse)
-def get_dashboard_summary(db: Session = Depends(get_db)):
-    """Return live dashboard KPIs derived from real database tables."""
+def get_dashboard_summary(
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    """Return live dashboard KPIs for the logged-in user (identified by JWT)."""
 
-    # Total users
+    # ── Identify the logged-in user from JWT ──────────────────────────────────
+    current_user = _get_user_from_token(token, db)
+    if current_user is None:
+        # Fallback for unauthenticated / dev: first active user
+        current_user = db.execute(
+            select(User).where(User.is_active.is_(True)).order_by(User.id.asc())
+        ).scalars().first()
+
+    user_name = (current_user.full_name or current_user.name or current_user.email) if current_user else "User"
+    user_role = (current_user.role or "User") if current_user else "User"
+
+    # ── Aggregate counts directly from DB tables ──────────────────────────────
     total_users = db.execute(select(func.count()).select_from(User)).scalar() or 0
 
-    # Unread notifications for user_id=1 (or global)
+    # Unread notifications (global count — no per-user filtering yet)
     unread_notifications = db.execute(
         select(func.count())
         .select_from(Notification)
-        .where(Notification.is_read == False)
+        .where(Notification.is_read.is_(False))
     ).scalar() or 0
 
-    # Pull analytics snapshot values (key-value store for computed metrics)
-    snapshots = {}
-    snap_result = db.execute(select(AnalyticsSnapshot))
-    for snap in snap_result.scalars().all():
+    # Pull analytics snapshot key-value store
+    snapshots: dict = {}
+    for snap in db.execute(select(AnalyticsSnapshot)).scalars().all():
         snapshots[snap.label.lower().replace(" ", "_")] = snap.value
 
-    # Pull monthly volume data to derive contract counts
-    vol_result = db.execute(select(MonthlyVolume).order_by(MonthlyVolume.sort_order.asc()))
-    volumes = vol_result.scalars().all()
+    # Monthly volume → contract counts
+    volumes = db.execute(
+        select(MonthlyVolume).order_by(MonthlyVolume.sort_order.asc())
+    ).scalars().all()
     total_contracts = sum(v.value for v in volumes) if volumes else 0
-    active_contracts = int(total_contracts * 0.78) if total_contracts else 0
-    expired_contracts = int(total_contracts * 0.13) if total_contracts else 0
-    pending_approvals = int(total_contracts * 0.09) if total_contracts else 0
-    high_risk = int(total_contracts * 0.13) if total_contracts else 0
-    renewals_due = int(total_contracts * 0.05) if total_contracts else 0
 
-    # Try to get compliance_score from snapshots
+    # Derive sub-counts from the total (real data would come from a contracts table)
+    active_contracts  = int(total_contracts * 0.78)
+    expired_contracts = int(total_contracts * 0.13)
+    pending_approvals = int(total_contracts * 0.09)
+    high_risk         = int(total_contracts * 0.13)
+    renewals_due      = int(total_contracts * 0.05)
+
+    # Compliance score from snapshot
     compliance_score = snapshots.get("compliance_score", "84%")
-    if not compliance_score.endswith("%"):
-        compliance_score = compliance_score + "%"
-
-    # User info from first user in DB
-    first_user = db.execute(select(User).order_by(User.id.asc())).scalars().first()
-    user_name = first_user.full_name if first_user else "User"
-    user_role = first_user.role if first_user else "User"
+    if not str(compliance_score).endswith("%"):
+        compliance_score = f"{compliance_score}%"
 
     return DashboardSummaryResponse(
         total_users=total_users,

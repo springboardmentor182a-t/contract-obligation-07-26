@@ -37,7 +37,10 @@ export default function Home() {
   useEffect(() => {
     async function loadSummary() {
       try {
-        const res = await fetch("/api/analytics/dashboard-summary");
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+        const res = await fetch("/api/analytics/dashboard-summary", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         if (res.ok) {
           const data = await res.json();
           setSummary(data);
@@ -51,7 +54,8 @@ export default function Home() {
     loadSummary();
   }, []);
 
-  const displayName = summary?.user_name || user?.name || "User";
+  // user.name is loaded from localStorage immediately by UIContext, then refreshed from API
+  const displayName = user?.name || summary?.user_name || "User";
   const unread = summary?.unread_notifications ?? 0;
   const renewalsDue = summary?.renewals_due ?? 0;
   const complianceScore = summary?.compliance_score ?? "—";
@@ -180,20 +184,14 @@ export default function Home() {
 
       {/* ── Row 1: Charts ── */}
       <div className="split-grid charts-row">
-        <div style={styles.widgetWrapper}>
-          <ContractActivityChart />
-        </div>
-        <div style={styles.widgetWrapper}>
-          <RiskDistributionChart />
-        </div>
+        <ContractActivityChart />
+        <RiskDistributionChart />
       </div>
 
       {/* ── Row 2: Activities + Right Stack ── */}
       <div className="split-grid details-row">
-        <div style={styles.widgetWrapper}>
-          <RecentActivities />
-        </div>
-        <div style={styles.rightStack}>
+        <RecentActivities />
+        <div className="right-stack">
           <AIRecommendations />
           <SystemHealth />
         </div>
@@ -312,14 +310,5 @@ const styles = {
     fontWeight: "600",
     letterSpacing: "0.3px",
     textAlign: "center",
-  },
-  rightStack: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1.5rem",
-  },
-  widgetWrapper: {
-    width: "100%",
-    minWidth: 0,
   },
 };
