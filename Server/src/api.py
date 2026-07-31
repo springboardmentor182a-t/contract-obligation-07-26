@@ -11,15 +11,15 @@ from src.renewals import controller as renewal_controller
 from src.user_setting import controller as user_setting_contraller
 from src.notifications import controller as notification_controller
 from src.compliance import controller as compliance_controller
-from src.dashboards import controller as dashboard_controller
-from src.chatbot import controller as chatbot_controller
+#from src.dashboards import controller as dashboard_controller
+#from src.chatbot import controller as chatbot_controller
 
 router = APIRouter()
 
 router.include_router(auth_controller.router, tags=["Authentication"])
 router.include_router(user_controller.router, tags=["Users"])
-router.include_router(dashboard_controller.router, tags=["Dashboards"])
-router.include_router(chatbot_controller.router, tags=["Chatbot"])
+#router.include_router(dashboard_controller.router, tags=["Dashboards"])
+#router.include_router(chatbot_controller.router, tags=["Chatbot"])
 router.include_router(organization_controller.router, tags=["Organization"])
 router.include_router(notification_controller.router, tags=["Notifications"])
 router.include_router(user_setting_contraller.router, tags=["User Setting"])
