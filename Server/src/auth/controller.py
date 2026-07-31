@@ -56,13 +56,26 @@ def register_user(
         location=user_data.location,
     )
 
+    existing_user = db.query(User).filter(User.email == user_data.email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=400, detail="User with this email already exists."
+        )
+
     try:
         db.add(user)
         db.commit()
         db.refresh(user)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400, detail="User with this email already exists."
+        )
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500, detail="An error occurred while creating the user."
+        )
 
     create_audit_log(
         db=db,
@@ -71,7 +84,7 @@ def register_user(
         action="register user",
         status="success",
         module="Authentication",
-        description="register new user.",
+        description="register new user by admin.",
     )
 
     return user
@@ -151,8 +164,12 @@ def update_user(
     user.designation = user_data.designation
     user.location = user_data.location
 
-    db.commit()
-    db.refresh(user)
+    try:
+        db.commit()
+        db.refresh(user)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
     create_audit_log(
         db=db,
