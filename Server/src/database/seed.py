@@ -7,7 +7,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from src.database.core import SessionLocal, engine
 from src.entities.compliance import Base, Compliance
-from src.entities.contract import Contract, ContractCategories, ContractStatus
+from src.entities.contract import Contract
+from src.entities.obligation import Obligation
 
 def seed_db():
     print("Initializing database schema...")
@@ -20,17 +21,14 @@ def seed_db():
         if not contract:
             print("No contract found. Creating a default contract for compliance records...")
             contract = Contract(
-                titile=ContractCategories.VENDOR_CONTRACTS,
-                category=ContractCategories.VENDOR_CONTRACTS,
-                department="Legal",
-                company_name="TechCorp Solutions",
-                vendor_name="TechCorp Solutions",
-                responsible_person="John Doe",
-                contract_value=150000,
-                description="Default contract for compliance tracking",
-                status=ContractStatus.ACTIVE,
-                effective_date=datetime.utcnow() - timedelta(days=365),
-                expiry_date=datetime.utcnow() + timedelta(days=365)
+                title="Default Vendor Contract",
+                vendor="TechCorp Solutions",
+                type="Vendor Contracts",
+                value=150000.0,
+                end_date=date.today() + timedelta(days=365),
+                owner="John Doe",
+                status="Active",
+                compliance="98%",
             )
             db.add(contract)
             db.commit()
