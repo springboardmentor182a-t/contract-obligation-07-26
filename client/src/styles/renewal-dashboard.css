@@ -853,3 +853,98 @@
     justify-content: space-between;
   }
 }
+
+/* ==========================================
+   DARK MODE — RENEWAL DASHBOARD
+========================================== */
+
+[data-theme="dark"] .renewal-hero-card,
+[data-theme="dark"] .renewal-card {
+  background: #111B2A;
+  border-color: #1E2D40;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+[data-theme="dark"] .renewal-hero-card__label { color: #94A3B8; }
+[data-theme="dark"] .renewal-hero-card__title { color: #F1F5F9; }
+[data-theme="dark"] .renewal-hero-card p      { color: #94A3B8; }
+
+/* Form */
+[data-theme="dark"] .renewal-form label { color: #94A3B8; }
+[data-theme="dark"] .renewal-form input,
+[data-theme="dark"] .renewal-form textarea,
+[data-theme="dark"] .renewal-form select {
+  background: #0D1828;
+  border-color: #1E2D40;
+  color: #F1F5F9;
+}
+[data-theme="dark"] .renewal-form input:focus,
+[data-theme="dark"] .renewal-form textarea:focus,
+[data-theme="dark"] .renewal-form select:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+}
+
+/* Buttons */
+[data-theme="dark"] .btn-secondary {
+  background: #1E293B;
+  border-color: #2A3A50;
+  color: #CBD5E1;
+}
+[data-theme="dark"] .btn-secondary:hover { background: #243450; border-color: #3B82F6; }
+
+/* Pipeline / prediction cards */
+[data-theme="dark"] .renewal-pipeline-item,
+[data-theme="dark"] .pipeline-card,
+[data-theme="dark"] .renewal-row {
+  background: #0D1828;
+  border-color: #1E2D40;
+}
+[data-theme="dark"] .renewal-pipeline-item:hover,
+[data-theme="dark"] .renewal-row:hover { background: #162032; }
+[data-theme="dark"] .pipeline-title,
+[data-theme="dark"] .renewal-contract-name { color: #F1F5F9; }
+[data-theme="dark"] .pipeline-meta,
+[data-theme="dark"] .renewal-vendor { color: #94A3B8; }
+
+/* Summary cards */
+[data-theme="dark"] .renewal-summary-card,
+[data-theme="dark"] .renewal-stat-card {
+  background: #111B2A;
+  border-color: #1E2D40;
+}
+[data-theme="dark"] .renewal-stat-value { color: #F1F5F9; }
+[data-theme="dark"] .renewal-stat-label { color: #94A3B8; }
+
+/* Prediction bars */
+[data-theme="dark"] .progress-track  { background: #1E2D40; }
+[data-theme="dark"] .prediction-card { background: #0D1828; border-color: #1E2D40; }
+[data-theme="dark"] .prediction-name { color: #F1F5F9; }
+[data-theme="dark"] .prediction-meta { color: #94A3B8; }
+
+/* Top navbar (renewal page) */
+[data-theme="dark"] .top-navbar {
+  background: #111B2A;
+  border-color: #1E2D40;
+}
+[data-theme="dark"] .top-navbar__search-input {
+  background: #0D1828;
+  border-color: #1E2D40;
+  color: #F1F5F9;
+}
+[data-theme="dark"] .top-navbar__icon-button { color: #94A3B8; background: #162032; }
+[data-theme="dark"] .top-navbar__icon-button:hover { color: #F1F5F9; background: #1E2D40; }
+[data-theme="dark"] .top-navbar__profile { background: #162032; border-color: #1E2D40; }
+[data-theme="dark"] .top-navbar__avatar { background: #1D4ED8; }
+[data-theme="dark"] .top-navbar__profile strong { color: #F1F5F9; }
+[data-theme="dark"] .top-navbar__profile span   { color: #94A3B8; }
+
+/* Badges */
+[data-theme="dark"] .renewal-badge-expiring { background: rgba(217,119,6,0.2);  color: #FCD34D; }
+[data-theme="dark"] .renewal-badge-active   { background: rgba(21,128,61,0.2);  color: #4ADE80; }
+[data-theme="dark"] .renewal-badge-urgent   { background: rgba(220,38,38,0.2);  color: #F87171; }
+[data-theme="dark"] .renewal-badge-upcoming { background: rgba(59,130,246,0.2); color: #93C5FD; }
+
+/* Empty state */
+[data-theme="dark"] .renewal-empty-state { color: #64748B; }
+[data-theme="dark"] .renewal-empty-state h3 { color: #CBD5E1; }

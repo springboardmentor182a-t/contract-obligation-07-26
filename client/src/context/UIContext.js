@@ -1,62 +1,136 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const UIContext = createContext(null);
 
-export function UIProvider({ children }){
-  const [notificationCount, setNotificationCount] = useState(0);
-  const [user, setUser] = useState({ name: '', role: '', email: '' });
-  const [theme, setTheme] = useState('light');
-  const [toast, setToast] = useState({ visible: false, message: "" });
+/**
+ * Get the auth token from storage (localStorage for "remember me", sessionStorage otherwise).
+ */
+function getStoredToken() {
+  return localStorage.getItem('token') || sessionStorage.getItem('token') || null;
+}
 
+/**
+ * Get the user info that Login.js stored after a successful login.
+ */
+function getStoredUser() {
+  const name = localStorage.getItem('name') || sessionStorage.getItem('name') || '';
+  const role = localStorage.getItem('role') || sessionStorage.getItem('role') || '';
+  const email = localStorage.getItem('email') || sessionStorage.getItem('email') || '';
+  return { name, role, email };
+}
+
+export function UIProvider({ children }) {
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  // Initialise from storage so name/role appear immediately after login redirect
+  const [user, setUser] = useState(() => getStoredUser());
+
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  const [toast, setToast] = useState({ visible: false, message: '' });
+
+  // Apply / persist theme
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
-  useEffect(() => {
-    async function loadUserProfile() {
-      try {
-        const res = await fetch("/api/profile");
-        if (res.ok) {
-          const data = await res.json();
-          setUser({ name: data.full_name, role: data.role, email: data.email });
-        }
-        // If backend is unavailable, user stays as empty — no dummy fallback
-      } catch (err) {
-        console.warn('Profile API unavailable — waiting for DB connection.', err);
+  // After mounting, refresh user from the API (passing the JWT so the backend
+  // returns the correct user, not always user #1).
+  const loadUserProfile = useCallback(async () => {
+    const token = getStoredToken();
+    if (!token) return; // not logged in yet
+
+    // Immediately apply whatever is already in storage so the navbar
+    // shows the correct name without waiting for the API round-trip.
+    const stored = getStoredUser();
+    if (stored.name) setUser(stored);
+
+    try {
+      const res = await fetch('/api/profile', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const refreshed = {
+          name: data.full_name || data.name || stored.name || data.email,
+          role: data.role || stored.role || 'User',
+          email: data.email || stored.email || '',
+        };
+        setUser(refreshed);
+        // Keep storage in sync so getStoredUser() returns up-to-date values
+        const storage = localStorage.getItem('token') ? localStorage : sessionStorage;
+        storage.setItem('name', refreshed.name);
+        storage.setItem('role', refreshed.role);
+        storage.setItem('email', refreshed.email);
       }
+    } catch (err) {
+      // API not reachable — use whatever was in storage
+      console.warn('Profile API unavailable, using stored data:', err);
     }
-    loadUserProfile();
   }, []);
 
-  function toggleTheme(){
-    setTheme(t => (t === 'light' ? 'dark' : 'light'));
+  useEffect(() => {
+    loadUserProfile();
+  }, [loadUserProfile]);
+
+  // Fetch notification count from backend
+  useEffect(() => {
+    const token = getStoredToken();
+    if (!token) return;
+
+    async function loadNotifCount() {
+      try {
+        const res = await fetch('/api/notifications', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const unread = Array.isArray(data) ? data.filter((n) => !n.read).length : 0;
+          setNotificationCount(unread);
+        }
+      } catch {
+        // silently fail — sidebar health check handles system errors
+      }
+    }
+    loadNotifCount();
+    const interval = setInterval(loadNotifCount, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  function toggleTheme() {
+    setTheme((t) => (t === 'light' ? 'dark' : 'light'));
   }
 
-  function showToast(message){
+  function showToast(message) {
     setToast({ visible: true, message });
-    setTimeout(() => {
-      setToast({ visible: false, message: "" });
-    }, 3000);
+    setTimeout(() => setToast({ visible: false, message: '' }), 3000);
   }
 
   return (
-    <UIContext.Provider value={{ 
-      notificationCount, 
-      setNotificationCount, 
-      user, 
-      setUser, 
-      theme, 
-      toggleTheme,
-      toast,
-      showToast
-    }}>
+    <UIContext.Provider
+      value={{
+        notificationCount,
+        setNotificationCount,
+        user,
+        setUser,
+        theme,
+        toggleTheme,
+        toast,
+        showToast,
+        refreshUser: loadUserProfile,
+      }}
+    >
       {children}
     </UIContext.Provider>
-  )
+  );
 }
 
-export function useUI(){
+export function useUI() {
   return useContext(UIContext);
 }
 
