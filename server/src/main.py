@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.api import api_router
 from src.contract_repository.controller import router as contract_repository_router
+from src.ai_compliance_guardian.controller import (
+    router as compliance_guardian_router,
+)
 from src.database.core import initialize_database
 from src.logging import configure_logging
 from src.rate_limiter import init_rate_limiter
@@ -48,7 +51,10 @@ app.include_router(
     contract_repository_router,
     prefix="/api",
 )
-
+app.include_router(
+    compliance_guardian_router,
+    prefix="/api",
+)
 
 @app.get("/")
 def root():

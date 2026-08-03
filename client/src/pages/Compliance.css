@@ -628,3 +628,207 @@
 /* Empty / placeholder */
 [data-theme="dark"] .placeholder-title { color: #CBD5E1; }
 [data-theme="dark"] .placeholder-text  { color: #64748B; }
+/* =======================================================
+   AI Compliance Guardian
+======================================================= */
+
+.ai-guardian-wrapper {
+  margin: 32px 0;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.ai-guardian-header {
+  margin-bottom: 24px;
+}
+
+.ai-guardian-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ai-guardian-header p {
+  margin-top: 8px;
+  color: #64748b;
+  line-height: 1.6;
+  max-width: 720px;
+}
+/* ===========================
+   AI Compliance Filters
+=========================== */
+
+.ai-filter-card {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.ai-filter-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ai-search-box {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.ai-search-box input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+}
+
+.ai-filter-select {
+  min-width: 180px;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: white;
+  font-size: 14px;
+}
+.border-purple {
+  border-top: 3px solid #8b5cf6;
+}
+
+.text-purple {
+  color: #8b5cf6;
+}
+.ai-alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ai-alert-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.ai-alert-content strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.ai-alert-content p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.ai-alert-icon {
+  margin-top: 2px;
+}
+/* ===============================
+   Compliance Details Modal
+================================= */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.compliance-details-modal {
+  width: 700px;
+  max-width: 92%;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.modal-close-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.compliance-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.compliance-details-grid label {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.compliance-details-grid p {
+  margin: 0;
+  font-size: 15px;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.recommendation-box {
+  margin-top: 28px;
+  padding: 18px;
+  border-radius: 12px;
+  background: #eff6ff;
+  border-left: 4px solid #2563eb;
+}
+
+.recommendation-box h4 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.recommendation-box p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .compliance-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .compliance-details-modal {
+    padding: 20px;
+  }
+}

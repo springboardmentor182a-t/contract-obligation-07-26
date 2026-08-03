@@ -2,10 +2,20 @@ import React, { useState, useEffect } from "react";
 import { ShieldIcon, DownloadIcon } from "../components/Icons";
 import "./Compliance.css";
 import { API_BASE } from "../config/api";
+import { getComplianceDashboard } from "../services/complianceAPI";
+
+import SummaryCards from "../components/AICompliance/SummaryCards";
+import ComplianceTable from "../components/AICompliance/ComplianceTable";
+import AlertsPanel from "../components/AICompliance/AlertsPanel";
+import Filters from "../components/AICompliance/Filters";
 export default function Compliance() {
   const [controls, setControls] = useState([]);
   const [selectedControl, setSelectedControl] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [guardianDashboard, setGuardianDashboard] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [riskFilter, setRiskFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   useEffect(() => {
     async function fetchControls() {
@@ -21,7 +31,19 @@ export default function Compliance() {
         setLoading(false);
       }
     }
+    async function fetchGuardianDashboard() {
+  try {
+    const data = await getComplianceDashboard();
+    setGuardianDashboard(data);
+  } catch (err) {
+    console.warn(
+      "AI Compliance Guardian unavailable.",
+      err
+    );
+  }
+}
     fetchControls();
+    fetchGuardianDashboard();
   }, []);
 
   // Deduplicate controls by ID to guarantee clean unique list
@@ -104,6 +126,32 @@ export default function Compliance() {
     downloadAnchor.click();
     downloadAnchor.remove();
   };
+  const filteredRecords =
+  guardianDashboard?.records?.filter((record) => {
+
+    const matchesSearch =
+      record.contract_name
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      record.vendor
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
+    const matchesRisk =
+      riskFilter === "All" ||
+      record.risk_level === riskFilter;
+
+    const matchesStatus =
+      statusFilter === "All" ||
+      record.compliance_status === statusFilter;
+
+    return (
+      matchesSearch &&
+      matchesRisk &&
+      matchesStatus
+    );
+
+  }) || [];
 
   return (
     <div className="compliance-dashboard fade-in-el">
@@ -116,6 +164,11 @@ export default function Compliance() {
 
       {/* Top Grid displaying four key indicator cards */}
       <div className="metrics-summary-grid">
+        {/* {guardianDashboard && (
+              <SummaryCards
+                  data={guardianDashboard.summary}
+              />
+          )} */}
         <div className="metric-indicator-card border-blue">
           <div className="metric-header">
             <span className="metric-label">Overall Score</span>
@@ -147,6 +200,44 @@ export default function Compliance() {
           <div className="metric-value text-red">{failedPolicies}</div>
         </div>
       </div>
+      <section className="ai-guardian-wrapper">
+
+    <div className="ai-guardian-header">
+        <h3>AI Compliance Guardian</h3>
+
+        <p>
+            Continuously monitors compliance activities,
+            identifies risks before they become violations,
+            and recommends corrective actions.
+        </p>
+    </div>
+
+    {guardianDashboard && (
+        <>
+            <SummaryCards
+                data={guardianDashboard.summary}
+            />
+
+            <Filters
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              riskFilter={riskFilter}
+              setRiskFilter={setRiskFilter}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+            />
+
+            <ComplianceTable
+                data={filteredRecords}
+            />
+
+            <AlertsPanel
+                alerts={guardianDashboard.alerts}
+            />
+        </>
+    )}
+
+</section>
 
       {/* Two-column responsive workspace layout */}
       <div className="workspace-container">
