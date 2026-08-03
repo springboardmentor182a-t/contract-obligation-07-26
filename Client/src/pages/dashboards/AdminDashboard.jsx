@@ -37,7 +37,7 @@ import SignupForm from '../../features/authentication/components/SignupForm';
 import { signupService } from '../../features/authentication/services/signup';
 import { getAllUsers } from '../../features/authentication/services/getAllUsers';
 import { getAuditLogs } from '../../features/auditLogs/services/getAuditLogs';
-import { getUserNotifications } from '../../features/notifications/services/notificationAPI';
+import { getUserNotifications, getNotificationSummary } from '../../features/notifications/services/notificationAPI';
 import './Dashboard.css';
 
 ChartJS.register(
@@ -62,6 +62,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [notifSummary, setNotifSummary] = useState({ critical: 0, high: 0, medium: 0, low: 0 });
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState('');
@@ -71,14 +72,16 @@ const AdminDashboard = () => {
 
       setLoading(true);
       try {
-        const [usersData, logsData, notifsData] = await Promise.all([
+        const [usersData, logsData, notifsData, summaryData] = await Promise.all([
           getAllUsers().catch(() => []),
           getAuditLogs().catch(() => []),
-          getUserNotifications().catch(() => [])
+          getUserNotifications().catch(() => []),
+          getNotificationSummary().catch(() => ({ critical: 0, high: 0, medium: 0, low: 0 }))
         ]);
         setUsers(usersData);
         setAuditLogs(logsData);
         setNotifications(notifsData);
+        setNotifSummary(summaryData);
       } catch (err) {
         console.error("Dashboard fetch error:", err);
       } finally {
@@ -305,6 +308,43 @@ const AdminDashboard = () => {
 
           </div>
         ))}
+      </div>
+
+      <div className="dashboard-header mb-2 stagger-1" style={{ marginTop: '2rem' }}>
+        <div>
+          <h2 className="text-xl font-bold">AI Notification Priorities</h2>
+        </div>
+      </div>
+
+      <div className="stats-grid stagger-1">
+        <div className="stat-card" style={{ borderLeft: '4px solid #e74c3c' }}>
+          <div className="stat-card-header">
+            <p className="stat-label" style={{ fontWeight: 'bold' }}>Critical</p>
+            <div className="stat-icon" style={{ color: '#e74c3c', backgroundColor: 'rgba(231, 76, 60, 0.15)' }}><Bell size={24} /></div>
+          </div>
+          <div className="stat-content"><h3>{notifSummary.critical}</h3></div>
+        </div>
+        <div className="stat-card" style={{ borderLeft: '4px solid #f39c12' }}>
+          <div className="stat-card-header">
+            <p className="stat-label" style={{ fontWeight: 'bold' }}>High</p>
+            <div className="stat-icon" style={{ color: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.15)' }}><Bell size={24} /></div>
+          </div>
+          <div className="stat-content"><h3>{notifSummary.high}</h3></div>
+        </div>
+        <div className="stat-card" style={{ borderLeft: '4px solid #f1c40f' }}>
+          <div className="stat-card-header">
+            <p className="stat-label" style={{ fontWeight: 'bold' }}>Medium</p>
+            <div className="stat-icon" style={{ color: '#f1c40f', backgroundColor: 'rgba(241, 196, 15, 0.15)' }}><Bell size={24} /></div>
+          </div>
+          <div className="stat-content"><h3>{notifSummary.medium}</h3></div>
+        </div>
+        <div className="stat-card" style={{ borderLeft: '4px solid #2ecc71' }}>
+          <div className="stat-card-header">
+            <p className="stat-label" style={{ fontWeight: 'bold' }}>Low</p>
+            <div className="stat-icon" style={{ color: '#2ecc71', backgroundColor: 'rgba(46, 204, 113, 0.15)' }}><Bell size={24} /></div>
+          </div>
+          <div className="stat-content"><h3>{notifSummary.low}</h3></div>
+        </div>
       </div>
 
       <div className="dashboard-middle-grid stagger-2">

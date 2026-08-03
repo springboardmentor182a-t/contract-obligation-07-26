@@ -10,6 +10,7 @@ from src.organization import controller as organization_controller
 from src.renewals import controller as renewal_controller
 from src.user_setting import controller as user_setting_contraller
 from src.notifications import controller as notification_controller
+from src.compliance import controller as compliance_controller
 from src.contracts import controller as contracts_controller
 from src.obligations import controller as obligations_controller
 #from src.dashboards import controller as dashboard_controller
