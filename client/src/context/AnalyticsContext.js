@@ -17,3 +17,4 @@ export const AnalyticsProvider = ({ children }) => {
 export const useAnalytics = () => {
   return useContext(AnalyticsContext);
 };
+

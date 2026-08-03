@@ -22,4 +22,5 @@ export const useSignup = () => {
   };
 
   return { signup, isLoading, error, success };
+
 };
