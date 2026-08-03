@@ -1,7 +1,8 @@
 import datetime
 import random
 from src.database.db import engine, Base, SessionLocal
-from src.database.models import User, Contract, Obligation, Renewal
+from src.database.models import User, Contract, Obligation, Renewal, Transaction, AuditLog, TaxEstimator, Notification
+from src.notifications.controller import ensure_initial_notifications
 
 RISK_LEVELS = ["Low", "Medium", "High", "Critical"]
 RISK_WEIGHTS = [0.55, 0.25, 0.14, 0.06]  # skew toward Low, matches typical portfolios
@@ -87,14 +88,12 @@ def seed_data():
     db.add_all(renewals)
 
     print("Seeding Additional Data...")
-    from src.database.models import Transaction, AuditLog, TaxEstimator
-
     transactions = [
         Transaction(transaction_id="TRX-101", date="Oct 12, 2026", description="Payment for Contract A", amount="$4,200.00", status="Completed"),
         Transaction(transaction_id="TRX-102", date="Oct 15, 2026", description="Vendor Retainer", amount="$1,500.00", status="Completed"),
         Transaction(transaction_id="TRX-103", date="Oct 18, 2026", description="Consulting Fees", amount="$3,800.00", status="Pending"),
         Transaction(transaction_id="TRX-104", date="Oct 20, 2026", description="Software License", amount="$5,100.00", status="Completed"),
-        Transaction(transaction_id="TRX-105", date="Oct 22, 2026", description="Office Supplies", amount="$900.00", status="Failed"),
+        Transaction(transaction_id="TRX-105", date="Oct 25, 2026", description="Office Supplies", amount="$900.00", status="Failed"),
         Transaction(transaction_id="TRX-106", date="Oct 25, 2026", description="Marketing Ad Spend", amount="$2,300.00", status="Completed"),
     ]
     db.add_all(transactions)
@@ -125,8 +124,9 @@ def seed_data():
     ]
     te = TaxEstimator(estimatedTax="$12,450", taxRate="15%", deductions="$3,200", netIncome="$85,000", breakdown=json.dumps(bd))
     db.add(te)
-
     db.commit()
+
+    ensure_initial_notifications(db)
     db.close()
     print("Database seeded successfully!")
 

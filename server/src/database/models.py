@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, Boolean, DateTime
 from sqlalchemy.orm import relationship
+from datetime import datetime
 from .db import Base
 
 class User(Base):
@@ -8,9 +9,12 @@ class User(Base):
     user_id = Column(String, unique=True, index=True)
     name = Column(String)
     email = Column(String, unique=True, index=True)
-    role = Column(String)
-    status = Column(String)
-    lastLogin = Column(String)
+    password_hash = Column(String, nullable=True)
+    otp_code = Column(String, nullable=True)
+    otp_expiry = Column(DateTime, nullable=True)
+    role = Column(String, default="User")
+    status = Column(String, default="Active")
+    lastLogin = Column(String, nullable=True)
 
 class Contract(Base):
     __tablename__ = "contracts"
@@ -22,7 +26,7 @@ class Contract(Base):
     value = Column(Float)
     owner = Column(String)
     date = Column(Date)
-    # NEW: needed for the dashboard's Risk Distribution / Department Performance widgets
+    # Needed for the dashboard's Risk Distribution / Department Performance widgets
     risk = Column(String, default="Low")           # Low | Medium | High | Critical
     department = Column(String, default="Legal")   # Legal | Procurement | HR | Finance | Operations | IT
     obligations = relationship("Obligation", back_populates="contract")
@@ -73,3 +77,16 @@ class TaxEstimator(Base):
     deductions = Column(String)
     netIncome = Column(String)
     breakdown = Column(String)
+
+class Notification(Base):
+    __tablename__ = "notifications"
+    id = Column(Integer, primary_key=True, index=True)
+    notification_id = Column(String, unique=True, index=True)
+    user_id = Column(String, index=True, nullable=True)
+    type = Column(String, index=True)
+    title = Column(String)
+    message = Column(String)
+    details = Column(String, nullable=True)
+    link = Column(String, nullable=True)
+    is_read = Column(Boolean, default=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)

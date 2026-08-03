@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PageContainer from './layout/PageContainer';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -20,12 +20,14 @@ import UserManagement from './pages/UserManagement';
 import Renewals from './pages/Renewals';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ThemeProvider } from './context/ThemeContext';
+import { NotificationProvider } from './context/NotificationContext';
 import './assets/theme.css';
 
 function App() {
   return (
     <ThemeProvider>
-      <Router>
+      <NotificationProvider>
+        <Router>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
@@ -51,6 +53,7 @@ function App() {
         </Route>
       </Routes>
     </Router>
+      </NotificationProvider>
     </ThemeProvider>
   );
 }

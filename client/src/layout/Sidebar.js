@@ -2,10 +2,12 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { DashboardIcon, ContractsIcon, ObligationsIcon, ComplianceIcon, SettingsIcon, ReportsIcon } from '../components/DashboardIcons';
 import { useTheme } from '../context/ThemeContext';
+import { useNotifications } from '../context/NotificationContext';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
   const { isDarkMode } = useTheme();
+  const { unreadCount } = useNotifications();
 
   const isActive = (path) => {
     return location.pathname.startsWith(path) ? 'bg-white/10 text-white border-l-4 border-emerald-400' : 'text-gray-300 hover:bg-white/5 hover:text-white';
@@ -80,6 +82,17 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               <ReportsIcon className="w-5 h-5" />
             </div>
             Reports
+          </Link>
+          <Link to="/notifications" onClick={() => setIsOpen(false)} className={`${linkClass} ${isActive('/notifications')}`}>
+            <div className="p-2 rounded-lg bg-blue-500/20 text-blue-300 mr-3">
+              <i className="fa-regular fa-bell w-5 h-5 flex items-center justify-center"></i>
+            </div>
+            <span className="flex-1">Notifications</span>
+            {unreadCount > 0 && (
+              <span className="bg-red-500 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm">
+                {unreadCount}
+              </span>
+            )}
           </Link>
         </nav>
 
