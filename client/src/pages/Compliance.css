@@ -542,3 +542,89 @@
   max-width: 240px;
   margin-inline: auto;
 }
+
+/* ==========================================
+   DARK MODE — COMPLIANCE PAGE
+========================================== */
+
+[data-theme="dark"] .compliance-dashboard { color: #F1F5F9; }
+[data-theme="dark"] .dashboard-title    { color: #F1F5F9; }
+[data-theme="dark"] .dashboard-subtitle { color: #94A3B8; }
+
+/* Metric cards */
+[data-theme="dark"] .metric-card,
+[data-theme="dark"] .compliance-metric-card {
+  background: #111B2A;
+  border-color: #1E2D40;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .metric-card:hover { box-shadow: 0 10px 28px rgba(0,0,0,0.45); }
+[data-theme="dark"] .metric-value,
+[data-theme="dark"] .metric-number { color: #F1F5F9; }
+[data-theme="dark"] .metric-label,
+[data-theme="dark"] .metric-subtitle { color: #94A3B8; }
+
+/* Controls table / list */
+[data-theme="dark"] .controls-table-wrapper,
+[data-theme="dark"] .controls-container {
+  background: #111B2A;
+  border-color: #1E2D40;
+}
+[data-theme="dark"] .controls-table thead,
+[data-theme="dark"] .controls-header-row { background: #0D1828; }
+[data-theme="dark"] .controls-table th { color: #94A3B8; border-color: #1E2D40; }
+[data-theme="dark"] .controls-table td { color: #CBD5E1; border-color: #162032; }
+[data-theme="dark"] .controls-table tbody tr:hover,
+[data-theme="dark"] .control-row:hover { background: #162032; }
+[data-theme="dark"] .control-name,
+[data-theme="dark"] .control-title { color: #F1F5F9; }
+[data-theme="dark"] .control-desc,
+[data-theme="dark"] .control-meta { color: #94A3B8; }
+
+/* Control detail panel */
+[data-theme="dark"] .control-detail-panel,
+[data-theme="dark"] .control-detail-card {
+  background: #111B2A;
+  border-color: #1E2D40;
+}
+[data-theme="dark"] .control-detail-panel h3 { color: #F1F5F9; }
+[data-theme="dark"] .detail-section-label { color: #64748B; }
+[data-theme="dark"] .detail-section-value { color: #CBD5E1; }
+[data-theme="dark"] .detail-divider       { border-color: #1E2D40; }
+
+/* Compliance log table */
+[data-theme="dark"] .compliance-log-row   { border-color: #162032; }
+[data-theme="dark"] .compliance-log-row:hover { background: #162032; }
+[data-theme="dark"] .log-timestamp { color: #64748B; }
+
+/* Score gauge */
+[data-theme="dark"] .score-track { background: #1E2D40; }
+
+/* Buttons */
+[data-theme="dark"] .compliance-outline-btn {
+  background: #1E293B;
+  border-color: #2A3A50;
+  color: #CBD5E1;
+}
+[data-theme="dark"] .compliance-outline-btn:hover {
+  background: #243450;
+  border-color: #3B82F6;
+  color: #F1F5F9;
+}
+
+/* Search / filter */
+[data-theme="dark"] .compliance-search-input,
+[data-theme="dark"] .compliance-filter-select {
+  background: #0D1828;
+  border-color: #1E2D40;
+  color: #F1F5F9;
+}
+
+/* Badges */
+[data-theme="dark"] .status-badge-passed  { background: rgba(21,128,61,0.2);  color: #4ADE80; }
+[data-theme="dark"] .status-badge-warning { background: rgba(217,119,6,0.2);  color: #FCD34D; }
+[data-theme="dark"] .status-badge-failed  { background: rgba(220,38,38,0.2);  color: #F87171; }
+
+/* Empty / placeholder */
+[data-theme="dark"] .placeholder-title { color: #CBD5E1; }
+[data-theme="dark"] .placeholder-text  { color: #64748B; }

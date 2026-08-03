@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Calendar.css";
 import { MONTH_NAMES, STATUS_COLORS, STATUS_LABELS } from "../data/constants";
 import Checkbox from "../components/Form/Checkbox";
@@ -12,32 +12,48 @@ function formatSelectedDate(key) {
   const d = new Date(key + "T00:00:00");
   return MONTH_NAMES[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
 }
-const TODAY = new Date(2026, 6, 7);
+const TODAY = new Date();
 const CAL_TYPES = ["due", "overdue", "ontrack", "renewal"];
 
-const SEED_EVENTS = {
-  "2026-07-03": [{ id: 1, title: "Insurance Certificate Submission", type: "overdue", completed: false }],
-  "2026-07-08": [{ id: 2, title: "Board Compliance Review", type: "ontrack", completed: false }],
-  "2026-07-12": [{ id: 3, title: "Vendor SLA Renewal", type: "due", completed: false }],
-  "2026-07-15": [{ id: 4, title: "Data Processing Addendum Review", type: "due", completed: false }],
-  "2026-07-18": [{ id: 5, title: "Cloudline MSA Renewal Window Opens", type: "renewal", completed: false }],
-  "2026-07-22": [{ id: 6, title: "Quarterly Audit Log Export", type: "ontrack", completed: true }],
-  "2026-07-29": [
-    { id: 7, title: "Prism Co. Payment Milestone", type: "ontrack", completed: false },
-    { id: 8, title: "SafeHaul Contract Renewal", type: "renewal", completed: false },
-  ],
-  "2026-08-01": [{ id: 9, title: "Payment Milestone \u2014 Phase 2", type: "ontrack", completed: false }],
-};
-
 export default function Calendar() {
-  const [year, setYear] = useState(2026);
-  const [month, setMonth] = useState(7);
+  const [year, setYear] = useState(TODAY.getFullYear());
+  const [month, setMonth] = useState(TODAY.getMonth() + 1);
   const [selected, setSelected] = useState(null);
-  const [events, setEvents] = useState(SEED_EVENTS);
+  const [events, setEvents] = useState({});
   const [taskTitle, setTaskTitle] = useState("");
-  const [taskDate, setTaskDate] = useState(dateKey(2026, 7, 7));
+  const [taskDate, setTaskDate] = useState(dateKey(TODAY.getFullYear(), TODAY.getMonth() + 1, TODAY.getDate()));
   const [taskType, setTaskType] = useState("due");
-  const [nextId, setNextId] = useState(10);
+  const [nextId, setNextId] = useState(1);
+
+  // Load upcoming renewals from backend and map them onto calendar
+  useEffect(() => {
+    async function loadRenewals() {
+      try {
+        const res = await fetch("/api/renewals/upcoming");
+        if (!res.ok) return;
+        const data = await res.json();
+        const mapped = {};
+        data.forEach((r, idx) => {
+          const d = new Date();
+          d.setDate(d.getDate() + r.daysLeft);
+          const key = dateKey(d.getFullYear(), d.getMonth() + 1, d.getDate());
+          if (!mapped[key]) mapped[key] = [];
+          mapped[key].push({
+            id: 1000 + idx,
+            title: `${r.code} — ${r.name}`,
+            type: r.daysLeft <= 14 ? "due" : "renewal",
+            completed: false,
+          });
+        });
+        setEvents(prev => ({ ...prev, ...mapped }));
+        // Start nextId after backend ids
+        setNextId(1000 + data.length + 1);
+      } catch (err) {
+        console.warn("Calendar: renewals API unavailable", err);
+      }
+    }
+    loadRenewals();
+  }, []);
 
   const firstWeekday = new Date(year, month - 1, 1).getDay();
   const totalDays = daysInMonth(year, month);
@@ -50,7 +66,7 @@ export default function Calendar() {
 
   function goPrev() { let m = month - 1, y = year; if (m < 1) { m = 12; y -= 1; } setMonth(m); setYear(y); setSelected(null); }
   function goNext() { let m = month + 1, y = year; if (m > 12) { m = 1; y += 1; } setMonth(m); setYear(y); setSelected(null); }
-  function goToday() { setYear(2026); setMonth(7); setSelected(null); }
+  function goToday() { setYear(TODAY.getFullYear()); setMonth(TODAY.getMonth() + 1); setSelected(null); }
 
   function addTask() {
     if (!taskTitle.trim() || !taskDate) return;

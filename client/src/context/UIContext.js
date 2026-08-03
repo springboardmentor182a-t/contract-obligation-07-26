@@ -31,6 +31,11 @@ export function UIProvider({ children }) {
   // Apply / persist theme
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     localStorage.setItem('theme', theme);
   }, [theme]);
 
@@ -40,6 +45,11 @@ export function UIProvider({ children }) {
     const token = getStoredToken();
     if (!token) return; // not logged in yet
 
+    // Immediately apply whatever is already in storage so the navbar
+    // shows the correct name without waiting for the API round-trip.
+    const stored = getStoredUser();
+    if (stored.name) setUser(stored);
+
     try {
       const res = await fetch('/api/profile', {
         headers: { Authorization: `Bearer ${token}` },
@@ -47,9 +57,9 @@ export function UIProvider({ children }) {
       if (res.ok) {
         const data = await res.json();
         const refreshed = {
-          name: data.full_name || data.name || data.email,
-          role: data.role || 'User',
-          email: data.email || '',
+          name: data.full_name || data.name || stored.name || data.email,
+          role: data.role || stored.role || 'User',
+          email: data.email || stored.email || '',
         };
         setUser(refreshed);
         // Keep storage in sync so getStoredUser() returns up-to-date values
@@ -59,7 +69,8 @@ export function UIProvider({ children }) {
         storage.setItem('email', refreshed.email);
       }
     } catch (err) {
-      console.warn('Profile API unavailable:', err);
+      // API not reachable — use whatever was in storage
+      console.warn('Profile API unavailable, using stored data:', err);
     }
   }, []);
 

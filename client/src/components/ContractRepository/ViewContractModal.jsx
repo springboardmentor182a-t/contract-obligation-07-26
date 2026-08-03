@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   X,
   Upload,
@@ -23,20 +23,21 @@ export default function ViewContractModal({
   const [documents, setDocuments] = useState([]);
   const [uploading, setUploading] = useState(false);
 
+  const loadDocuments = useCallback(async () => {
+    if (!contract?.id) return;
+    try {
+      const data = await getDocuments(contract.id);
+      setDocuments(data || []);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [contract]);
+
   useEffect(() => {
     if (contract) {
       loadDocuments();
     }
-  }, [contract]);
-
-  const loadDocuments = async () => {
-    try {
-      const data = await getDocuments(contract.id);
-      setDocuments(data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  }, [contract, loadDocuments]);
 
   const handleUpload = async (e) => {
     const file = e.target.files[0];
@@ -170,18 +171,23 @@ export default function ViewContractModal({
             >
               <h3>Documents</h3>
 
-              <label className="primary-btn" htmlFor="contract-upload">
-                  <Upload size={16} />
-                  Upload Document
-                </label>
+              <label
+                className={`primary-btn ${uploading ? "disabled" : ""}`}
+                htmlFor="contract-upload"
+                style={{ opacity: uploading ? 0.6 : 1, cursor: uploading ? "wait" : "pointer" }}
+              >
+                <Upload size={16} />
+                {uploading ? "Uploading..." : "Upload Document"}
+              </label>
 
-                <input
-                  id="contract-upload"
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  style={{ display: "none" }}
-                  onChange={handleUpload}
-                />
+              <input
+                id="contract-upload"
+                type="file"
+                disabled={uploading}
+                accept=".pdf,.doc,.docx"
+                style={{ display: "none" }}
+                onChange={handleUpload}
+              />
             </div>
                         {documents.length === 0 ? (
               <div className="no-documents">

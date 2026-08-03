@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Upload,
   Download,
   Plus,
 } from "lucide-react";
@@ -23,6 +22,7 @@ import "../styles/contract-repository.css";
 export default function ContractRepository() {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState("");
 
   const [view, setView] = useState("grid");
   const [activeTab, setActiveTab] = useState("all");
@@ -44,6 +44,12 @@ export default function ContractRepository() {
     try {
       const data = await getContracts();
       setContracts(data);
+      setLastUpdated(
+        new Date().toLocaleString("en-US", {
+          month: "short", day: "numeric",
+          hour: "2-digit", minute: "2-digit",
+        })
+      );
     } catch (err) {
       console.error(err);
       alert("Failed to load contracts.");
@@ -147,7 +153,7 @@ const handleExport = () => {
           </p>
 
           <span className="last-updated">
-            Last Updated: Today • 09:45 AM
+            Last Updated: {lastUpdated || "Loading…"}
           </span>
         </div>
 
