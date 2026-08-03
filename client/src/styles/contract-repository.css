@@ -1406,3 +1406,239 @@
 .disabled-btn {
     pointer-events: none;
 }
+
+/* ==========================================
+   DARK MODE — CONTRACT REPOSITORY
+   Uses the global [data-theme="dark"] token
+   set by UIContext on document.documentElement
+========================================== */
+
+[data-theme="dark"] .contract-repository-page {
+    background: #0B1320;
+    color: #F1F5F9;
+}
+
+/* Header */
+[data-theme="dark"] .header-left h1 { color: #F1F5F9; }
+[data-theme="dark"] .header-left p  { color: #94A3B8; }
+[data-theme="dark"] .last-updated   { color: #64748B; }
+
+/* Buttons */
+[data-theme="dark"] .outline-btn {
+    background: #1E293B;
+    border-color: #2A3A50;
+    color: #CBD5E1;
+}
+[data-theme="dark"] .outline-btn:hover {
+    background: #243450;
+    border-color: #3B82F6;
+    color: #F1F5F9;
+}
+
+/* Summary Cards */
+[data-theme="dark"] .contract-summary-card {
+    background: #111B2A;
+    border-color: #1E2D40;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+}
+[data-theme="dark"] .contract-summary-card:hover {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+[data-theme="dark"] .summary-content h3 { color: #F1F5F9; }
+[data-theme="dark"] .summary-content p  { color: #94A3B8; }
+
+/* Search Box */
+[data-theme="dark"] .search-box {
+    background: #111B2A;
+    border-color: #1E2D40;
+}
+[data-theme="dark"] .search-box:hover  { border-color: #2A3A50; }
+[data-theme="dark"] .search-box:focus-within {
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+}
+[data-theme="dark"] .search-box input { color: #F1F5F9; }
+[data-theme="dark"] .search-box svg   { color: #64748B; }
+
+/* Filter Tabs */
+[data-theme="dark"] .filter-tab {
+    background: #111B2A;
+    border-color: #1E2D40;
+    color: #94A3B8;
+}
+[data-theme="dark"] .filter-tab:hover { background: #1A2844; color: #CBD5E1; }
+[data-theme="dark"] .filter-tab.active {
+    background: #1D4ED8;
+    border-color: #1D4ED8;
+    color: #fff;
+}
+
+/* View Toggle */
+[data-theme="dark"] .view-toggle button {
+    background: #111B2A;
+    border-color: #1E2D40;
+    color: #94A3B8;
+}
+[data-theme="dark"] .view-toggle button:hover { background: #1A2844; color: #F1F5F9; }
+[data-theme="dark"] .view-toggle button.active {
+    background: #1D4ED8;
+    border-color: #1D4ED8;
+    color: #fff;
+}
+
+/* Contract Cards */
+[data-theme="dark"] .contract-card {
+    background: #111B2A;
+    border-color: #1E2D40;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .contract-card:hover {
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    border-color: #2A3A50;
+}
+[data-theme="dark"] .contract-card h3 { color: #F1F5F9; }
+[data-theme="dark"] .vendor            { color: #94A3B8; }
+[data-theme="dark"] .card-divider      { border-color: #1E2D40; }
+[data-theme="dark"] .info-label        { color: #64748B; }
+[data-theme="dark"] .info-value        { color: #E2E8F0; }
+[data-theme="dark"] .card-menu:hover   { background: #1A2844; }
+
+/* Table */
+[data-theme="dark"] .table-container {
+    background: #111B2A;
+    border-color: #1E2D40;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .contract-table thead { background: #0D1828; }
+[data-theme="dark"] .contract-table th {
+    color: #94A3B8;
+    border-color: #1E2D40;
+}
+[data-theme="dark"] .contract-table td {
+    color: #CBD5E1;
+    border-color: #162032;
+}
+[data-theme="dark"] .contract-table tbody tr:hover { background: #162032; }
+[data-theme="dark"] .contract-name strong { color: #F1F5F9; }
+[data-theme="dark"] .contract-name span   { color: #94A3B8; }
+
+/* Action Buttons */
+[data-theme="dark"] .action-btn {
+    background: #162032;
+    color: #94A3B8;
+}
+[data-theme="dark"] .action-btn:hover {
+    background: #1D4ED8;
+    color: #fff;
+}
+
+/* Pagination */
+[data-theme="dark"] .page-btn {
+    background: #111B2A;
+    border-color: #1E2D40;
+    color: #94A3B8;
+}
+[data-theme="dark"] .page-btn:hover  { background: #162032; color: #F1F5F9; }
+[data-theme="dark"] .page-btn.active {
+    background: #1D4ED8;
+    border-color: #1D4ED8;
+    color: #fff;
+}
+[data-theme="dark"] .pagination-info { color: #94A3B8; }
+
+/* Empty State */
+[data-theme="dark"] .empty-state       { color: #94A3B8; }
+[data-theme="dark"] .empty-state h3    { color: #F1F5F9; }
+
+/* Scrollbar */
+[data-theme="dark"] .table-container::-webkit-scrollbar-thumb  { background: #2A3A50; }
+[data-theme="dark"] .table-container::-webkit-scrollbar-track  { background: #0D1828; }
+
+/* View Contract Modal */
+[data-theme="dark"] .modal-overlay { background: rgba(5,10,20,0.7); }
+[data-theme="dark"] .view-contract-modal,
+[data-theme="dark"] .contract-modal {
+    background: #111B2A;
+    border: 1px solid #1E2D40;
+}
+[data-theme="dark"] .modal-header {
+    border-color: #1E2D40;
+}
+[data-theme="dark"] .modal-header h2 { color: #F1F5F9; }
+[data-theme="dark"] .close-btn,
+[data-theme="dark"] .icon-btn {
+    color: #64748B;
+}
+[data-theme="dark"] .close-btn:hover,
+[data-theme="dark"] .icon-btn:hover { color: #F1F5F9; }
+[data-theme="dark"] .modal-footer,
+[data-theme="dark"] .modal-actions { border-color: #1E2D40; }
+[data-theme="dark"] .detail-row {
+    border-color: #162032;
+}
+[data-theme="dark"] .detail-row span   { color: #94A3B8; }
+[data-theme="dark"] .detail-row strong { color: #F1F5F9; }
+[data-theme="dark"] .detail-description span { color: #94A3B8; }
+[data-theme="dark"] .detail-description p {
+    background: #0D1828;
+    color: #CBD5E1;
+}
+
+/* Form Inputs inside Modal */
+[data-theme="dark"] .form-grid input,
+[data-theme="dark"] .form-grid select,
+[data-theme="dark"] .contract-form textarea {
+    background: #0D1828;
+    border-color: #1E2D40;
+    color: #F1F5F9;
+}
+[data-theme="dark"] .form-grid input:focus,
+[data-theme="dark"] .form-grid select:focus,
+[data-theme="dark"] .contract-form textarea:focus {
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+}
+
+/* Document Cards */
+[data-theme="dark"] .document-card {
+    background: #0D1828;
+    border-color: #1E2D40;
+}
+[data-theme="dark"] .document-card:hover {
+    border-color: #3B82F6;
+    box-shadow: 0 4px 14px rgba(59,130,246,0.15);
+}
+[data-theme="dark"] .document-icon {
+    background: rgba(59,130,246,0.14);
+    color: #60A5FA;
+}
+[data-theme="dark"] .document-name  { color: #F1F5F9; }
+[data-theme="dark"] .document-meta  { color: #64748B; }
+[data-theme="dark"] .document-icon-btn {
+    background: #162032;
+    color: #94A3B8;
+}
+[data-theme="dark"] .document-icon-btn:hover {
+    background: rgba(59,130,246,0.18);
+    color: #60A5FA;
+}
+[data-theme="dark"] .document-delete-btn:hover {
+    background: rgba(220,38,38,0.18);
+    color: #F87171;
+}
+[data-theme="dark"] .no-documents {
+    border-color: #2A3A50;
+    color: #64748B;
+}
+[data-theme="dark"] .no-documents svg { color: #475569; }
+[data-theme="dark"] .no-documents h4  { color: #CBD5E1; }
+
+/* Risk & Status Badges — ensure legibility on dark backgrounds */
+[data-theme="dark"] .risk-badge.low    { background: rgba(21,128,61,0.2);  color: #4ADE80; }
+[data-theme="dark"] .risk-badge.medium { background: rgba(217,119,6,0.2);  color: #FCD34D; }
+[data-theme="dark"] .risk-badge.high   { background: rgba(220,38,38,0.2);  color: #F87171; }
+[data-theme="dark"] .status-badge.active          { background: rgba(21,128,61,0.2);  color: #4ADE80; }
+[data-theme="dark"] .status-badge.pending-review  { background: rgba(37,99,235,0.2);  color: #93C5FD; }
+[data-theme="dark"] .status-badge.expiring-soon   { background: rgba(217,119,6,0.2);  color: #FCD34D; }
+[data-theme="dark"] .status-badge.draft           { background: rgba(100,116,139,0.2); color: #94A3B8; }
+[data-theme="dark"] .status-badge.expired         { background: rgba(220,38,38,0.2);  color: #F87171; }

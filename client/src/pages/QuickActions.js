@@ -48,35 +48,21 @@ export default function QuickActions() {
   async function handleExecute(action) {
     if (executingId) return;
     setExecutingId(action.id);
-    
-    // Simulate API execution
+
     try {
       const response = await fetch(`${API_BASE}/quick-actions/execute`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action_id: action.id }),
       });
-      
+
       if (response.ok) {
         const logItem = await response.json();
         setLogs(prev => [logItem, ...prev].slice(0, 8));
-      } else {
-        const mockLog = {
-          id: Date.now(),
-          label: action.label,
-          time: "Just now",
-          status: "Success"
-        };
-        setLogs(prev => [mockLog, ...prev].slice(0, 8));
       }
+      // On failure — no mock log, just continue
     } catch (e) {
-      const mockLog = {
-        id: Date.now(),
-        label: action.label,
-        time: "Just now",
-        status: "Success"
-      };
-      setLogs(prev => [mockLog, ...prev].slice(0, 8));
+      console.warn("Quick action execute failed:", e);
     }
 
     setToastMessage(`Action "${action.label}" executed successfully!`);

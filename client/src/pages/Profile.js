@@ -47,17 +47,25 @@ const TABS = [
 ];
 
 export default function Profile() {
-  const { setUser: setGlobalUser } = useUI();
+  const { user: globalUser, setUser: setGlobalUser } = useUI();
   const [tab, setTab] = useState("personal");
-  const [user, setUser] = useState({
-    full_name: "",
-    email: "",
-    role: "",
-    department: "",
-    job_title: "",
-    phone: "",
-    bio: "",
-  });
+
+  const getInitialUser = () => {
+    const storedName = localStorage.getItem("name") || sessionStorage.getItem("name") || globalUser?.name || "";
+    const storedRole = localStorage.getItem("role") || sessionStorage.getItem("role") || globalUser?.role || "User";
+    const storedEmail = localStorage.getItem("email") || sessionStorage.getItem("email") || globalUser?.email || "";
+    return {
+      full_name: storedName,
+      email: storedEmail,
+      role: storedRole,
+      department: "Legal & Compliance",
+      job_title: storedRole,
+      phone: "",
+      bio: "",
+    };
+  };
+
+  const [user, setUser] = useState(getInitialUser);
   const [mfa, setMfa] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
@@ -80,14 +88,25 @@ export default function Profile() {
   /* ── Load from backend on mount ── */
   useEffect(() => {
     async function loadProfile() {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       try {
-        const res = await fetch(`${API_BASE}/profile`);
+        const res = await fetch(`${API_BASE}/profile`, {
+          headers: token
+            ? { Authorization: `Bearer ${token}` }
+            : {},
+        });
         if (res.ok) {
           const data = await res.json();
-          setUser(prev => ({ ...prev, ...data }));
-          setGlobalUser({ name: data.full_name, role: data.role, email: data.email });
+          setUser(prev => ({
+            ...prev,
+            ...data,
+            full_name: data.full_name || prev.full_name,
+            email: data.email || prev.email,
+            role: data.role || prev.role,
+          }));
+          const updatedName = data.full_name || data.email || "User";
+          setGlobalUser({ name: updatedName, role: data.role || "User", email: data.email || "" });
         }
-        // Backend unavailable — keep empty user state, no dummy fallback
       } catch {
         console.warn('Profile API unavailable — waiting for DB connection.');
       }
@@ -106,6 +125,7 @@ export default function Profile() {
     e.preventDefault();
     if (emailState === "error" || fullNameState === "error") return;
     setSaving(true);
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     const payload = {
       full_name: user.full_name,
       email: user.email,
@@ -114,14 +134,27 @@ export default function Profile() {
       job_title: user.job_title,
       department: user.department,
     };
+    
+    // Update global context & storage
     setGlobalUser({ name: user.full_name, role: user.role, email: user.email });
+    const storage = localStorage.getItem("token") ? localStorage : sessionStorage;
+    storage.setItem("name", user.full_name);
+    storage.setItem("email", user.email);
+
     try {
-      await fetch(`${API_BASE}/profile`, {
+        const res = await fetch(`${API_BASE}/profile`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
-      setSaveMsg("Profile saved successfully!");
+      if (res.ok) {
+        setSaveMsg("Profile saved successfully!");
+      } else {
+        setSaveMsg("Saved locally — backend error.");
+      }
     } catch {
       setSaveMsg("Saved locally — backend not reachable.");
     }

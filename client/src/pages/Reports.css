@@ -262,3 +262,59 @@
   line-height: 1.5;
   color: var(--text);
 }
+
+/* ==========================================
+   DARK MODE — REPORTS PAGE
+========================================== */
+
+[data-theme="dark"] .reports-header-row h1 { color: #F1F5F9; }
+[data-theme="dark"] .reports-header-row p  { color: #94A3B8; }
+
+/* Date tabs */
+[data-theme="dark"] .date-tabs { background: #0D1828; border-color: #1E2D40; }
+[data-theme="dark"] .date-tab-btn { color: #94A3B8; }
+[data-theme="dark"] .date-tab-btn:hover { color: #F1F5F9; }
+[data-theme="dark"] .date-tab-btn.active { background: #1D4ED8; color: #fff; }
+
+/* KPI / metric cards */
+[data-theme="dark"] .report-kpi-card,
+[data-theme="dark"] .report-stat-card {
+  background: #111B2A;
+  border-color: #1E2D40;
+}
+[data-theme="dark"] .report-kpi-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+[data-theme="dark"] .report-kpi-value,
+[data-theme="dark"] .kpi-number { color: #F1F5F9; }
+[data-theme="dark"] .report-kpi-label,
+[data-theme="dark"] .kpi-desc { color: #94A3B8; }
+
+/* Chart containers */
+[data-theme="dark"] .chart-card,
+[data-theme="dark"] .report-chart-container {
+  background: #111B2A;
+  border-color: #1E2D40;
+}
+[data-theme="dark"] .chart-card h3,
+[data-theme="dark"] .chart-title { color: #F1F5F9; }
+
+/* Table */
+[data-theme="dark"] .report-table-container { background: #111B2A; border-color: #1E2D40; }
+[data-theme="dark"] .report-table thead      { background: #0D1828; }
+[data-theme="dark"] .report-table th { color: #94A3B8; border-color: #1E2D40; }
+[data-theme="dark"] .report-table td { color: #CBD5E1; border-color: #162032; }
+[data-theme="dark"] .report-table tbody tr:hover { background: #162032; }
+
+/* Buttons */
+[data-theme="dark"] .report-outline-btn {
+  background: #1E293B;
+  border-color: #2A3A50;
+  color: #CBD5E1;
+}
+[data-theme="dark"] .report-outline-btn:hover { background: #243450; border-color: #3B82F6; }
+
+/* Banner */
+[data-theme="dark"] .compliance-banner-enhanced {
+  background: rgba(59,130,246,0.08);
+  border-color: rgba(59,130,246,0.2);
+}
+[data-theme="dark"] .compliance-banner-enhanced .banner-text { color: #CBD5E1; }
