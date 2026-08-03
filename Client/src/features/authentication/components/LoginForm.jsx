@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import FormInput from '../../../components/Form/FormInput';
 import Checkbox from '../../../components/Form/Checkbox';
 import Button from '../../../components/Buttons/Button';
-import { Mail, Lock, User, Briefcase, BadgeCheck, Building, Users } from 'lucide-react';
+import { Mail, Lock, User, Briefcase, BadgeCheck, Building, Users, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const rolesList = [
@@ -15,6 +15,7 @@ const rolesList = [
 const LoginForm = ({ onSubmit }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
@@ -78,17 +79,28 @@ const LoginForm = ({ onSubmit }) => {
 
       <div className="input-group" style={{ marginBottom: '0.5rem' }}>
         <label className="input-label">Password</label>
-        <div className="input-with-icon">
+        <div className="input-with-icon" style={{ position: 'relative' }}>
           <Lock size={18} className="input-icon" />
           <FormInput 
-            type="password" 
+            type={showPassword ? 'text' : 'password'} 
             name="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••" 
             required 
-            style={{ width: '100%', paddingLeft: '2.5rem' }}
+            style={{ width: '100%', paddingLeft: '2.5rem', paddingRight: '2.5rem' }}
           />
+          <button 
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0
+            }}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
       </div>
 

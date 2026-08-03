@@ -151,8 +151,8 @@ const UserManagement = () => {
           </h1>
           <p className="text-muted mt-1">Manage user roles, permissions, and account status.</p>
         </div>
-        <div className="dashboard-header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <div className="header-search" style={{ display: 'flex', alignItems: 'center', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '0.5rem 1rem', width: '250px' }}>
+        <div className="dashboard-header-actions user-header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div className="header-search" style={{ display: 'flex', alignItems: 'center', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '0.5rem 1rem', width: '100%', maxWidth: '250px' }}>
             <Search size={16} className="text-muted" style={{ marginRight: '0.5rem' }} />
             <input 
               type="text" 
@@ -217,9 +217,9 @@ const UserManagement = () => {
       </div>
 
       {/* User Table */}
-      <div className="dashboard-card stagger-2" style={{ overflow: 'visible' }}>
-        <div className="activity-table-wrapper" style={{ overflow: 'visible' }}>
-          <table className="activity-table">
+      <div className="dashboard-card stagger-2 user-table-card">
+        <div className="activity-table-wrapper user-table-wrapper">
+          <table className="activity-table user-table">
             <thead>
               <tr>
                 <th>User Details</th>
