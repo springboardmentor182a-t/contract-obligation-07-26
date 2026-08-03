@@ -91,6 +91,7 @@ def get_ai_recommendations():
             "color": "blue",
         },
         {
+            
             "icon": "📅",
             "message": "Schedule audit for high-risk vendors.",
             "color": "green",

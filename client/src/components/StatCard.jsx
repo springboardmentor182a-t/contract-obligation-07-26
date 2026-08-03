@@ -18,7 +18,7 @@ const StatCard = ({ title, metric, trendDirection, trendText, icon, colorTheme }
                     'fa-minus';
 
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow hover:-translate-y-1 hover:scale-[1.02] duration-200 p-6 flex flex-col justify-between h-full cursor-pointer">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow hover:-translate-y-1 hover:scale-[1.02] duration-200 p-6 flex flex-col justify-between h-full cursor-pointer">
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{title}</h3>

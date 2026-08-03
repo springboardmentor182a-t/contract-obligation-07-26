@@ -132,7 +132,7 @@ const ContractRepository = () => {
             ref={fileInputRef}
             onChange={handleBulkUpload}
           />
-          <button className="premium-button" style={{ backgroundColor: '#fff', color: 'var(--primary-color)', border: '1px solid var(--primary-color)', width: 'auto', padding: '12px 24px', display: 'flex', alignItems: 'center' }} onClick={() => fileInputRef.current?.click()}>
+          <button className="premium-button" style={{ backgroundColor: 'var(--background-white)', color: 'var(--primary-color)', border: '1px solid var(--primary-color)', width: 'auto', padding: '12px 24px', display: 'flex', alignItems: 'center' }} onClick={() => fileInputRef.current?.click()}>
             <i className="fa-solid fa-file-csv" style={{ marginRight: '8px' }}></i> Upload CSV
           </button>
           <button className="premium-button" style={{ width: 'auto', padding: '12px 24px', display: 'flex', alignItems: 'center' }} onClick={() => setIsModalOpen(true)}>
@@ -142,7 +142,7 @@ const ContractRepository = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', backgroundColor: '#fff', padding: '16px', borderRadius: '12px', boxShadow: 'var(--shadow-sm)', border: '1px solid #e5e7eb' }}>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', backgroundColor: 'var(--background-white)', padding: '16px', borderRadius: '12px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-color)' }}>
         <div style={{ flex: 1, position: 'relative' }}>
           <i className="fa-solid fa-search" style={{ position: 'absolute', top: '14px', left: '16px', color: 'var(--text-secondary)' }}></i>
           <input 
@@ -241,14 +241,14 @@ const ContractRepository = () => {
           </div>
           <div className="form-group">
             <label className="form-label">Upload File (PDF)</label>
-            <div style={{ border: '2px dashed #d1d5db', borderRadius: '8px', padding: '32px', textAlign: 'center', cursor: 'pointer', backgroundColor: '#f9fafb' }}>
+            <div style={{ border: '2px dashed var(--border-color)', borderRadius: '8px', padding: '32px', textAlign: 'center', cursor: 'pointer', backgroundColor: 'var(--background-light)' }}>
               <i className="fa-solid fa-cloud-arrow-up" style={{ fontSize: '32px', color: 'var(--secondary-color)', marginBottom: '12px' }}></i>
               <div style={{ fontWeight: 500 }}>Click to upload or drag and drop</div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>PDF, DOCX up to 10MB</div>
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
-            <button type="button" onClick={() => setIsModalOpen(false)} className="premium-button" style={{ backgroundColor: '#e5e7eb', color: 'var(--text-primary)', width: 'auto', padding: '10px 20px', marginTop: 0 }}>Cancel</button>
+            <button type="button" onClick={() => setIsModalOpen(false)} className="premium-button" style={{ backgroundColor: 'var(--background-light)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', width: 'auto', padding: '10px 20px', marginTop: 0 }}>Cancel</button>
             <button type="submit" className="premium-button" style={{ width: 'auto', padding: '10px 20px', marginTop: 0 }}>Save Contract</button>
           </div>
         </form>

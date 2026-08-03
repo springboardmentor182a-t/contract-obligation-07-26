@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import { useTheme } from '../context/ThemeContext';
+import AIChatbot from '../components/AIChatbot';
 
 const PageContainer = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -24,6 +25,7 @@ const PageContainer = ({ children }) => {
           {children}
         </main>
       </div>
+      <AIChatbot />
     </div>
   );
 };

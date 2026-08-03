@@ -9,7 +9,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
       display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
     }}>
       <div style={{
-        background: '#fff', borderRadius: '12px', width: '100%', maxWidth: '500px',
+        background: 'var(--background-white)', borderRadius: '12px', width: '100%', maxWidth: '500px',
         boxShadow: '0 24px 48px rgba(0,0,0,0.2)', padding: '24px', animation: 'slideUp 0.3s ease-out'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>

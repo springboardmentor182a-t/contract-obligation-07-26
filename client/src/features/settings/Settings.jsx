@@ -6,13 +6,13 @@ const ToggleSwitch = ({ label, defaultChecked = false }) => {
   const [checked, setChecked] = useState(defaultChecked);
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-      <div style={{ fontWeight: 500, color: '#f1f5f9' }}>{label}</div>
+      <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{label}</div>
       <div 
         onClick={() => setChecked(!checked)}
         style={{
           width: '44px',
           height: '24px',
-          backgroundColor: checked ? '#3b82f6' : '#475569',
+          backgroundColor: checked ? 'var(--primary-color)' : 'var(--text-secondary)',
           borderRadius: '12px',
           position: 'relative',
           cursor: 'pointer',
@@ -41,7 +41,7 @@ const Settings = () => {
   const handleLoadDemoData = async () => {
     setLoading(true);
     try {
-      await axios.post('http://127.0.0.1:8000/api/demo/load');
+      await axios.post('/api/demo/load');
       alert("Demo data loaded successfully"); // Using simple alert as toast
       navigate('/dashboard');
     } catch (error) {
@@ -52,20 +52,20 @@ const Settings = () => {
   };
 
   const cardStyle = {
-    backgroundColor: '#1e293b', // Dark slate card
+    backgroundColor: 'var(--background-white)',
     borderRadius: '12px',
     padding: '24px',
-    border: '1px solid #334155',
-    color: '#f8fafc',
+    border: '1px solid var(--border-color)',
+    color: 'var(--text-primary)',
     marginBottom: '24px'
   };
 
   const sectionTitleStyle = {
     marginTop: 0,
-    borderBottom: '1px solid #334155',
+    borderBottom: '1px solid var(--border-color)',
     paddingBottom: '16px',
     marginBottom: '24px',
-    color: '#e2e8f0',
+    color: 'var(--primary-color)',
     fontSize: '18px',
     fontWeight: '600'
   };
@@ -75,23 +75,23 @@ const Settings = () => {
     fontSize: '13px',
     fontWeight: '600',
     marginBottom: '8px',
-    color: '#cbd5e1'
+    color: 'var(--text-secondary)'
   };
 
   const inputStyle = {
     width: '100%',
     padding: '12px',
-    backgroundColor: '#0f172a',
-    border: '1px solid #334155',
+    backgroundColor: 'var(--background-light)',
+    border: '1px solid var(--border-color)',
     borderRadius: '8px',
-    color: '#f8fafc',
+    color: 'var(--text-primary)',
     marginBottom: '20px',
     boxSizing: 'border-box'
   };
 
   return (
-    <div style={{ backgroundColor: '#0f172a', minHeight: '100%', padding: '24px', borderRadius: '12px' }}>
-      <h1 style={{ margin: '0 0 32px 0', fontSize: '28px', color: '#f8fafc' }}>Settings</h1>
+    <div style={{ minHeight: '100%', padding: '24px', borderRadius: '12px' }}>
+      <h1 style={{ margin: '0 0 32px 0', fontSize: '28px', color: 'var(--primary-color)' }}>Settings</h1>
       
       <div style={cardStyle}>
         <h3 style={sectionTitleStyle}>Account Settings</h3>
@@ -165,14 +165,14 @@ const Settings = () => {
         </div>
       </div>
       
-      <div style={{ ...cardStyle, border: '1px solid #3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)' }}>
-        <h3 style={{ ...sectionTitleStyle, borderBottom: '1px solid rgba(59, 130, 246, 0.2)' }}>Demo Environment</h3>
-        <p style={{ color: '#94a3b8', marginBottom: '24px' }}>Populate your workspace with realistic mock contracts and obligations to explore the platform's capabilities.</p>
+      <div style={{ ...cardStyle, border: '1px solid var(--primary-color)', backgroundColor: 'rgba(30, 58, 138, 0.05)' }}>
+        <h3 style={{ ...sectionTitleStyle, borderBottom: '1px solid rgba(30, 58, 138, 0.2)' }}>Demo Environment</h3>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>Populate your workspace with realistic mock contracts and obligations to explore the platform's capabilities.</p>
         <button 
           onClick={handleLoadDemoData} 
           disabled={loading}
           style={{
-            backgroundColor: '#3b82f6',
+            backgroundColor: 'var(--primary-color)',
             color: '#fff',
             border: 'none',
             padding: '12px 24px',

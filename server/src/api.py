@@ -8,7 +8,7 @@ from src.todos.controller import router as todos_router
 from src.users.controller import router as users_router
 from src.dashboard.controller import router as dashboard_router
 from src.obligation.controller import router as obligation_router
-
+from src.ai.controller import router as ai_router
 from src.database.db import get_db
 from src.database.models import (
     User,
@@ -32,6 +32,9 @@ api_router.include_router(todos_router)
 api_router.include_router(users_router)
 api_router.include_router(dashboard_router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(obligation_router, prefix="/obligations", tags=["obligations"])
+api_router.include_router(ai_router, tags=["ai"])
+
+
 @api_router.post("/demo/load")
 def load_demo_data(db: Session = Depends(get_db)):
     from datetime import date, timedelta

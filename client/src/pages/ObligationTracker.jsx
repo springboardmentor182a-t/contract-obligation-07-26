@@ -98,7 +98,7 @@ const ObligationTracker = () => {
 
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', width: '500px', padding: '32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', animation: 'slideUp 0.3s ease-out' }}>
+          <div style={{ backgroundColor: 'var(--background-white)', borderRadius: '12px', width: '500px', padding: '32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', animation: 'slideUp 0.3s ease-out', border: '1px solid var(--border-color)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h2 style={{ margin: 0, color: 'var(--primary-color)', fontSize: '22px' }}>Add New Obligation</h2>
               <i className="fa-solid fa-xmark" style={{ cursor: 'pointer', fontSize: '20px', color: '#9ca3af' }} onClick={() => setIsModalOpen(false)}></i>
@@ -127,7 +127,7 @@ const ObligationTracker = () => {
               </div>
               
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                <button type="button" onClick={() => setIsModalOpen(false)} className="premium-button" style={{ width: 'auto', backgroundColor: '#fff', color: 'var(--text-secondary)', border: '1px solid #d1d5db', boxShadow: 'none', padding: '10px 20px' }}>Cancel</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="premium-button" style={{ width: 'auto', backgroundColor: 'var(--background-light)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', boxShadow: 'none', padding: '10px 20px' }}>Cancel</button>
                 <button type="submit" className="premium-button" style={{ width: 'auto', padding: '10px 24px' }}>Save Task</button>
               </div>
             </form>

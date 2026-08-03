@@ -14,7 +14,7 @@ const ActivityChart = () => {
   if (data.length === 0) return <div>Loading activity...</div>;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 mb-8 hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm p-6 mb-8 hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
       <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500 opacity-5 rounded-full blur-3xl group-hover:opacity-10 transition-opacity"></div>
       
       <div className="flex justify-between items-center mb-10 relative z-10">
