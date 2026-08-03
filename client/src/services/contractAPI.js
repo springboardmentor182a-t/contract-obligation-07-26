@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL,
+  baseURL: "/api",
 });
 
 // ======================
@@ -63,16 +63,16 @@ export const getDocuments = async (contractId) => {
 
 // Preview Document URL
 export const previewDocument = (documentId) => {
-  return `${process.env.REACT_APP_API_BASE_URL}/contracts/documents/${documentId}/preview`;
+  return `/api/contracts/documents/${documentId}/preview`;
 };
 
 // Download Document URL
 export const downloadDocument = (documentId) => {
-  return `${process.env.REACT_APP_API_BASE_URL}/contracts/documents/${documentId}/download`;
+  return `/api/contracts/documents/${documentId}/download`;
 };
 
 // Delete Document
 export const removeDocument = async (documentId) => {
   const response = await API.delete(`/contracts/documents/${documentId}`);
   return response.data;
-};
+};
