@@ -1,11 +1,31 @@
-from sqlalchemy import Column, Integer, String, Float, Date
+from sqlalchemy import (
+    Column,
+    Date,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+)
+from sqlalchemy.orm import relationship
+
 from src.database.core import Base
 
 
 class Renewal(Base):
     __tablename__ = "renewals"
+    __table_args__ = {"schema": "public"}
 
     id = Column(Integer, primary_key=True, index=True)
+
+    contract_id = Column(
+        Integer,
+        ForeignKey(
+            "public.contracts.id",
+            ondelete="CASCADE",
+        ),
+        nullable=True,
+        index=True,
+    )
 
     contract_name = Column(String, nullable=False)
     vendor = Column(String, nullable=False)
@@ -23,3 +43,8 @@ class Renewal(Base):
     confidence = Column(Integer)
 
     recommendation = Column(String)
+
+    contract = relationship(
+        "Contract",
+        backref="renewals",
+    )
