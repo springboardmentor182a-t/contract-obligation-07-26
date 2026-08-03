@@ -17,7 +17,6 @@ from renewals.service import (
     submit_approval,
     schedule_reminder,
     send_reminder_action,
-    seed_renewals,
     create_renewal,
 )
 
@@ -133,8 +132,3 @@ def send_reminder(renewal_id: int, db: Session = Depends(get_db)):
         )
     return result
 
-
-@router.post("/seed")
-def seed_data(db: Session = Depends(get_db)):
-    """Seed the database with sample renewal data."""
-    return seed_renewals(db)
