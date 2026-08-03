@@ -48,8 +48,8 @@ export default function ContractRepository() {
       console.log("Is Array:", Array.isArray(data));
       console.log("Type:", typeof data);
 
-setContracts(Array.isArray(data) ? data : []);
-      setContracts(data);
+      setContracts(Array.isArray(data) ? data : []);
+      
 
       if (data && data.length > 0) {
         const latest = data.reduce((prev, current) =>
