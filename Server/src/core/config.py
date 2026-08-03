@@ -4,7 +4,7 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
+ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
 
 
 class Setting(BaseSettings):
@@ -18,7 +18,7 @@ class Setting(BaseSettings):
     # JWT
     SECRET_KEY: str = ""
     ALGORITHM: str = ""
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = ""
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # Send Mail
     EMAIL_BACKEND: str = ""
