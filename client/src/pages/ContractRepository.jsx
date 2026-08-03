@@ -34,23 +34,12 @@ export default function ContractRepository() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingContract, setEditingContract] = useState(null);
 
+  const [lastUpdated, setLastUpdated] = useState(null);
+
   useEffect(() => {
     loadContracts();
   }, []);
 
-  const loadContracts = async () => {
-    setLoading(true);
-
-    try {
-      const data = await getContracts();
-      setContracts(data);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to load contracts.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDelete = async (id) => {
   const confirmDelete = window.confirm(
@@ -61,7 +50,7 @@ export default function ContractRepository() {
 
   try {
     await deleteContract(id);
-    loadContracts();
+    await loadContracts();
   } catch (err) {
     console.error(err);
     alert("Failed to delete contract.");
@@ -132,6 +121,58 @@ const handleExport = () => {
   window.URL.revokeObjectURL(url);
 };
 
+  const loadContracts = async () => {
+    setLoading(true);
+
+    try {
+        const data = await getContracts();
+
+        setContracts(data);
+
+        if (data.length > 0) {
+            const latest = data.reduce((prev, current) =>
+                new Date(prev.updated_at) > new Date(current.updated_at)
+                    ? prev
+                    : current
+            );
+
+            setLastUpdated(latest.updated_at);
+        } else {
+            setLastUpdated(null);
+        }
+    } catch (err) {
+        console.error(err);
+    } finally {
+        setLoading(false);
+    }
+};
+const formatLastUpdated = (timestamp) => {
+  if (!timestamp) return "No updates";
+
+  //const date = new Date(timestamp);
+  const date = new Date(timestamp + "Z");
+  const now = new Date();
+
+  const isToday = date.toDateString() === now.toDateString();
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+
+  const isYesterday =
+    date.toDateString() === yesterday.toDateString();
+
+  const time = date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  if (isToday) return `Today • ${time}`;
+
+  if (isYesterday) return `Yesterday • ${time}`;
+
+  return `${date.toLocaleDateString()} • ${time}`;
+};
+console.log("Last Updated:", lastUpdated);
   return (
     <div className="contract-repository-page">
 
@@ -147,7 +188,7 @@ const handleExport = () => {
           </p>
 
           <span className="last-updated">
-            Last Updated: Today • 09:45 AM
+              Last Updated: {formatLastUpdated(lastUpdated)}
           </span>
         </div>
 
