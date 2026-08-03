@@ -66,7 +66,8 @@ def seed_data():
     db.add_all(renewals)
         
     print("Seeding Additional Data...")
-    from src.database.models import Transaction, AuditLog, TaxEstimator
+    from src.database.models import Transaction, AuditLog, TaxEstimator, Notification
+    from src.notifications.controller import ensure_initial_notifications
     
     transactions = [
         Transaction(transaction_id="TRX-101", date="Oct 12, 2026", description="Payment for Contract A", amount="$4,200.00", status="Completed"),
@@ -89,8 +90,9 @@ def seed_data():
     ]
     te = TaxEstimator(estimatedTax="$12,450", taxRate="15%", deductions="$3,200", netIncome="$85,000", breakdown=json.dumps(bd))
     db.add(te)
-
     db.commit()
+
+    ensure_initial_notifications(db)
     db.close()
     print("Database seeded successfully!")
 
