@@ -34,19 +34,23 @@ const ContractRepository = () => {
     Vendor: contract.vendor,
     Type: contract.type,
     Value: contract.value,
+    "Effective Date": contract.effective_date || '',
     "End Date": contract.end_date,
+    "Expiry Date": contract.expiry_date || '',
     Owner: contract.owner,
     Status: contract.status,
     Compliance: contract.compliance
   }));
   const handleExport = () => {
-  const exportData = contracts.map((contract) => ({
+  const exportData2 = contracts.map((contract) => ({
     ID: contract.id,
     Title: contract.title,
     Vendor: contract.vendor,
     Type: contract.type,
     Value: contract.value,
+    "Effective Date": contract.effective_date || '',
     "End Date": contract.end_date,
+    "Expiry Date": contract.expiry_date || '',
     Owner: contract.owner,
     Status: contract.status,
     Compliance: contract.compliance
@@ -76,7 +80,9 @@ const ContractRepository = () => {
     vendor: '',
     type: 'SaaS License',
     value: '',
+    effective_date: '',
     end_date: '',
+    expiry_date: '',
     owner: '',
     status: 'Active',
     compliance: 90
@@ -133,7 +139,9 @@ const ContractRepository = () => {
       vendor: formData.vendor,
       type: formData.type,
       value: numericValue,
+      effective_date: formData.effective_date || null,
       end_date: formData.end_date, 
+      expiry_date: formData.expiry_date || null,
       owner: formData.owner,
       status: formData.status,
       compliance: complianceString
@@ -184,7 +192,9 @@ const ContractRepository = () => {
       vendor: contract.vendor,
       type: contract.type,
       value: contract.value,
+      effective_date: contract.effective_date || '',
       end_date: contract.end_date || '',
+      expiry_date: contract.expiry_date || '',
       owner: contract.owner || '',
       status: contract.status,
       compliance: isNaN(cleanCompliance) ? 90 : cleanCompliance
@@ -198,7 +208,7 @@ const ContractRepository = () => {
     setIsEditing(false);
     setCurrentContractId(null);
     setFormData({
-      title: '', vendor: '', type: 'SaaS License', value: '', end_date: '', owner: '', status: 'Active', compliance: 90
+      title: '', vendor: '', type: 'SaaS License', value: '', effective_date: '', end_date: '', expiry_date: '', owner: '', status: 'Active', compliance: 90
     });
   };
 
@@ -243,7 +253,9 @@ const ContractRepository = () => {
                 vendor: '',
                 type: 'SaaS License',
                 value: '',
+                effective_date: '',
                 end_date: '',
+                expiry_date: '',
                 owner: '',
                 status: 'Active',
                 compliance: 90
@@ -411,9 +423,20 @@ const ContractRepository = () => {
 
                 <div className="form-row-half">
                   <div className="form-group">
+                    <label className="form-label">Effective Date</label>
+                    <input type="date" name="effective_date" className="form-input" value={formData.effective_date} onChange={handleInputChange} />
+                  </div>
+                  <div className="form-group">
                     <label className="form-label">End Date</label>
                     
                     <input type="date" name="end_date" required className="form-input" value={formData.end_date} onChange={handleInputChange} />
+                  </div>
+                </div>
+
+                <div className="form-row-half">
+                  <div className="form-group">
+                    <label className="form-label">Expiry Date</label>
+                    <input type="date" name="expiry_date" className="form-input" value={formData.expiry_date} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Contract Owner</label>

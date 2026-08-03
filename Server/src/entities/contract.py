@@ -36,13 +36,20 @@ class Contract(Base):
     vendor = Column(String(200), nullable=False)
     type = Column(String(100), nullable=False)
     value = Column(Float, nullable=False)
-    end_date = Column(Date, nullable=False)
     owner = Column(String(200), nullable=False)
     status = Column(String(100), default=ContractStatus.ACTIVE.value, nullable=False)
     compliance = Column(String(100), default="Compliant", nullable=False)
     archived = Column(Boolean, default=False, nullable=False)
 
+    # --- Date Tracking ---
+    effective_date = Column(Date, nullable=True)       # When the contract becomes effective
+    end_date = Column(Date, nullable=False)             # Contract end / expiry date
+    expiry_date = Column(Date, nullable=True)           # Explicit expiry date (if different from end_date)
+    approved_date = Column(DateTime(timezone=True), nullable=True)   # When the contract was approved
+    review_date = Column(DateTime(timezone=True), nullable=True)     # Next scheduled review date
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     obligations = relationship(
         "Obligation", back_populates="contract", cascade="all, delete-orphan"

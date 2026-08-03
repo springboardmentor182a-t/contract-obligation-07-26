@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,6 +13,10 @@ class ContractCreate(BaseModel):
     owner: str
     status: str = "Active"
     compliance: str = "Compliant"
+    effective_date: Optional[date] = None
+    expiry_date: Optional[date] = None
+    approved_date: Optional[datetime] = None
+    review_date: Optional[datetime] = None
 
 
 # --- UPDATE SCHEMA ---
@@ -25,6 +29,10 @@ class ContractUpdate(BaseModel):
     owner: Optional[str] = None
     status: Optional[str] = None
     compliance: Optional[str] = None
+    effective_date: Optional[date] = None
+    expiry_date: Optional[date] = None
+    approved_date: Optional[datetime] = None
+    review_date: Optional[datetime] = None
 
 
 # --- RESPONSE SCHEMA ---
@@ -38,5 +46,11 @@ class ContractResponse(BaseModel):
     owner: str
     status: str
     compliance: str
+    effective_date: Optional[date] = None
+    expiry_date: Optional[date] = None
+    approved_date: Optional[datetime] = None
+    review_date: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
