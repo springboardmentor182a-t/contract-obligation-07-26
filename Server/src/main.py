@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.config import settings
 from src.database.core import create_tables
-from src.database.seed import seed_db
 from src.api import router
 
 
