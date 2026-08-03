@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Lock, Phone, Building, Briefcase, BadgeCheck, MapPin, Users, Calendar, Hash, ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Lock, Phone, Building, Briefcase, BadgeCheck, MapPin, Users, Calendar, Hash, ChevronRight, ChevronLeft, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import FormInput from '../../../components/Form/FormInput';
 import { getOrganizations } from '../../organizations/services/organizationAPI';
 
@@ -13,6 +13,8 @@ const rolesList = [
 const SignupForm = ({ onSubmit, disabled, hideAdminRole = false }) => {
   const [step, setStep] = useState(1);
   const [organizations, setOrganizations] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     role: '',
     name: '', employeeId: '', email: '', phone: '', password: '', confirmPassword: '',
@@ -168,16 +170,38 @@ const SignupForm = ({ onSubmit, disabled, hideAdminRole = false }) => {
         </div>
         <div className="input-group" style={{ marginBottom: 0 }}>
           <label className="input-label">Password</label>
-          <div className="input-with-icon">
+          <div className="input-with-icon" style={{ position: 'relative' }}>
             <Lock size={18} className="input-icon" />
-            <FormInput type="password" name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" required style={{ width: '100%', paddingLeft: '2.5rem' }} />
+            <FormInput type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" required style={{ width: '100%', paddingLeft: '2.5rem', paddingRight: '2.5rem' }} />
+            <button 
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0
+              }}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
         </div>
         <div className="input-group" style={{ marginBottom: 0 }}>
           <label className="input-label">Confirm Password</label>
-          <div className="input-with-icon">
+          <div className="input-with-icon" style={{ position: 'relative' }}>
             <Lock size={18} className="input-icon" />
-            <FormInput type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="••••••••" required style={{ width: '100%', paddingLeft: '2.5rem' }} />
+            <FormInput type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="••••••••" required style={{ width: '100%', paddingLeft: '2.5rem', paddingRight: '2.5rem' }} />
+            <button 
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              style={{
+                position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0
+              }}
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
         </div>
       </div>

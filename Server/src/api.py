@@ -11,6 +11,8 @@ from src.renewals import controller as renewal_controller
 from src.user_setting import controller as user_setting_contraller
 from src.notifications import controller as notification_controller
 from src.compliance import controller as compliance_controller
+from src.contracts import controller as contracts_controller
+from src.obligations import controller as obligations_controller
 #from src.dashboards import controller as dashboard_controller
 #from src.chatbot import controller as chatbot_controller
 
@@ -27,3 +29,5 @@ router.include_router(audit_logs_controller.router, tags=["Audit Logs"])
 router.include_router(report_analytics_controller.router, tags=["Reports"])
 router.include_router(compliance_controller.router, tags=["Compliance"])
 router.include_router(renewal_controller.router, tags=["Renewals"])
+router.include_router(contracts_controller.router, tags=["Contracts"])
+router.include_router(obligations_controller.router, tags=["Obligations"])

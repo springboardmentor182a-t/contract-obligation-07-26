@@ -2,8 +2,8 @@ from datetime import date, datetime
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case
-
 from src.entities.compliance import Compliance
+from src.entities.contract import Contract
 
 def get_dashboard_summary(db: Session) -> Dict[str, Any]:
     """
@@ -227,3 +227,150 @@ def delete_compliance_record(db: Session, record_id: int) -> bool:
     db.delete(db_record)
     db.commit()
     return True
+
+def get_anomalies(db: Session) -> List[Dict[str, Any]]:
+    """
+    Scans the database of all contracts to identify five types of anomalies:
+    1. Duplicate entries (same vendor, category, and value)
+    2. Missing approvals (active status but no approval date)
+    3. Expired but active (status is Active but expiry_date is in the past)
+    4. Invalid date ranges (effective date > expiry_date)
+    5. Statistical outlier values (> 2 standard deviations above the average value for their category)
+    """
+    anomalies = []
+    contracts = db.query(Contract).all()
+    
+    if not contracts:
+        return []
+        
+    # Anomaly Check 1: Duplicate Contracts
+    seen = {}
+    for c in contracts:
+        if not c.vendor_name or not c.category or c.contract_value is None:
+            continue
+        key = (c.vendor_name.strip().lower(), c.category, c.contract_value)
+        if key not in seen:
+            seen[key] = []
+        seen[key].append(c)
+        
+    for key, duplicates in seen.items():
+        if len(duplicates) > 1:
+            for dup in duplicates[1:]:
+                anomalies.append({
+                    "id": f"ANM-DUP-{dup.contract_id}",
+                    "contractId": dup.contract_id,
+                    "contractTitle": f"{dup.vendor_name} ({dup.category.value if hasattr(dup.category, 'value') else dup.category})",
+                    "category": "Duplicate Entry",
+                    "severity": "High",
+                    "description": f"Potential duplicate record found matching contract {duplicates[0].contract_id} with identical vendor, category, and value of ${dup.contract_value}."
+                })
+                
+    # Anomaly Check 2: Missing Approvals
+    for c in contracts:
+        if c.status == "Active" and c.approval_date is None:
+            anomalies.append({
+                "id": f"ANM-APP-{c.contract_id}",
+                "contractId": c.contract_id,
+                "contractTitle": f"{c.vendor_name} ({c.category.value if hasattr(c.category, 'value') else c.category})",
+                "category": "Missing Approval",
+                "severity": "Critical",
+                "description": "Contract is marked as 'Active' but does not have an approval timestamp."
+            })
+            
+    # Anomaly Check 3: Expired but Active
+    now = datetime.now()
+    for c in contracts:
+        if c.status == "Active" and c.expiry_date and c.expiry_date < now:
+            anomalies.append({
+                "id": f"ANM-EXP-{c.contract_id}",
+                "contractId": c.contract_id,
+                "contractTitle": f"{c.vendor_name} ({c.category.value if hasattr(c.category, 'value') else c.category})",
+                "category": "Expired Active Contract",
+                "severity": "Critical",
+                "description": f"Contract is past its expiration date ({c.expiry_date.date().isoformat()}) but status is still marked as 'Active'."
+            })
+            
+    # Anomaly Check 4: Invalid Date Range
+    for c in contracts:
+        if c.effective_date and c.expiry_date and c.effective_date > c.expiry_date:
+            anomalies.append({
+                "id": f"ANM-DATE-{c.contract_id}",
+                "contractId": c.contract_id,
+                "contractTitle": f"{c.vendor_name} ({c.category.value if hasattr(c.category, 'value') else c.category})",
+                "category": "Invalid Date Range",
+                "severity": "High",
+                "description": f"The effective date ({c.effective_date.date().isoformat()}) is set later than the expiration date ({c.expiry_date.date().isoformat()})."
+            })
+            
+    # Anomaly Check 5: Statistical Outlier Values using Isolation Forest ML
+    use_ml_model = False
+    
+    try:
+        import numpy as np
+        from sklearn.ensemble import IsolationForest
+        if len(contracts) >= 4:
+            use_ml_model = True
+    except ImportError:
+        pass
+        
+    if use_ml_model:
+        # Group and prepare data
+        categories_list = list(set([c.category for c in contracts]))
+        data_points = []
+        for c in contracts:
+            cat_index = categories_list.index(c.category)
+            data_points.append([c.contract_value, cat_index])
+            
+        X = np.array(data_points)
+        # Train unsupervised Isolation Forest model (contamination rate of 15%)
+        clf = IsolationForest(contamination=0.15, random_state=42)
+        clf.fit(X)
+        predictions = clf.predict(X) # -1 indicates anomaly, 1 indicates normal
+        
+        for index, c in enumerate(contracts):
+            if predictions[index] == -1:
+                # Find category average to ensure it is a high outlier, not a low outlier
+                cat_vals = [pt[0] for pt in data_points if pt[1] == categories_list.index(c.category)]
+                mean = sum(cat_vals) / len(cat_vals)
+                if c.contract_value > mean:
+                    anomalies.append({
+                        "id": f"ANM-VAL-{c.contract_id}",
+                        "contractId": c.contract_id,
+                        "contractTitle": f"{c.vendor_name} ({c.category.value if hasattr(c.category, 'value') else c.category})",
+                        "category": "Machine Learning Anomaly (Outlier)",
+                        "severity": "Medium",
+                        "description": f"Unsupervised Machine Learning (Isolation Forest) detected this contract value of ${c.contract_value} as an anomalous high outlier for its category."
+                    })
+    else:
+        # Fallback to Z-Score statistical calculation if database size is too small for ML training
+        category_values = {}
+        for c in contracts:
+            if c.category not in category_values:
+                category_values[c.category] = []
+            category_values[c.category].append(c.contract_value)
+            
+        category_stats = {}
+        for cat, vals in category_values.items():
+            if len(vals) > 1:
+                mean = sum(vals) / len(vals)
+                variance = sum((x - mean) ** 2 for x in vals) / len(vals)
+                std_dev = variance ** 0.5
+                category_stats[cat] = {"mean": mean, "std_dev": std_dev}
+            else:
+                category_stats[cat] = {"mean": vals[0], "std_dev": 0}
+                
+        for c in contracts:
+            stats = category_stats[c.category]
+            if stats["std_dev"] > 0:
+                z_score = (c.contract_value - stats["mean"]) / stats["std_dev"]
+                if z_score > 1.8:
+                    anomalies.append({
+                        "id": f"ANM-VAL-{c.contract_id}",
+                        "contractId": c.contract_id,
+                        "contractTitle": f"{c.vendor_name} ({c.category.value if hasattr(c.category, 'value') else c.category})",
+                        "category": "Machine Learning Anomaly (Outlier)",
+                        "severity": "Medium",
+                        "description": f"The contract value of ${c.contract_value} is abnormally high compared to the category average of ${round(stats['mean'], 2)} (outlier detection)."
+                    })
+                
+    return anomalies
