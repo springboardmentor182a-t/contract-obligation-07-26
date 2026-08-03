@@ -1,3 +1,4 @@
+from datetime import date
 from fastapi import APIRouter, Depends
 
 from src.database.core import get_db
@@ -37,3 +38,24 @@ def dashboard(
     db=Depends(get_db)
 ):
     return service.dashboard(db)
+
+
+@router.get("/upcoming")
+def upcoming_renewals(db=Depends(get_db)):
+    """Returns renewals expiring within 90 days — used by Notifications sidebar."""
+    renewals = service.repo.get_all(db)
+    today = date.today()
+    result = []
+    for r in renewals:
+        expiry = getattr(r, "expiry_date", None)
+        if not expiry:
+            continue
+        days_left = (expiry - today).days
+        if 0 <= days_left <= 90:
+            result.append({
+                "code": f"CTR-{r.id:03d}",
+                "name": r.contract_name or r.vendor or "Unnamed",
+                "daysLeft": days_left,
+            })
+    result.sort(key=lambda x: x["daysLeft"])
+    return result[:10]

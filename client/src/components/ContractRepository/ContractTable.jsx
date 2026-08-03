@@ -66,21 +66,12 @@ function ContractTable({
                 </span>
 
                 <span
-                  className={`risk-badge ${
-                    contract.status.toLowerCase() ===
-                    "expired"
-                      ? "high"
-                      : contract.status.toLowerCase() ===
-                        "expiring"
-                      ? "medium"
-                      : "low"
-                  }`}
+                  className={`risk-badge ${(contract.risk_level || "low")
+                    .toLowerCase()}`}
                 >
-                  {contract.status.toLowerCase() ===
-                  "expired"
+                  {(contract.risk_level || "low").toLowerCase() === "high"
                     ? "High Risk"
-                    : contract.status.toLowerCase() ===
-                      "expiring"
+                    : (contract.risk_level || "low").toLowerCase() === "medium"
                     ? "Medium Risk"
                     : "Low Risk"}
                 </span>

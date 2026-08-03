@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Upload,
   Download,
   Plus,
 } from "lucide-react";
@@ -40,139 +39,140 @@ export default function ContractRepository() {
     loadContracts();
   }, []);
 
-
-  const handleDelete = async (id) => {
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this contract?"
-  );
-
-  if (!confirmDelete) return;
-
-  try {
-    await deleteContract(id);
-    await loadContracts();
-  } catch (err) {
-    console.error(err);
-    alert("Failed to delete contract.");
-  }
-};
-
-const handleExport = () => {
-  if (contracts.length === 0) {
-    alert("No contracts available to export.");
-    return;
-  }
-
-  const headers = [
-    "Contract Name",
-    "Contract Number",
-    "Vendor",
-    "Department",
-    "Type",
-    "Status",
-    "Risk Level",
-    "Owner",
-    "Renewal Type",
-    "Contract Value",
-    "Start Date",
-    "End Date",
-    "Description",
-  ];
-
-  const rows = contracts.map((contract) => [
-    contract.contract_name,
-    contract.contract_number,
-    contract.vendor,
-    contract.department,
-    contract.contract_type,
-    contract.status,
-    contract.risk_level,
-    contract.owner,
-    contract.renewal_type,
-    contract.contract_value,
-    contract.start_date,
-    contract.end_date,
-    contract.description,
-  ]);
-
-  const csvContent = [
-    headers.join(","),
-    ...rows.map((row) =>
-      row.map((value) => `"${value ?? ""}"`).join(",")
-    ),
-  ].join("\n");
-
-  const blob = new Blob([csvContent], {
-    type: "text/csv;charset=utf-8;",
-  });
-
-  const url = window.URL.createObjectURL(blob);
-
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `contracts_${new Date()
-    .toISOString()
-    .split("T")[0]}.csv`;
-
-  document.body.appendChild(link);
-  link.click();
-
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
-};
-
   const loadContracts = async () => {
     setLoading(true);
 
     try {
-        const data = await getContracts();
+      const data = await getContracts();
+      setContracts(data);
 
-        setContracts(data);
-
-        if (data.length > 0) {
-            const latest = data.reduce((prev, current) =>
-                new Date(prev.updated_at) > new Date(current.updated_at)
-                    ? prev
-                    : current
-            );
-
-            setLastUpdated(latest.updated_at);
-        } else {
-            setLastUpdated(null);
-        }
+      if (data && data.length > 0) {
+        const latest = data.reduce((prev, current) =>
+          new Date(prev.updated_at || prev.created_at || 0) > new Date(current.updated_at || current.created_at || 0)
+            ? prev
+            : current
+        );
+        setLastUpdated(latest.updated_at || latest.created_at || new Date().toISOString());
+      } else {
+        setLastUpdated(null);
+      }
     } catch (err) {
-        console.error(err);
+      console.error(err);
+      alert("Failed to load contracts.");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
-const formatLastUpdated = (timestamp) => {
-  if (!timestamp) return "No updates";
+  };
 
-  //const date = new Date(timestamp);
-  const date = new Date(timestamp + "Z");
-  const now = new Date();
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this contract?"
+    );
 
-  const isToday = date.toDateString() === now.toDateString();
+    if (!confirmDelete) return;
 
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
+    try {
+      await deleteContract(id);
+      await loadContracts();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete contract.");
+    }
+  };
 
-  const isYesterday =
-    date.toDateString() === yesterday.toDateString();
+  const handleExport = () => {
+    if (contracts.length === 0) {
+      alert("No contracts available to export.");
+      return;
+    }
 
-  const time = date.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+    const headers = [
+      "Contract Name",
+      "Contract Number",
+      "Vendor",
+      "Department",
+      "Type",
+      "Status",
+      "Risk Level",
+      "Owner",
+      "Renewal Type",
+      "Contract Value",
+      "Start Date",
+      "End Date",
+      "Description",
+    ];
 
-  if (isToday) return `Today • ${time}`;
+    const rows = contracts.map((contract) => [
+      contract.contract_name,
+      contract.contract_number,
+      contract.vendor,
+      contract.department,
+      contract.contract_type,
+      contract.status,
+      contract.risk_level,
+      contract.owner,
+      contract.renewal_type,
+      contract.contract_value,
+      contract.start_date,
+      contract.end_date,
+      contract.description,
+    ]);
 
-  if (isYesterday) return `Yesterday • ${time}`;
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row.map((value) => `"${value ?? ""}"`).join(",")
+      ),
+    ].join("\n");
 
-  return `${date.toLocaleDateString()} • ${time}`;
-};
-console.log("Last Updated:", lastUpdated);
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `contracts_${new Date()
+      .toISOString()
+      .split("T")[0]}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const formatLastUpdated = (timestamp) => {
+    if (!timestamp) return "No updates";
+
+    const date = new Date(timestamp.endsWith("Z") ? timestamp : timestamp + "Z");
+    if (isNaN(date.getTime())) {
+      return timestamp;
+    }
+    const now = new Date();
+
+    const isToday = date.toDateString() === now.toDateString();
+
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+
+    const isYesterday =
+      date.toDateString() === yesterday.toDateString();
+
+    const time = date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    if (isToday) return `Today • ${time}`;
+
+    if (isYesterday) return `Yesterday • ${time}`;
+
+    return `${date.toLocaleDateString()} • ${time}`;
+  };
+
   return (
     <div className="contract-repository-page">
 
@@ -188,7 +188,7 @@ console.log("Last Updated:", lastUpdated);
           </p>
 
           <span className="last-updated">
-              Last Updated: {formatLastUpdated(lastUpdated)}
+            Last Updated: {formatLastUpdated(lastUpdated)}
           </span>
         </div>
 
