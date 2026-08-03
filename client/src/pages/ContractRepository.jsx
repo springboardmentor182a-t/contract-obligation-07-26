@@ -44,6 +44,11 @@ export default function ContractRepository() {
 
     try {
       const data = await getContracts();
+      console.log("API Response:", data);
+      console.log("Is Array:", Array.isArray(data));
+      console.log("Type:", typeof data);
+
+setContracts(Array.isArray(data) ? data : []);
       setContracts(data);
 
       if (data && data.length > 0) {
