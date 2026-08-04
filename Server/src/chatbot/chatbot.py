@@ -25,21 +25,10 @@ CONTRACT_KEYWORDS = [
 ]
 
 
-def summarize_contract(text):
-    parser = PlaintextParser.from_string(text, Tokenizer("english"))
-    summarizer = LsaSummarizer()
-    summary = summarizer(parser.document, 5)
-    return "\n".join(str(sentence) for sentence in summary)
-
-
 def ask_with_contract(question, context):
 
-    question_lower = question.lower()
-
-    if "summary" in question_lower or "summarize" in question_lower:
-        return summarize_contract(context)
-
-    return summarize_contract(context)
+    if model is None:
+        return "AI model is not available."
 
     messages = [
         {
@@ -48,10 +37,10 @@ def ask_with_contract(question, context):
                 "You are ContractIQ AI. "
                 "Answer ONLY using the provided contract context. "
                 "If the answer is not available, say "
-                "'I couldn't find this information in the contract.'"
                 "Do NOT think step by step.\n"
                 "Do NOT reveal reasoning.\n"
                 "Respond with only the final answer."
+                "'I couldn't find this information in the contract.'"
             ),
         },
         {
@@ -66,7 +55,6 @@ def ask_with_contract(question, context):
         },
     ]
 
-    
     text = tokenizer.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
     )
