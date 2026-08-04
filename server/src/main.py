@@ -2,6 +2,11 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from src.database.core import get_db
+from src.users.controller import router as users_router
+from src.contracts.controller import router as contracts_router
+from src.renewals.controller import router as renewals_router
+from pydantic import BaseModel
+from datetime import date, datetime
 from src.database.models import Contract, Activity, Deadline, ComplianceItem, ReportHistory, Document, AppNotification, User
 from src.users.controller import router as users_router
 from src.contracts.controller import router as contracts_router
@@ -17,7 +22,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://127.0.0.1:3000"
+        "http://127.0.0.1:3000",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -28,6 +33,8 @@ app.add_middleware(
 app.include_router(users_router, prefix="/api/v1", tags=["Users"])
 app.include_router(contracts_router, prefix="/api/v1", tags=["Contracts"])
 app.include_router(calendar_router, prefix="/api/v1", tags=["Calendar"])
+app.include_router(users_router, prefix="/users", tags=["Users"])
+app.include_router(contracts_router)
 
 class ContractCreate(BaseModel):
     name: str
@@ -49,6 +56,35 @@ def create_contract(contract: ContractCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_contract)
     return db_contract
+app.include_router(
+    users_router,
+    prefix="/users",
+    tags=["Users"],
+)
+
+app.include_router(renewals_router)
+class ContractCreate(BaseModel):
+    name: str
+    party: str
+    status: str
+    start_date: date
+    end_date: date
+    value: float
+    department: str = "General" # --- NEW: Accepts department on creation ---
+    prefix="/api/v1",
+    tags=["Users"]
+
+app.include_router(
+    contracts_router,
+    prefix="/api/v1",
+    tags=["Contracts"]
+)
+app.include_router(
+    calendar_router,
+    prefix="/api/v1",
+    tags=["Calendar"]
+)
+
 
 @app.get("/api/v1/dashboard")
 def get_dashboard_data(db: Session = Depends(get_db)):
@@ -79,9 +115,35 @@ def get_dashboard_data(db: Session = Depends(get_db)):
             "endDate": c.end_date, 
             "value": c.value
         } for c in contracts],
+        
+            "id": c.id, "name": c.name, "party": c.party, "company": c.party,
+            "contract": c.name, "category": "General", "owner": "System",
+            "status": c.status, "startDate": c.start_date, "endDate": c.end_date, "value": c.value
+            "id": c.id,
+            "name": c.contract,
+            "party": c.company,
+
+            # Existing keys (for frontend compatibility)
+            "name": c.contract,
+            "party": c.company,
+
+            # Additional keys
+            "company": c.company,
+            "contract": c.contract,
+            "category": c.category,
+            "owner": c.owner,
+
+            "status": c.status,
+            "startDate": c.start_date,
+            "endDate": c.end_date,
+            "value": c.value
+        
+        } 
+        
+        for c in contracts,
         "activities": [{"description": a.description, "time": a.time} for a in activities]
     }
-
+   
 class ComplianceCreate(BaseModel):
     item_name: str
     description: str
@@ -144,6 +206,7 @@ def delete_compliance_item(item_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Compliance item deleted successfully"}
 
+
 @app.delete("/api/v1/contracts/{contract_id}")
 def delete_contract(contract_id: int, db: Session = Depends(get_db)):
     contract = db.query(Contract).filter(Contract.id == contract_id).first()
@@ -151,6 +214,8 @@ def delete_contract(contract_id: int, db: Session = Depends(get_db)):
     db.delete(contract)
     db.commit()
     return {"message": "Contract deleted successfully"}
+
+
 
 class ReportCreate(BaseModel):
     name: str
@@ -293,6 +358,13 @@ def get_documents_data(db: Session = Depends(get_db)):
             "storagePercent": storage_pct, "recentlyAdded": recently_added,
             "expiringSoon": expiring_soon_docs
         },
+
+        "recentReports": recent_reports,
+        "insights": insights
+    }
+
+{
+
         "documents": table_data,
         "contracts": formatted_contracts,
         "users": all_users
@@ -414,3 +486,6 @@ def mark_notifications_read(db: Session = Depends(get_db)):
     db.query(AppNotification).update({"is_read": True})
     db.commit()
     return {"message": "All marked as read"}
+    notifs = db.query(AppNotification).order_by(AppNotification.id.desc()).limit(5).all()
+    return [{"id": n.id, "message": n.message, "time": n.time, "isRead": n.is_read} for n in notifs]
+}

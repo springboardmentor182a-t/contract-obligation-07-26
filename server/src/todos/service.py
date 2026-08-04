@@ -14,3 +14,4 @@ def get_todos() -> List[TodoResponse]:
         TodoResponse(id=1, title="Review Master Services Agreement", completed=False),
         TodoResponse(id=2, title="Complete Insurance Renewal", completed=True)
     ]
+    

@@ -23,4 +23,5 @@ export const useFetch = (url, options = {}) => {
   }, [url]);
 
   return { data, loading, error };
+
 };

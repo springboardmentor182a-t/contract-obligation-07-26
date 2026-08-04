@@ -34,9 +34,7 @@ def read_user(user_id: int):
     return user
 
 
-# -----------------------------
-# User Management APIs
-# -----------------------------
+
 
 @router.get("/users", response_model=list[UserManagementResponse])
 def read_all_users():

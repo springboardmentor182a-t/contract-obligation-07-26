@@ -15,3 +15,4 @@ export const getUsers = async (token) => {
 
   return response.json();
 };
+

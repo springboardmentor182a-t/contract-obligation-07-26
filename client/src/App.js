@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
 import Home from './pages/Home';
 import Compliance from './pages/Compliance';
 import Reports from './pages/Reports';
@@ -8,23 +7,27 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Settings from './pages/Settings';
 import AddUser from "./pages/AddUser";
+<<<<<<< HEAD
 import Documents from './pages/Documents';
 import Notifications from './pages/Notifications';
+=======
+import Documents from './pages/Documents'; 
+>>>>>>> 8e11c4af71cc3de746e1739cde9db63824d69e95
 import Obligations from "./pages/Obligations";
-
 import ContractRepository from './pages/ContractRepository/ContractRepository';
 import ContractDetails from './pages/ContractDetails/ContractDetails';
 import AddContract from './pages/AddContract/AddContract';
 import UserManagement from './pages/UserManagement';
 import Calendar from './pages/Calendar';
-
+import Renewals from './pages/Renewals';
 function App() {
   return (
     <Router>
       <div className="App">
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
+          
+          <Route path="/renewals" element={<Renewals />} />
           <Route path="/dashboard" element={<Home />} />
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/reports" element={<Reports />} />
@@ -38,6 +41,8 @@ function App() {
 
           <Route path="/users" element={<UserManagement />} />
           <Route path="/add-user" element={<AddUser />} />
+          <Route path="/compliance" element={<Compliance />} />
+           
           
           {/* --- NEW: Added the route for Documents --- */}
           <Route path="/documents" element={<Documents />} /> 

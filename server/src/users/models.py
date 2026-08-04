@@ -18,12 +18,6 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
-
-
-# -----------------------------
-# User Management Models
-# -----------------------------
-
 class UserManagementBase(BaseModel):
     email: EmailStr
     name: str
