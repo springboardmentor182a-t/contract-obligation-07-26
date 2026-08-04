@@ -15,7 +15,6 @@ import {
   GearIcon,
   ChevDownIcon,
   CalendarIcon,
-  ChevLeftIcon
 } from "../components/Icons";
 
 const MENU = [
