@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Calendar, User, Building2, Tag, Clock, DollarSign,
   CheckCircle, XCircle, RefreshCw, Shield, Bell, FileText, PlayCircle,
-  Ban, AlertTriangle
+  Ban, AlertTriangle, BrainCircuit
 } from 'lucide-react';
 
 import Button from '../../components/Buttons/Button';
@@ -184,6 +184,15 @@ const RenewalDetail = () => {
         </div>
 
         <div className="rd-header-actions">
+          <Button
+            variant="primary"
+            icon={BrainCircuit}
+            onClick={() => navigate(`/renewals/${id}/ai-recommendation`)}
+            className="rd-ai-btn"
+          >
+            AI Insight
+          </Button>
+          
           <Button
             variant="outline"
             icon={Bell}

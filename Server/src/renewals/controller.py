@@ -24,6 +24,7 @@ from src.renewals.service import (
     generate_renewals_from_contracts,
 )
 
+from src.renewals.AI_Recommendation import generate_renewal_recommendation
 
 router = APIRouter(
     prefix="/renewals",
@@ -165,4 +166,22 @@ def send_reminder(renewal_id: int, db: Session = Depends(get_db)):
             status_code=404, detail="No pending reminders found for this renewal"
         )
 
+    return result
+
+
+@router.get("/{renewal_id}/ai-recommendation")
+def ai_recommendation(
+    renewal_id: int,
+    db: Session = Depends(get_db),
+):
+    result = generate_renewal_recommendation(
+        db=db,
+        renewal_id=renewal_id,
+    )
+
+    if not result:
+        raise HTTPException(
+            status_code=404,
+            detail="Renewal not found",
+        )
     return result
