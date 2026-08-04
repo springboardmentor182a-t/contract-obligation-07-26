@@ -1,6 +1,7 @@
 import time
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from sqlalchemy.future import select
 from sqlalchemy import text
 from src.database.core import get_db
 

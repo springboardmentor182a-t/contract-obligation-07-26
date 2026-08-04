@@ -19,23 +19,22 @@ import {
 } from "../components/Icons";
 
 const MENU = [
-  { to: "/dashboard", label: "Dashboard", Icon: GridIcon, implemented: true },
-  { to: "/repository", label: "Contract Repository", Icon: FileIcon, implemented: false },
-  { to: "/obligations", label: "Obligation Tracker", Icon: ClipboardIcon, implemented: false },
-  { to: "/renewal-dashboard", label: "Renewal Dashboard", Icon: RepeatIcon, implemented: true },
-  { to: "/compliance", label: "Compliance", Icon: ShieldIcon, implemented: false },
-  { to: "/reports", label: "Reports & Analytics", Icon: BarIcon, implemented: true },
-  { to: "/notifications", label: "Notifications", Icon: BellIcon, badgeKey: "notifications", implemented: true },
-  { to: "/calendar", label: "Calendar", Icon: CalendarIcon, implemented: true },
-  { to: "/audit", label: "Audit Logs", Icon: BookIcon, implemented: true },
-  { to: "/users", label: "User Management", Icon: UsersIcon, implemented: false },
-  { to: "/settings", label: "Settings", Icon: GearIcon, implemented: true },
+  { to: "/dashboard",          label: "Dashboard",           Icon: GridIcon,      implemented: true },
+  { to: "/repository",         label: "Contract Repository", Icon: FileIcon,      implemented: true },
+  { to: "/obligations",        label: "Obligation Tracker",  Icon: ClipboardIcon, implemented: true },
+  { to: "/renewal-dashboard",  label: "Renewal Dashboard",   Icon: RepeatIcon,    implemented: true },
+  { to: "/compliance",         label: "Compliance",          Icon: ShieldIcon,    implemented: true },
+  { to: "/reports",            label: "Reports & Analytics", Icon: BarIcon,       implemented: true },
+  { to: "/notifications",      label: "Notifications",       Icon: BellIcon,      badgeKey: "notifications", implemented: true },
+  { to: "/calendar",           label: "Calendar",            Icon: CalendarIcon,  implemented: true },
+  { to: "/audit",              label: "Audit Logs",          Icon: BookIcon,      implemented: true },
+  { to: "/user-management",    label: "User Management",     Icon: UsersIcon,     implemented: true },
+  { to: "/settings",           label: "Settings",            Icon: GearIcon,      implemented: true },
 ];
 
 export default function Sidebar({ collapsed = false, mobileOpen = false }) {
   const { notificationCount, showToast } = useUI();
   const [statusCollapsed, setStatusCollapsed] = useState(false);
-  const [orgOpen, setOrgOpen] = useState(false);
   const health = useHealthCheck(15000);
 
   if (collapsed && !mobileOpen) return null;
@@ -62,48 +61,29 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
   };
 
   return (
-    <aside className={"sidebar" + (mobileOpen ? " mobile-open" : "")} aria-label="Main navigation">
-      {/* Brand Header */}
+    <aside className={`sidebar${mobileOpen ? " mobile-open" : ""}`} aria-label="Main navigation">
       <div className="sb-brand">
         <div className="mark">
-          <ShieldIcon size={18} color="#fff" />
+          <ShieldIcon size={14} color="#fff" />
         </div>
         <div className="sb-brand-text">
           <h1>ContractIQ</h1>
           <span>AI-Powered Platform</span>
         </div>
-        <button type="button" className="sb-collapse-btn" title="Collapse Sidebar">
-          <ChevLeftIcon size={16} color="#64748B" />
-        </button>
-      </div>
-
-      {/* Org Selector Box */}
-      <div className="sb-org" onClick={() => setOrgOpen(!orgOpen)}>
-        <div className="sb-org-left">
-          <div className="sb-org-avatar">A</div>
-          <div className="sb-org-meta">
-            <strong>Acme Corp</strong>
-            <span>Enterprise Plan</span>
-          </div>
-        </div>
-        <ChevDownIcon size={14} color="#64748B" />
       </div>
 
       <div className="sb-divider" />
-
-      {/* Main Menu Label */}
       <div className="sb-menu-label">MAIN MENU</div>
 
-      {/* Navigation Links */}
       <div className="sb-nav">
         {MENU.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === "/"}
+            end={item.to === "/dashboard"}
             onClick={(e) => handleItemClick(e, item)}
             className={({ isActive }) =>
-              "sb-item" + (isActive && item.implemented ? " active" : "")
+              `sb-item${isActive && item.implemented ? " active" : ""}`
             }
           >
             <item.Icon size={16} />
@@ -117,7 +97,7 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
 
       {/* Sidebar Footer Widgets */}
       <div className="sb-footer">
-        {/* System Operational widget */}
+        {/* Live System Operational Widget */}
         <div className="sb-status">
           <button
             type="button"
@@ -126,10 +106,11 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
           >
             <span className={`dot ${getOverallDotClass(health.status)}`} />
             <span className="status-text">System {getOverallStatusText(health.status)}</span>
-            <span className={"chev" + (statusCollapsed ? " collapsed" : "")}>
+            <span className={`chev${statusCollapsed ? " collapsed" : ""}`}>
               <ChevDownIcon size={12} />
             </span>
           </button>
+
           {!statusCollapsed && (
             <div className="sb-status-body">
               <div className="sb-status-row">

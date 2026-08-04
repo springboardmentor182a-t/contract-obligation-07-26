@@ -1,126 +1,99 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import "./assets/global.css";
+
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
+
 import { UIProvider } from "./context/UIContext";
 import PageContainer from "./layout/PageContainer";
 
-// Auth pages
+// Authentication pages
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Logout from "./pages/Logout";
 
-// Dashboard pages
+// Application pages
 import Home from "./pages/Home";
-import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
-import Notifications from "./pages/Notifications";
-import Help from "./pages/Help";
+import RenewalDashboard from "./pages/RenewalDashboard";
+import ContractRepository from "./pages/ContractRepository";
+import Obligations from "./pages/Obligations";
+import Compliance from "./pages/Compliance";
 import Reports from "./pages/Reports";
+import Notifications from "./pages/Notifications";
 import QuickActions from "./pages/QuickActions";
 import Calendar from "./pages/Calendar";
-import RenewalDashboard from "./pages/RenewalDashboard";
 import Audit from "./pages/Audit";
+import UserManagement from "./pages/UserManagement";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
+import Help from "./pages/Help";
 
-import "./assets/global.css";
+function isAuthenticated() {
+  return Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"));
+}
+
+function ProtectedRoute({ children }) {
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
+
+function PublicOnlyRoute({ children }) {
+  if (isAuthenticated()) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+}
+
+function AppShell() {
+  return (
+    <PageContainer>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<Home />} />
+        <Route path="/renewal-dashboard" element={<RenewalDashboard />} />
+        <Route path="/repository" element={<ContractRepository />} />
+        <Route path="/contract-repository" element={<Navigate to="/repository" replace />} />
+        <Route path="/obligations" element={<Obligations />} />
+        <Route path="/compliance" element={<Compliance />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/quick-actions" element={<QuickActions />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/audit" element={<Audit />} />
+        <Route path="/user-management" element={<UserManagement />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </PageContainer>
+  );
+}
 
 function App() {
   return (
     <BrowserRouter>
       <UIProvider>
         <Routes>
-          {/* Auth and Default routes */}
-          <Route
-            path="/"
-            element={
-              <PageContainer>
-                <Home />
-              </PageContainer>
-            }
-          />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+          <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-
-          {/* Dashboard routes */}
+          <Route path="/logout" element={<Logout />} />
           <Route
-            path="/dashboard"
+            path="/*"
             element={
-              <PageContainer>
-                <Home />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/renewal-dashboard"
-            element={
-              <PageContainer>
-                <RenewalDashboard />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/reports"
-            element={
-              <PageContainer>
-                <Reports />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <PageContainer>
-                <Profile />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <PageContainer>
-                <Settings />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/notifications"
-            element={
-              <PageContainer>
-                <Notifications />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/help"
-            element={
-              <PageContainer>
-                <Help />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/calendar"
-            element={
-              <PageContainer>
-                <Calendar />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/quick-actions"
-            element={
-              <PageContainer>
-                <QuickActions />
-              </PageContainer>
-            }
-          />
-          <Route
-            path="/audit"
-            element={
-              <PageContainer>
-                <Audit />
-              </PageContainer>
+              <ProtectedRoute>
+                <AppShell />
+              </ProtectedRoute>
             }
           />
         </Routes>
@@ -130,4 +103,3 @@ function App() {
 }
 
 export default App;
-

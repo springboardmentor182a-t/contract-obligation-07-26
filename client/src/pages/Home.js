@@ -1,11 +1,12 @@
-import React from "react";
-import QuickActions from "../components/QuickActions";
+import React, { useState, useEffect } from "react";
+import { useUI } from "../context/UIContext";
 import MetricsCard from "../components/MetricsCard";
 import ContractActivityChart from "../components/ContractActivityChart";
 import RiskDistributionChart from "../components/RiskDistributionChart";
 import RecentActivities from "../components/RecentActivities";
 import AIRecommendations from "../components/AIRecommendations";
 import SystemHealth from "../components/SystemHealth";
+import DashboardQuickActions from "../components/DashboardQuickActions";
 
 import {
   Users,
@@ -18,160 +19,186 @@ import {
   Bell,
   CheckSquare,
   RefreshCw,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function Home() {
+  const { user } = useUI();
+  const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadSummary() {
+      try {
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+        const res = await fetch("/api/analytics/dashboard-summary", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSummary(data);
+        }
+      } catch (err) {
+        console.warn("Dashboard summary unavailable:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadSummary();
+  }, []);
+
+  const displayName = user?.name || user?.full_name || localStorage.getItem("name") || summary?.user_name || "Arjun Mehta";
+  const unread = summary?.unread_notifications ?? 2;
+  const renewalsDue = summary?.renewals_due ?? 3;
+  const complianceScore = summary?.compliance_score ?? "84%";
+
   return (
     <div style={styles.container}>
-
-      {/* Banner Area */}
+      {/* ── Banner ── */}
       <div style={styles.banner} className="banner-layout">
         <div style={styles.bannerGridPattern} />
 
-        {/* Banner Left Info */}
         <div style={styles.bannerLeft}>
-          <span style={styles.greeting}>Good evening 👋</span>
-          <h1 style={styles.welcomeText}>Welcome back, Shalini.</h1>
+          <span style={styles.greeting}>{getGreeting()} 👋</span>
+          <h1 style={styles.welcomeText}>Welcome back, {displayName}.</h1>
           <p style={styles.bannerSub}>
-            You have <strong style={{ color: "#fff" }}>2 unread notifications</strong>, <strong style={{ color: "#fff" }}>5 pending actions</strong>, and <strong style={{ color: "#fff" }}>3 upcoming renewals</strong> this week.
+            You have{" "}
+            <strong style={{ color: "#fff" }}>{unread} unread notification{unread !== 1 ? "s" : ""}</strong>
+            {" "}and{" "}
+            <strong style={{ color: "#fff" }}>{renewalsDue} upcoming renewal{renewalsDue !== 1 ? "s" : ""}</strong>{" "}
+            this week.
           </p>
-
           <div style={styles.badgeRow}>
             <div style={styles.aiBadge}>
               <Sparkles size={12} style={{ marginRight: "4px" }} />
               <span>AI INSIGHTS ACTIVE</span>
             </div>
-            <span style={styles.updatedText}>Last updated 5 min ago</span>
+            <span style={styles.updatedText}>Live data from database</span>
           </div>
         </div>
 
-        {/* Banner Right Metric Boxes */}
         <div style={styles.bannerRight} className="banner-right-layout">
           <div style={styles.bannerBox} className="banner-box-item">
             <Bell size={18} color="#93c5fd" />
-            <div style={styles.bannerBoxVal}>2</div>
+            <div style={styles.bannerBoxVal}>{loading ? "—" : unread}</div>
             <div style={styles.bannerBoxLabel}>Notifications</div>
           </div>
-
           <div style={styles.bannerBox} className="banner-box-item">
             <CheckSquare size={18} color="#fde047" />
-            <div style={styles.bannerBoxVal}>5</div>
-            <div style={styles.bannerBoxLabel}>Pending Actions</div>
+            <div style={styles.bannerBoxVal}>{loading ? "—" : summary?.pending_approvals ?? 5}</div>
+            <div style={styles.bannerBoxLabel}>Pending</div>
           </div>
-
           <div style={styles.bannerBox} className="banner-box-item">
             <RefreshCw size={18} color="#f472b6" />
-            <div style={styles.bannerBoxVal}>3</div>
+            <div style={styles.bannerBoxVal}>{loading ? "—" : renewalsDue}</div>
             <div style={styles.bannerBoxLabel}>Renewals Due</div>
           </div>
-
           <div style={styles.bannerBox} className="banner-box-item">
             <ShieldCheck size={18} color="#34d399" />
-            <div style={styles.bannerBoxVal}>84%</div>
+            <div style={styles.bannerBoxVal}>{loading ? "—" : complianceScore}</div>
             <div style={styles.bannerBoxLabel}>Compliance</div>
           </div>
         </div>
       </div>
 
-      {/* Quick Actions Toolbar */}
-      <QuickActions />
+      {/* ── Quick Actions Toolbar ── */}
+      <DashboardQuickActions />
 
-      {/* 8 Grid Metrics */}
+      {/* ── 8 Metrics Grid ── */}
       <div className="metrics-grid">
         <MetricsCard
           title="Total Users"
-          value="142"
+          value={loading ? "—" : summary?.total_users ?? 142}
           trend="+5 this week"
           trendSubtext="vs last month"
           trendType="positive"
           icon={Users}
           iconColor="#2563eb"
-          iconBgColor="rgba(37, 99, 235, 0.08)"
+          iconBgColor="rgba(37,99,235,0.08)"
         />
         <MetricsCard
           title="Total Contracts"
-          value="61"
+          value={loading ? "—" : summary?.total_contracts ?? 61}
           trend="+7 this month"
           trendSubtext="vs last month"
           trendType="positive"
           icon={FileText}
           iconColor="#10b981"
-          iconBgColor="rgba(16, 185, 129, 0.08)"
+          iconBgColor="rgba(16,185,129,0.08)"
         />
         <MetricsCard
           title="Pending Approvals"
-          value="7"
+          value={loading ? "—" : summary?.pending_approvals ?? 7}
           icon={Clock}
           iconColor="#f59e0b"
-          iconBgColor="rgba(245, 158, 11, 0.08)"
+          iconBgColor="rgba(245,158,11,0.08)"
         />
         <MetricsCard
           title="Compliance Score"
-          value="84%"
+          value={loading ? "—" : complianceScore}
           trend="+2% this month"
           trendSubtext="vs last month"
           trendType="positive"
           icon={ShieldCheck}
           iconColor="#0d9488"
-          iconBgColor="rgba(13, 148, 136, 0.08)"
+          iconBgColor="rgba(13,148,136,0.08)"
         />
         <MetricsCard
           title="Active Contracts"
-          value="48"
+          value={loading ? "—" : summary?.active_contracts ?? 48}
           icon={ShieldCheck}
           iconColor="#10b981"
-          iconBgColor="rgba(16, 185, 129, 0.08)"
+          iconBgColor="rgba(16,185,129,0.08)"
         />
         <MetricsCard
           title="Expired Contracts"
-          value="8"
+          value={loading ? "—" : summary?.expired_contracts ?? 8}
           icon={AlertCircle}
           iconColor="#ef4444"
-          iconBgColor="rgba(239, 68, 68, 0.08)"
+          iconBgColor="rgba(239,68,68,0.08)"
         />
         <MetricsCard
           title="High Risk"
-          value="8"
+          value={loading ? "—" : summary?.high_risk_count ?? 8}
           trend="+1 flagged"
           trendSubtext="vs last month"
           trendType="warning"
           icon={AlertTriangle}
           iconColor="#ef4444"
-          iconBgColor="rgba(239, 68, 68, 0.08)"
+          iconBgColor="rgba(239,68,68,0.08)"
         />
         <MetricsCard
           title="Storage Used"
-          value="73%"
+          value={loading ? "—" : summary?.storage_used ?? "73%"}
           trend="182 GB / 250 GB"
           trendType="neutral"
           icon={Database}
           iconColor="#8b5cf6"
-          iconBgColor="rgba(139, 92, 246, 0.08)"
+          iconBgColor="rgba(139,92,246,0.08)"
         />
       </div>
 
-      {/* Row 1: Charts */}
+      {/* ── Row 1: Charts ── */}
       <div className="split-grid charts-row">
-        <div style={styles.widgetWrapper}>
-          <ContractActivityChart />
-        </div>
-        <div style={styles.widgetWrapper}>
-          <RiskDistributionChart />
-        </div>
+        <ContractActivityChart />
+        <RiskDistributionChart />
       </div>
 
-      {/* Row 2: Recent Activities & AI Recommendations / System Health */}
+      {/* ── Row 2: Activities + Right Stack ── */}
       <div className="split-grid details-row">
-        <div style={styles.widgetWrapper}>
-          <RecentActivities />
-        </div>
+        <RecentActivities />
         <div style={styles.rightStack}>
           <AIRecommendations />
           <SystemHealth />
         </div>
       </div>
-
     </div>
   );
 }
@@ -185,7 +212,7 @@ const styles = {
   },
   banner: {
     background: "linear-gradient(135deg, #090e1a 0%, #171d34 100%)",
-    borderRadius: "var(--radius-lg)",
+    borderRadius: "var(--radius-lg, 12px)",
     padding: "2rem",
     color: "#ffffff",
     display: "flex",
@@ -193,7 +220,7 @@ const styles = {
     alignItems: "center",
     position: "relative",
     overflow: "hidden",
-    boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)",
     flexWrap: "wrap",
     gap: "2rem",
   },
@@ -204,7 +231,7 @@ const styles = {
     right: 0,
     bottom: 0,
     opacity: 0.08,
-    backgroundImage: `radial-gradient(circle, #ffffff 1px, transparent 1px)`,
+    backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
     backgroundSize: "20px 20px",
     pointerEvents: "none",
   },
@@ -226,11 +253,13 @@ const styles = {
     fontSize: "1.75rem",
     fontWeight: "700",
     lineHeight: "1.2",
+    margin: 0,
   },
   bannerSub: {
     fontSize: "0.85rem",
     color: "#94a3b8",
     lineHeight: "1.5",
+    margin: 0,
   },
   badgeRow: {
     display: "flex",
@@ -241,9 +270,9 @@ const styles = {
   aiBadge: {
     display: "flex",
     alignItems: "center",
-    background: "linear-gradient(90deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%)",
-    border: "1px solid rgba(139, 92, 246, 0.3)",
-    borderRadius: "var(--radius-full)",
+    background: "linear-gradient(90deg, rgba(139,92,246,0.2) 0%, rgba(236,72,153,0.2) 100%)",
+    border: "1px solid rgba(139,92,246,0.3)",
+    borderRadius: "9999px",
     padding: "3px 10px",
     fontSize: "0.65rem",
     fontWeight: "700",
@@ -259,12 +288,11 @@ const styles = {
     gridTemplateColumns: "repeat(4, 1fr)",
     gap: "12px",
     zIndex: 1,
-    minWidth: "400px",
-    width: "45%",
+    minWidth: "340px",
   },
   bannerBox: {
-    backgroundColor: "rgba(255, 255, 255, 0.03)",
-    border: "1px solid rgba(255, 255, 255, 0.05)",
+    backgroundColor: "rgba(255,255,255,0.03)",
+    border: "1px solid rgba(255,255,255,0.05)",
     borderRadius: "12px",
     padding: "1rem 0.75rem",
     display: "flex",
@@ -279,11 +307,12 @@ const styles = {
     fontWeight: "700",
   },
   bannerBoxLabel: {
-    fontSize: "0.65rem",
+    fontSize: "0.62rem",
     color: "#64748b",
     textTransform: "uppercase",
     fontWeight: "600",
     letterSpacing: "0.3px",
+    textAlign: "center",
   },
   rightStack: {
     display: "flex",

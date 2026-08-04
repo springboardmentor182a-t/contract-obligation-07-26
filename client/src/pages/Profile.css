@@ -398,3 +398,72 @@
   .profile-tabbar { overflow-x: auto; }
   .profile-tabbar-btn { white-space: nowrap; }
 }
+
+/* ==========================================
+   DARK MODE — PROFILE PAGE
+========================================== */
+
+[data-theme="dark"] .profile-page h1,
+[data-theme="dark"] .profile-page h2 { color: #F1F5F9; }
+
+/* Hero card */
+[data-theme="dark"] .profile-hero-card { border-color: #1E2D40; }
+[data-theme="dark"] .profile-hero-body { background: #111B2A; }
+[data-theme="dark"] .profile-hero-name { color: #F1F5F9; }
+[data-theme="dark"] .profile-hero-role,
+[data-theme="dark"] .profile-hero-dept { color: #94A3B8; }
+[data-theme="dark"] .profile-hero-stat-value  { color: #F1F5F9; }
+[data-theme="dark"] .profile-hero-stat-label  { color: #94A3B8; }
+[data-theme="dark"] .profile-hero-stat-divider { background: #2A3A50; }
+
+/* Tab bar */
+[data-theme="dark"] .profile-tabbar { border-color: #1E2D40; background: #111B2A; }
+[data-theme="dark"] .profile-tabbar-btn { color: #94A3B8; }
+[data-theme="dark"] .profile-tabbar-btn:hover { color: #F1F5F9; }
+[data-theme="dark"] .profile-tabbar-btn.active {
+  color: #60A5FA;
+  border-bottom-color: #3B82F6;
+}
+
+/* Info cards */
+[data-theme="dark"] .profile-info-card,
+[data-theme="dark"] .profile-section-card {
+  background: #111B2A;
+  border-color: #1E2D40;
+}
+[data-theme="dark"] .profile-info-card h3,
+[data-theme="dark"] .profile-section-title { color: #F1F5F9; }
+
+/* Fields */
+[data-theme="dark"] .profile-field-label { color: #64748B; }
+[data-theme="dark"] .profile-field-value { color: #CBD5E1; }
+[data-theme="dark"] .profile-field-divider { border-color: #1E2D40; }
+
+/* Form inputs */
+[data-theme="dark"] .profile-input,
+[data-theme="dark"] .profile-select,
+[data-theme="dark"] .profile-textarea {
+  background: #0D1828;
+  border-color: #1E2D40;
+  color: #F1F5F9;
+}
+[data-theme="dark"] .profile-input:focus,
+[data-theme="dark"] .profile-select:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+}
+
+/* Authority / permissions matrix */
+[data-theme="dark"] .matrix-row { border-color: #1E2D40; }
+[data-theme="dark"] .matrix-row:hover { background: #162032; }
+[data-theme="dark"] .matrix-label { color: #94A3B8; }
+[data-theme="dark"] .matrix-desc strong { color: #F1F5F9; }
+[data-theme="dark"] .matrix-desc span   { color: #94A3B8; }
+
+/* Action buttons */
+[data-theme="dark"] .profile-outline-btn {
+  background: #1E293B;
+  border-color: #2A3A50;
+  color: #CBD5E1;
+}
+[data-theme="dark"] .profile-outline-btn:hover { background: #243450; border-color: #3B82F6; }

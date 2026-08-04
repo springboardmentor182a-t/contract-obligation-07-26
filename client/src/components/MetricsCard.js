@@ -1,5 +1,5 @@
 import React from "react";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 export default function MetricsCard({
   title,
@@ -9,35 +9,53 @@ export default function MetricsCard({
   trendType,
   icon: Icon,
   iconColor,
-  iconBgColor
+  iconBgColor,
 }) {
   return (
     <div className="card kpi-card">
       <div className="kpi-left">
         <span className="kpi-title">{title}</span>
-        <span className="kpi-value">{value}</span>
+        <span className="kpi-value">{value !== undefined && value !== null ? value : "—"}</span>
         <div className="kpi-trend-container">
           {trend ? (
             <div className="kpi-trend">
               {trendType === "positive" ? (
                 <TrendingUp className="trend-icon" style={{ strokeWidth: 3, color: "var(--color-green)" }} />
               ) : trendType === "warning" ? (
-                <TrendingUp className="trend-icon" style={{ strokeWidth: 3, color: "var(--color-red)" }} />
+                <TrendingDown className="trend-icon" style={{ strokeWidth: 3, color: "var(--color-red)" }} />
               ) : null}
-              <span className={trendType === "positive" ? "color-green" : trendType === "warning" ? "color-red" : "text-muted"}>
-                {trend} {trendSubtext && <span className="text-muted" style={{ fontWeight: 500 }}>{trendSubtext}</span>}
+              <span
+                className={
+                  trendType === "positive"
+                    ? "color-green"
+                    : trendType === "warning"
+                    ? "color-red"
+                    : "text-muted"
+                }
+              >
+                {trend}{" "}
+                {trendSubtext && (
+                  <span className="text-muted" style={{ fontWeight: 500 }}>
+                    {trendSubtext}
+                  </span>
+                )}
               </span>
             </div>
           ) : (
-            <div className="kpi-trend-placeholder"></div>
+            <div className="kpi-trend-placeholder" />
           )}
         </div>
       </div>
-      <div className="kpi-right">
-        <div className="kpi-icon-circle" style={{ backgroundColor: iconBgColor, color: iconColor }}>
-          <Icon className="kpi-icon" />
+      {Icon && (
+        <div className="kpi-right">
+          <div
+            className="kpi-icon-circle"
+            style={{ backgroundColor: iconBgColor, color: iconColor }}
+          >
+            <Icon size={20} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

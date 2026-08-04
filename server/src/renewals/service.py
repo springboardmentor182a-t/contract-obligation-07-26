@@ -36,7 +36,7 @@ class RenewalService:
         for renewal in renewals:
             days_left = self._days_until(getattr(renewal, "expiry_date", None))
             if days_left is None:
-                continue
+                days_left = 0
 
             if 0 <= days_left <= 30:
                 expiring30 += 1
@@ -51,14 +51,72 @@ class RenewalService:
             contracts_payload.append(
                 {
                     "id": renewal.id,
-                    "contract_name": renewal.contract_name,
+                    "contract_name": getattr(renewal, "contract_name", "N/A"),
                     "vendor": getattr(renewal, "vendor", "N/A"),
+                    "status": getattr(renewal, "status", None) or "Upcoming",
+                    "approval_status": getattr(renewal, "approval_status", "Pending"),
                     "contract_value": getattr(renewal, "contract_value", "N/A"),
-                    "expiry_date": str(getattr(renewal, "expiry_date", "N/A")),
+                    "confidence": getattr(renewal, "confidence", 80),
+                    "recommendation": getattr(renewal, "recommendation", "Review terms"),
+                    "expiry_date": renewal.expiry_date.isoformat() if getattr(renewal, "expiry_date", None) else None,
+                    "renewal_date": renewal.renewal_date.isoformat() if getattr(renewal, "renewal_date", None) else None,
+                    "department": getattr(renewal, "department", "General"),
                     "auto_renew": getattr(renewal, "auto_renew", False),
                     "days_left": days_left,
                     "risk_score": getattr(renewal, "risk_score", "Low"),
-                    "status": getattr(renewal, "status", "Active"),
+                }
+            )
+
+        pipeline = [
+            {"month": "Jan", "contracts": 0},
+            {"month": "Feb", "contracts": 0},
+            {"month": "Mar", "contracts": 0},
+            {"month": "Apr", "contracts": 0},
+            {"month": "May", "contracts": 0},
+            {"month": "Jun", "contracts": 0},
+            {"month": "Jul", "contracts": 0},
+            {"month": "Aug", "contracts": 0},
+            {"month": "Sep", "contracts": 0},
+            {"month": "Oct", "contracts": 0},
+            {"month": "Nov", "contracts": 0},
+            {"month": "Dec", "contracts": 0},
+        ]
+
+        for renewal in renewals:
+            expiry = getattr(renewal, "expiry_date", None)
+            if expiry:
+                month_name = expiry.strftime("%b")
+                for entry in pipeline:
+                    if entry["month"] == month_name:
+                        entry["contracts"] += 1
+                        break
+
+        predictions = []
+        for renewal in renewals:
+            confidence = getattr(renewal, "confidence", None) or 80
+            if confidence >= 85:
+                badge = "High Confidence"
+            elif confidence >= 70:
+                badge = "Recommended"
+            else:
+                badge = "Moderate"
+
+            predictions.append(
+                {
+                    "id": f"CTR-{renewal.id:03d}",
+                    "title": getattr(renewal, "recommendation", None) or "Review renewal strategy",
+                    "confidence": confidence,
+                    "badge": badge,
+                }
+            )
+
+        if not predictions:
+            predictions.append(
+                {
+                    "id": "AUTO-001",
+                    "title": "Add a renewal record to start insights",
+                    "confidence": 0,
+                    "badge": "Pending",
                 }
             )
 
@@ -71,6 +129,8 @@ class RenewalService:
                 "reminders_sent": reminders,
             },
             "contracts": contracts_payload,
+            "pipeline": pipeline,
+            "predictions": predictions,
         }
 
 service = RenewalService()

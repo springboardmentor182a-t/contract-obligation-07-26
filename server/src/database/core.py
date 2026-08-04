@@ -9,8 +9,6 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 SERVER_DIR = Path(__file__).resolve().parents[2]
 ENV_FILE = SERVER_DIR / ".env"
 
-# Local development lo server/.env unte load chestundi.
-# GitHub Actions lo workflow environment variables use avutayi.
 if ENV_FILE.exists():
     load_dotenv(ENV_FILE, override=False)
 
@@ -29,14 +27,24 @@ def initialize_database():
 
     database_url = os.getenv("DATABASE_URL")
 
-    if not database_url or database_url.startswith("postgresql://user:password@localhost"):
+    if not database_url or not database_url.strip() or database_url.startswith("postgresql://user:password@localhost"):
         fallback = SERVER_DIR / "dev.db"
         database_url = f"sqlite:///{fallback}"
+        print("WARNING: DATABASE_URL not set — falling back to local SQLite:", database_url)
+    elif database_url.startswith("postgresql+asyncpg://"):
+        database_url = database_url.replace("postgresql+asyncpg://", "postgresql://")
+    elif database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://")
+
+    connect_args = {}
+    if database_url.startswith("sqlite"):
+        connect_args = {"check_same_thread": False}
 
     try:
         engine = create_engine(
             database_url,
             pool_pre_ping=True,
+            connect_args=connect_args,
         )
         Base.metadata.create_all(bind=engine)
     except Exception as exc:
@@ -46,6 +54,7 @@ def initialize_database():
         engine = create_engine(
             database_url,
             pool_pre_ping=True,
+            connect_args={"check_same_thread": False},
         )
         Base.metadata.create_all(bind=engine)
 

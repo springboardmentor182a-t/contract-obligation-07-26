@@ -31,7 +31,7 @@ export default function Notifications() {
       try {
         const [resNotifs, resRenewals] = await Promise.all([
           fetch("/api/notifications"),
-          fetch("/api/upcoming-renewals")
+          fetch("/api/renewals/upcoming")
         ]);
         if (resNotifs.ok) {
           const data = await resNotifs.json();

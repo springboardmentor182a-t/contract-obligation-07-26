@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   LayoutDashboard,
   FileText,
@@ -22,17 +23,17 @@ function Sidebar({ isCollapsed, width, onToggle, onResizeStart }) {
   const [isSystemOpen, setIsSystemOpen] = useState(true);
 
   const menuItems = [
-    { name: "Dashboard", icon: LayoutDashboard },
-    { name: "Contract Repository", icon: FileText },
-    { name: "Obligation Tracker", icon: ClipboardList },
-    { name: "Renewal Dashboard", icon: RefreshCcw, active: true },
-    { name: "Compliance", icon: Shield },
-    { name: "Reports & Analytics", icon: BarChart3 },
-    { name: "Notifications", icon: Bell, badge: "2" },
-    { name: "Audit Logs", icon: BookOpen },
-    { name: "User Management", icon: Users },
-    { name: "Settings", icon: Settings },
-  ];
+  { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+  { name: "Contract Repository", icon: FileText, path: "/contracts" },
+  { name: "Obligation Tracker", icon: ClipboardList, path: "/obligations" },
+  { name: "Renewal Dashboard", icon: RefreshCcw, path: "/renewal-dashboard", active: true },
+  { name: "Compliance", icon: Shield, path: "/compliance" },
+  { name: "Reports & Analytics", icon: BarChart3, path: "/reports" },
+  { name: "Notifications", icon: Bell, path: "/notifications", badge: "2" },
+  { name: "Audit Logs", icon: BookOpen, path: "/audit" },
+  { name: "User Management", icon: Users, path: "/users" },
+  { name: "Settings", icon: Settings, path: "/settings" },
+ ];
 
   const systemServices = [
     { name: "API Server", status: "OK" },
