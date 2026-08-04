@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from src.renewal_ai.controller import router as renewal_ai_router
 from src.api import api_router
 from src.contract_repository.controller import router as contract_repository_router
 from src.ai_compliance_guardian.controller import (
@@ -53,6 +53,11 @@ app.include_router(
 )
 app.include_router(
     compliance_guardian_router,
+    prefix="/api",
+)
+
+app.include_router(
+    renewal_ai_router,
     prefix="/api",
 )
 

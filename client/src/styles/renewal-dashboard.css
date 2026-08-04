@@ -969,3 +969,100 @@
 /* Empty state */
 [data-theme="dark"] .renewal-empty-state { color: #64748B; }
 [data-theme="dark"] .renewal-empty-state h3 { color: #CBD5E1; }
+/* ===========================
+   AI Renewal Strategy
+=========================== */
+
+.contract-row__button--ai {
+  background: #ede9fe;
+  color: #6d28d9;
+  border: 1px solid #c4b5fd;
+}
+
+.contract-row__button--ai:hover {
+  background: #ddd6fe;
+}
+
+.contract-row__button--ai:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.contract-ai-panel {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid #ddd6fe;
+  background: #faf5ff;
+}
+
+.contract-ai-panel--error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.contract-ai-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.contract-ai-panel__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #7c3aed;
+  text-transform: uppercase;
+}
+
+.contract-ai-panel__title {
+  margin: 4px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.contract-ai-panel__confidence {
+  background: #ede9fe;
+  color: #6d28d9;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.contract-ai-panel__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #475569;
+}
+
+.contract-ai-panel__section {
+  margin-top: 14px;
+}
+
+.contract-ai-panel__section h5 {
+  margin-bottom: 6px;
+  color: #334155;
+}
+
+.contract-ai-panel__section ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.contract-ai-panel__section li {
+  margin-bottom: 6px;
+}
+
+.contract-ai-panel__notice {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #ddd6fe;
+  font-size: 13px;
+  color: #64748b;
+}
