@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 
-from database.core import get_db
-from renewals.models import (
+
+from src.database.core import get_db
+from src.entities.renewal import RenewalStatus
+from src.renewals.models import (
     RenewalCreate,
     StatusUpdateRequest,
     ApprovalActionRequest,
@@ -18,6 +20,7 @@ from renewals.service import (
     schedule_reminder,
     send_reminder_action,
     create_renewal,
+    generate_renewals_from_contracts,
 )
 
 router = APIRouter(
@@ -46,20 +49,42 @@ def list_renewals(
 @router.post("/", status_code=201)
 def add_renewal(request: RenewalCreate, db: Session = Depends(get_db)):
     """Create a renewal record from the dashboard form."""
-    valid_statuses = ["Upcoming", "In Progress", "Renewed", "Expired", "Cancelled"]
-    if request.status not in valid_statuses:
-        raise HTTPException(status_code=400, detail="Invalid renewal status")
+    # Validate status using the enum
+    valid_values = [s.value for s in RenewalStatus]
+    if request.status not in valid_values:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid renewal status. Must be one of: {valid_values}",
+        )
 
     renewal = create_renewal(db, request)
     return {"message": "Renewal created", "renewal_id": renewal.renewal_id}
+
+
+@router.post("/generate", status_code=200)
+def generate_renewals(db: Session = Depends(get_db)):
+    """Generate renewal records from existing contracts and obligations."""
+    try:
+        count = generate_renewals_from_contracts(db)
+        return {
+            "message": f"Generated {count} renewal(s) from existing contracts",
+            "created_count": count,
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate renewals: {str(e)}",
+        )
 
 
 @router.get("/{renewal_id}")
 def renewal_detail(renewal_id: int, db: Session = Depends(get_db)):
     """Get full renewal detail including approvals and history."""
     detail = get_renewal_detail(db, renewal_id)
+
     if not detail:
         raise HTTPException(status_code=404, detail="Renewal not found")
+
     return detail
 
 
@@ -70,16 +95,19 @@ def change_status(
     db: Session = Depends(get_db),
 ):
     """Update renewal status."""
-    valid_statuses = ["Upcoming", "In Progress", "Renewed", "Expired", "Cancelled"]
-    if request.status not in valid_statuses:
+    valid_values = [s.value for s in RenewalStatus]
+
+    if request.status not in valid_values:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid status. Must be one of: {valid_statuses}",
+            detail=f"Invalid status. Must be one of: {valid_values}",
         )
 
     result = update_renewal_status(db, renewal_id, request.status, request.performed_by)
+
     if not result:
         raise HTTPException(status_code=404, detail="Renewal not found")
+
     return {"message": f"Status updated to {request.status}"}
 
 
@@ -104,8 +132,10 @@ def approval_action(
         request.approver,
         request.comments,
     )
+
     if not result:
         raise HTTPException(status_code=404, detail="Renewal not found")
+
     return {"message": f"Step '{request.step_name}' marked as {request.action}"}
 
 
@@ -117,8 +147,10 @@ def create_reminder(
 ):
     """Schedule a reminder for a renewal."""
     result = schedule_reminder(db, renewal_id, request.reminder_date, request.message)
+
     if not result:
         raise HTTPException(status_code=404, detail="Renewal not found")
+
     return {"message": "Reminder scheduled", "reminder_id": result.reminder_id}
 
 
@@ -130,5 +162,5 @@ def send_reminder(renewal_id: int, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=404, detail="No pending reminders found for this renewal"
         )
-    return result
 
+    return result

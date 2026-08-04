@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func as sql_func
 
-from entities.renewal import (
+
+from src.entities.renewal import (
     Renewal,
     RenewalApproval,
     RenewalReminder,
@@ -10,10 +11,41 @@ from entities.renewal import (
     RenewalStatus,
     ApprovalStatus,
 )
+from src.entities.contract import Contract
+from src.entities.obligation import Obligation
+from src.audit_logs.service import create_audit_log
+
+
+
+def auto_update_expired_statuses(db: Session):
+    """Automatically update any UPCOMING renewals past their expiry date to EXPIRED status."""
+    now = datetime.utcnow()
+    expired_renewals = (
+        db.query(Renewal)
+        .filter(
+            Renewal.status == RenewalStatus.UPCOMING,
+            Renewal.expiry_date < now,
+        )
+        .all()
+    )
+    if expired_renewals:
+        for r in expired_renewals:
+            r.status = RenewalStatus.EXPIRED
+            db.add(
+                RenewalHistory(
+                    renewal_id=r.renewal_id,
+                    action="Automatically marked as Expired",
+                    performed_by="System",
+                    details="Contract past expiry date with no renewal started",
+                )
+            )
+        db.commit()
 
 
 def get_dashboard_summary(db: Session):
     """Get counts per status + expiring-soon-no-action count."""
+    auto_update_expired_statuses(db)
+
     counts = {}
     for status in RenewalStatus:
         count = db.query(Renewal).filter(Renewal.status == status).count()
@@ -41,14 +73,22 @@ def get_dashboard_summary(db: Session):
     )
 
     return {
-        "upcoming": counts.get("Upcoming", 0),
-        "in_progress": counts.get("In Progress", 0),
-        "renewed": counts.get("Renewed", 0),
-        "expired": counts.get("Expired", 0),
-        "cancelled": counts.get("Cancelled", 0),
+        "upcoming": counts.get(RenewalStatus.UPCOMING.value, 0),
+        "in_progress": counts.get(RenewalStatus.IN_PROGRESS.value, 0),
+        "renewed": counts.get(RenewalStatus.RENEWED.value, 0),
+        "expired": counts.get(RenewalStatus.EXPIRED.value, 0),
+        "cancelled": counts.get(RenewalStatus.CANCELLED.value, 0),
         "expiring_soon_no_action": expiring_soon,
         "total_value_at_risk": float(value_at_risk or 0),
     }
+
+
+def _resolve_status_enum(status_str: str) -> RenewalStatus:
+    """Convert a raw status string to RenewalStatus enum, or raise ValueError."""
+    for member in RenewalStatus:
+        if member.value == status_str:
+            return member
+    raise ValueError(f"Invalid status: {status_str}")
 
 
 def get_renewals(
@@ -58,6 +98,8 @@ def get_renewals(
     status: str = None,
 ):
     """List renewals with optional filters. Computes days_until_expiry server-side."""
+    auto_update_expired_statuses(db)
+
     query = db.query(Renewal)
 
     if search:
@@ -72,14 +114,20 @@ def get_renewals(
         query = query.filter(Renewal.category == category)
 
     if status and status != "All":
-        query = query.filter(Renewal.status == status)
+        try:
+            status_enum = _resolve_status_enum(status)
+            query = query.filter(Renewal.status == status_enum)
+        except ValueError:
+            query = query.filter(Renewal.status == status)
 
     renewals = query.order_by(Renewal.expiry_date.asc()).all()
 
     result = []
     now = datetime.utcnow()
+
     for r in renewals:
         days_left = (r.expiry_date - now).days
+
         renewal_dict = {
             "renewal_id": r.renewal_id,
             "contract_name": r.contract_name,
@@ -191,16 +239,23 @@ def update_renewal_status(db: Session, renewal_id: int, new_status: str, perform
         return None
 
     old_status = renewal.status.value if hasattr(renewal.status, "value") else renewal.status
-    renewal.status = new_status
+
+    # Convert string to enum for storage
+    try:
+        status_enum = _resolve_status_enum(new_status)
+    except ValueError:
+        return None
+    renewal.status = status_enum
 
     # Log to history
     history = RenewalHistory(
         renewal_id=renewal_id,
-        action=f"Status changed from {old_status} to {new_status}",
+        action=f"Status changed from {old_status} to {status_enum.value}",
         performed_by=performed_by,
         details=f"Renewal status updated by {performed_by}",
     )
     db.add(history)
+    create_audit_log(db, user_name=performed_by, action="updated renewal status", module="Renewals", category="Change", entity_type="Renewal", entity_id=renewal_id, description=f"Changed renewal status from {old_status} to {status_enum.value}", old_value={"status": old_status}, new_value={"status": status_enum.value})
     db.commit()
     db.refresh(renewal)
 
@@ -233,7 +288,9 @@ def submit_approval(db: Session, renewal_id: int, step_name: str, action: str, a
             acted_at=datetime.utcnow(),
         )
         db.add(approval)
+
     else:
+
         approval.status = action
         approval.approver = approver
         approval.comments = comments
@@ -248,8 +305,10 @@ def submit_approval(db: Session, renewal_id: int, step_name: str, action: str, a
     )
     db.add(history)
 
-    # If approved at final step, update status to Renewed
-    if action == "Approved":
+    # If approved at final step,
+    # update status to Renewed
+    if action == ApprovalStatus.APPROVED.value:
+
         all_approvals = (
             db.query(RenewalApproval)
             .filter(RenewalApproval.renewal_id == renewal_id)
@@ -270,7 +329,7 @@ def submit_approval(db: Session, renewal_id: int, step_name: str, action: str, a
             db.add(history2)
 
     # If rejected, keep status as In Progress
-    if action == "Rejected":
+    if action == ApprovalStatus.REJECTED.value:
         renewal.status = RenewalStatus.IN_PROGRESS
 
     db.commit()
@@ -332,4 +391,118 @@ def send_reminder_action(db: Session, renewal_id: int):
     db.add(history)
 
     db.commit()
+
     return {"sent_count": len(reminders)}
+
+
+def generate_renewals_from_contracts(db: Session):
+    """
+    Generate renewal records from existing contracts and their obligations.
+    - Only non-archived contracts with an end_date are considered.
+    - Skips contracts that already have a matching renewal (by contract_id_ref).
+    - Determines initial status from expiry date.
+    - Links obligation info into the renewal history.
+    Returns the count of newly created renewals.
+    """
+    contracts = (
+        db.query(Contract)
+        .filter(Contract.archived == False, Contract.end_date.isnot(None))
+        .all()
+    )
+
+    created_count = 0
+    now = datetime.utcnow()
+
+    for contract in contracts:
+        contract_ref = f"CNT-{contract.contract_id}"
+
+        # Skip if a renewal already exists for this contract
+        existing = (
+            db.query(Renewal)
+            .filter(Renewal.contract_id_ref == contract_ref)
+            .first()
+        )
+        if existing:
+            continue
+
+        # Determine expiry_date: prefer explicit expiry_date, fall back to end_date
+        expiry = contract.expiry_date or contract.end_date
+        # Convert date to datetime if needed
+        if hasattr(expiry, "hour"):
+            expiry_dt = expiry
+        else:
+            expiry_dt = datetime(expiry.year, expiry.month, expiry.day)
+
+        # Determine initial status based on dates
+        days_until = (expiry_dt - now).days
+        if days_until < 0:
+            initial_status = RenewalStatus.EXPIRED
+        else:
+            initial_status = RenewalStatus.UPCOMING
+
+        renewal = Renewal(
+            contract_name=contract.title,
+            contract_id_ref=contract_ref,
+            category=contract.type or "General",
+            vendor=contract.vendor,
+            owner=contract.owner,
+            expiry_date=expiry_dt,
+            notice_period_days=30,
+            value=contract.value or 0.0,
+            status=initial_status,
+            auto_renew=False,
+        )
+        db.add(renewal)
+        db.flush()
+
+        # Create initial history entry
+        db.add(
+            RenewalHistory(
+                renewal_id=renewal.renewal_id,
+                action="Renewal auto-generated from contract",
+                performed_by="System",
+                details=f"Generated from contract '{contract.title}' (ID: {contract.contract_id})",
+            )
+        )
+
+        # Link obligation information into history
+        obligations = (
+            db.query(Obligation)
+            .filter(Obligation.contract_id == contract.contract_id)
+            .all()
+        )
+        if obligations:
+            obligation_titles = ", ".join(o.title for o in obligations[:5])
+            suffix = f" and {len(obligations) - 5} more" if len(obligations) > 5 else ""
+            db.add(
+                RenewalHistory(
+                    renewal_id=renewal.renewal_id,
+                    action=f"Linked {len(obligations)} obligation(s)",
+                    performed_by="System",
+                    details=f"Obligations: {obligation_titles}{suffix}",
+                )
+            )
+
+        # Create default approval steps for In Progress / Upcoming renewals
+        if initial_status in (RenewalStatus.UPCOMING, RenewalStatus.IN_PROGRESS):
+            db.add(
+                RenewalApproval(
+                    renewal_id=renewal.renewal_id,
+                    step_name="Manager Review",
+                    approver=contract.owner,
+                    status=ApprovalStatus.PENDING,
+                )
+            )
+            db.add(
+                RenewalApproval(
+                    renewal_id=renewal.renewal_id,
+                    step_name="Legal Approval",
+                    approver="Legal Department",
+                    status=ApprovalStatus.PENDING,
+                )
+            )
+
+        created_count += 1
+
+    db.commit()
+    return created_count

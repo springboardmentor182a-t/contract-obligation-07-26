@@ -10,13 +10,13 @@ from notifications import controller as notification_controller
 from audit_logs import controller as audit_logs_controller
 from renewals import controller as renewals_controller
 
-# Import entities so tables are created
-import entities.renewal  # noqa: F401
-from api import router
+import src.entities
+from src.core.config import settings
+from src.database.core import create_tables
+from src.api import router
+
 
 create_tables()
-
-
 
 app = FastAPI(
     title="Choose your Own Adventure Game API",

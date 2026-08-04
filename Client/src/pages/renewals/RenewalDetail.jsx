@@ -1,13 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Calendar, User, Building2, Tag, Clock, DollarSign,
+<<<<<<< Updated upstream
   CheckCircle, XCircle, RefreshCw, AlertTriangle, Shield,
   Bell, FileText, PlayCircle
+=======
+  CheckCircle, XCircle, RefreshCw, Shield, Bell, FileText, PlayCircle,
+  Ban, AlertTriangle
+>>>>>>> Stashed changes
 } from 'lucide-react';
 import Button from '../../components/Buttons/Button';
+import {
+  getRenewalById,
+  updateRenewalStatus,
+  submitApproval,
+  scheduleReminder,
+} from '../../features/renewals/services/renewalAPI';
 import './RenewalDetail.css';
-import { API_BASE } from "../../constants";
 
 const RenewalDetail = () => {
   const { id } = useParams();
@@ -15,44 +25,38 @@ const RenewalDetail = () => {
   const [renewal, setRenewal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
+  const [feedback, setFeedback] = useState(null);
 
-  const fetchDetail = async () => {
+  const fetchDetail = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/renewals/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setRenewal(data);
-      }
+      const data = await getRenewalById(id);
+      setRenewal(data);
     } catch (err) {
       console.error('Failed to fetch renewal detail:', err);
+      setFeedback({ type: 'error', message: err.message || 'Failed to load renewal details.' });
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchDetail();
-  }, [id]);
+  }, [fetchDetail]);
 
   const handleApprovalAction = async (stepName, action) => {
     setActionLoading(stepName);
     try {
-      const res = await fetch(`${API_BASE}/renewals/${id}/approve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          step_name: stepName,
-          action: action,
-          approver: 'Current User',
-          comments: action === 'Approved' ? 'Approved by reviewer' : 'Rejected — needs revision',
-        }),
-      });
-      if (res.ok) {
-        await fetchDetail();
-      }
+      const comments = action === 'Approved'
+        ? 'Approved by reviewer'
+        : 'Rejected — needs revision';
+
+      await submitApproval(id, stepName, action, 'Current User', comments);
+      setFeedback({ type: 'success', message: `Step "${stepName}" marked as ${action}.` });
+      await fetchDetail();
     } catch (err) {
       console.error('Approval action failed:', err);
+      setFeedback({ type: 'error', message: err.message || 'Failed to submit approval action.' });
     } finally {
       setActionLoading(null);
     }
@@ -61,6 +65,7 @@ const RenewalDetail = () => {
   const handleStatusChange = async (newStatus) => {
     setActionLoading('status');
     try {
+<<<<<<< Updated upstream
       const res = await fetch(`${API_BASE}/renewals/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -69,8 +74,14 @@ const RenewalDetail = () => {
       if (res.ok) {
         await fetchDetail();
       }
+=======
+      await updateRenewalStatus(id, newStatus, 'Current User');
+      setFeedback({ type: 'success', message: `Status updated to ${newStatus}.` });
+      await fetchDetail();
+>>>>>>> Stashed changes
     } catch (err) {
       console.error('Status update failed:', err);
+      setFeedback({ type: 'error', message: err.message || 'Failed to update status.' });
     } finally {
       setActionLoading(null);
     }
@@ -82,20 +93,17 @@ const RenewalDetail = () => {
       const reminderDate = new Date();
       reminderDate.setDate(reminderDate.getDate() + 7);
 
-      const res = await fetch(`${API_BASE}/renewals/${id}/reminder`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reminder_date: reminderDate.toISOString(),
-          message: 'Renewal follow-up reminder',
-        }),
-      });
-      if (res.ok) {
-        alert('Reminder scheduled!');
-        await fetchDetail();
-      }
+      await scheduleReminder(
+        id,
+        reminderDate.toISOString(),
+        'Renewal follow-up reminder',
+      );
+
+      setFeedback({ type: 'success', message: 'Reminder scheduled successfully.' });
+      await fetchDetail();
     } catch (err) {
       console.error('Reminder failed:', err);
+      setFeedback({ type: 'error', message: err.message || 'Failed to schedule reminder.' });
     } finally {
       setActionLoading(null);
     }
@@ -172,6 +180,14 @@ const RenewalDetail = () => {
         <span>Back to Renewal Dashboard</span>
       </div>
 
+      {/* Feedback Banner */}
+      {feedback && (
+        <div className={`rnw-feedback rnw-feedback-${feedback.type}`} role="status">
+          <span>{feedback.message}</span>
+          <button type="button" onClick={() => setFeedback(null)} aria-label="Dismiss message">×</button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="rd-header">
         <div className="rd-header-left">
@@ -188,16 +204,41 @@ const RenewalDetail = () => {
             onClick={handleSendReminder}
             disabled={actionLoading === 'reminder'}
           >
-            Schedule Reminder
+            {actionLoading === 'reminder' ? 'Scheduling...' : 'Schedule Reminder'}
           </Button>
-          {renewal.status === 'Upcoming' && (
+
+          {renewal.status === 'Upcoming' && renewal.days_until_expiry >= 0 && (
             <Button
               variant="primary"
               icon={PlayCircle}
               onClick={() => handleStatusChange('In Progress')}
               disabled={actionLoading === 'status'}
             >
-              Start Renewal
+              {actionLoading === 'status' ? 'Updating...' : 'Start Renewal'}
+            </Button>
+          )}
+
+          {(renewal.status === 'Upcoming' || renewal.status === 'In Progress') && (
+            <Button
+              variant="outline"
+              icon={Ban}
+              onClick={() => handleStatusChange('Cancelled')}
+              disabled={actionLoading === 'status'}
+              className="rd-cancel-btn"
+            >
+              {actionLoading === 'status' ? 'Updating...' : 'Cancel Renewal'}
+            </Button>
+          )}
+
+          {renewal.status === 'Upcoming' && renewal.days_until_expiry < 0 && (
+            <Button
+              variant="outline"
+              icon={AlertTriangle}
+              onClick={() => handleStatusChange('Expired')}
+              disabled={actionLoading === 'status'}
+              className="rd-expire-btn"
+            >
+              {actionLoading === 'status' ? 'Updating...' : 'Mark Expired'}
             </Button>
           )}
         </div>
@@ -275,14 +316,14 @@ const RenewalDetail = () => {
                           onClick={() => handleApprovalAction(step.step_name, 'Approved')}
                           disabled={actionLoading === step.step_name}
                         >
-                          <CheckCircle size={14} /> Approve
+                          {actionLoading === step.step_name ? '...' : <><CheckCircle size={14} /> Approve</>}
                         </button>
                         <button
                           className="rd-reject-btn"
                           onClick={() => handleApprovalAction(step.step_name, 'Rejected')}
                           disabled={actionLoading === step.step_name}
                         >
-                          <XCircle size={14} /> Reject
+                          {actionLoading === step.step_name ? '...' : <><XCircle size={14} /> Reject</>}
                         </button>
                       </div>
                     ) : (

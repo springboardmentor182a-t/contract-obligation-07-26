@@ -2,11 +2,19 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, AlertTriangle, RefreshCw, CheckCircle, Clock,
-  XCircle, CalendarClock, Eye, PlayCircle, Bell, Filter,
-  TrendingUp, ArrowUpRight, Plus
+  XCircle, CalendarClock, Eye, Bell,
+  TrendingUp, Plus, Zap
 } from 'lucide-react';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modals/Modal';
+import {
+  getRenewalSummary,
+  getRenewals,
+  createRenewal,
+  updateRenewalStatus,
+  scheduleReminder,
+  generateRenewals,
+} from '../../features/renewals/services/renewalAPI';
 import './Renewals.css';
 import { API_BASE } from "../../constants";
 
@@ -37,37 +45,22 @@ const Renewals = () => {
 
   const fetchSummary = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/renewals/summary`);
-      if (res.ok) {
-        const data = await res.json();
-        setSummary(data);
-      } else {
-        setFeedback({ type: 'error', message: 'Could not load renewal summary. Confirm that the backend is running.' });
-      }
+      const data = await getRenewalSummary();
+      setSummary(data);
     } catch (err) {
       console.error('Failed to fetch summary:', err);
-      setFeedback({ type: 'error', message: 'Could not connect to the backend. Start the server and refresh this page.' });
+      setFeedback({ type: 'error', message: err.message || 'Could not load renewal summary.' });
     }
   }, []);
 
   const fetchRenewals = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      if (categoryFilter !== 'All') params.append('category', categoryFilter);
-      if (statusFilter !== 'All') params.append('status', statusFilter);
-
-      const res = await fetch(`${API_BASE}/renewals/?${params.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
-        setRenewals(data);
-      } else {
-        setFeedback({ type: 'error', message: 'Could not load renewals.' });
-      }
+      const data = await getRenewals(searchTerm, categoryFilter, statusFilter);
+      setRenewals(data);
     } catch (err) {
       console.error('Failed to fetch renewals:', err);
-      setFeedback({ type: 'error', message: 'Could not connect to the backend. Start the server and refresh this page.' });
+      setFeedback({ type: 'error', message: err.message || 'Could not load renewals.' });
     } finally {
       setLoading(false);
     }
@@ -86,6 +79,7 @@ const Renewals = () => {
     event.preventDefault();
     setIsSubmitting(true);
     try {
+<<<<<<< Updated upstream
       const res = await fetch(`${API_BASE}/renewals/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -98,6 +92,14 @@ const Renewals = () => {
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.detail || 'Unable to create renewal');
+=======
+      await createRenewal({
+        ...newRenewal,
+        expiry_date: new Date(`${newRenewal.expiry_date}T00:00:00`).toISOString(),
+        notice_period_days: Number(newRenewal.notice_period_days),
+        value: Number(newRenewal.value),
+      });
+>>>>>>> Stashed changes
 
       setIsAddModalOpen(false);
       setNewRenewal({
@@ -132,20 +134,45 @@ const Renewals = () => {
     setFeedback({ type: 'success', message: 'Renewals exported to CSV.' });
   };
 
-  const handleStartRenewal = async (renewalId) => {
-    setActionLoading(renewalId);
+  const handleGenerateRenewals = async () => {
+    setActionLoading('generate');
     try {
-      const res = await fetch(`${API_BASE}/renewals/${renewalId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'In Progress', performed_by: 'Current User' }),
+      const result = await generateRenewals();
+      setFeedback({
+        type: 'success',
+        message: result.message || `Generated ${result.created_count} renewal(s) from contracts.`,
       });
+<<<<<<< Updated upstream
       if (res.ok) {
         await fetchRenewals();
         await fetchSummary();
       }
+=======
+      await Promise.all([fetchRenewals(), fetchSummary()]);
+    } catch (err) {
+      setFeedback({ type: 'error', message: err.message || 'Failed to generate renewals.' });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleStartRenewal = async (renewalId) => {
+    setActionLoading(`start-${renewalId}`);
+    try {
+      await updateRenewalStatus(renewalId, 'In Progress', 'Current User');
+
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Renewal Started', message: `Renewal process started for ID: ${renewalId}.` });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (notifErr) { console.error('Notification error:', notifErr); }
+
+      setFeedback({ type: 'success', message: 'Renewal process started successfully.' });
+      await Promise.all([fetchRenewals(), fetchSummary()]);
+>>>>>>> Stashed changes
     } catch (err) {
       console.error('Failed to start renewal:', err);
+      setFeedback({ type: 'error', message: err.message || 'Failed to start renewal process.' });
     } finally {
       setActionLoading(null);
     }
@@ -158,6 +185,7 @@ const Renewals = () => {
       const reminderDate = new Date();
       reminderDate.setDate(reminderDate.getDate() + 7);
 
+<<<<<<< Updated upstream
       const res = await fetch(`${API_BASE}/renewals/${renewalId}/reminder`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -170,8 +198,25 @@ const Renewals = () => {
         alert('Reminder scheduled successfully!');
         await fetchRenewals();
       }
+=======
+      await scheduleReminder(
+        renewalId,
+        reminderDate.toISOString(),
+        'Renewal action required — please review',
+      );
+
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Renewal Reminder Sent', message: `Reminder scheduled for Renewal ID: ${renewalId}.` });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (notifErr) { console.error('Notification error:', notifErr); }
+
+      setFeedback({ type: 'success', message: 'Reminder scheduled successfully.' });
+      await fetchRenewals();
+>>>>>>> Stashed changes
     } catch (err) {
       console.error('Failed to schedule reminder:', err);
+      setFeedback({ type: 'error', message: err.message || 'Failed to schedule reminder.' });
     } finally {
       setActionLoading(null);
     }
@@ -270,6 +315,14 @@ const Renewals = () => {
           <p className="rnw-subtitle">Monitor and manage upcoming contract renewals</p>
         </div>
         <div className="rnw-header-actions">
+          <Button
+            variant="outline"
+            icon={Zap}
+            onClick={handleGenerateRenewals}
+            disabled={actionLoading === 'generate'}
+          >
+            {actionLoading === 'generate' ? 'Generating...' : 'Generate Renewals'}
+          </Button>
           <Button variant="outline" icon={TrendingUp} onClick={handleExport}>Export</Button>
           <Button variant="primary" icon={Plus} onClick={() => setIsAddModalOpen(true)}>Add Renewal</Button>
         </div>
@@ -362,7 +415,7 @@ const Renewals = () => {
             <div className="rnw-empty-state">
               <CalendarClock size={48} />
               <h3>No renewals found</h3>
-              <p>Try adjusting your filters or search terms</p>
+              <p>Try adjusting your filters or click &quot;Generate Renewals&quot; to create renewal records from existing contracts.</p>
             </div>
           ) : (
             <table className="rnw-data-table">
@@ -398,22 +451,33 @@ const Renewals = () => {
                       <span className="rnw-action-required">{getActionRequired(renewal)}</span>
                     </td>
                     <td className="rnw-action-cell">
-                      {renewal.status === 'Upcoming' && renewal.days_until_expiry <= 90 ? (
-                        <button
-                          className="rnw-action-btn rnw-start-btn"
-                          onClick={(e) => { e.stopPropagation(); handleStartRenewal(renewal.renewal_id); }}
-                          disabled={actionLoading === renewal.renewal_id}
-                        >
-                          {actionLoading === renewal.renewal_id ? '...' : 'Start Renewal'}
-                        </button>
-                      ) : (
+                      <div className="rnw-action-buttons">
+                        {renewal.status === 'Upcoming' && renewal.days_until_expiry >= 0 && renewal.days_until_expiry <= 90 && (
+                          <button
+                            className="rnw-action-btn rnw-start-btn"
+                            onClick={(e) => { e.stopPropagation(); handleStartRenewal(renewal.renewal_id); }}
+                            disabled={actionLoading === `start-${renewal.renewal_id}`}
+                          >
+                            {actionLoading === `start-${renewal.renewal_id}` ? '...' : 'Start Renewal'}
+                          </button>
+                        )}
+                        {(renewal.status === 'Upcoming' || renewal.status === 'In Progress') && renewal.days_until_expiry >= 0 && (
+                          <button
+                            className="rnw-action-btn rnw-remind-btn"
+                            onClick={(e) => { e.stopPropagation(); handleSendReminder(renewal.renewal_id); }}
+                            disabled={actionLoading === `remind-${renewal.renewal_id}`}
+                            title="Schedule reminder"
+                          >
+                            {actionLoading === `remind-${renewal.renewal_id}` ? '...' : <><Bell size={13} /> Remind</>}
+                          </button>
+                        )}
                         <button
                           className="rnw-action-btn rnw-view-btn"
                           onClick={() => navigate(`/renewals/${renewal.renewal_id}`)}
                         >
-                          View
+                          <Eye size={13} /> View
                         </button>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}
