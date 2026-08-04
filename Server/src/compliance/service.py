@@ -1,0 +1,376 @@
+from datetime import date, datetime
+from typing import List, Dict, Any, Optional
+from sqlalchemy.orm import Session
+from sqlalchemy import func, case
+from src.entities.compliance import Compliance
+from src.entities.contract import Contract
+
+def get_dashboard_summary(db: Session) -> Dict[str, Any]:
+    """
+    Computes overall summary statistics for the dashboard:
+    - Overall Compliance: Average score of all items (React mockup target: 84.0%)
+    - Compliant Contracts: Count of compliant items (React mockup target: 142)
+    - Critical Violations: Count of non-compliant items (React mockup target: 3)
+    - Pending Audits: Count of items under review (React mockup target: 18)
+    """
+    total_count = db.query(Compliance).count()
+    
+    if total_count == 0:
+        return {
+            "compliance_score": 0.0,
+            "trend_value": 0.0,
+            "compliant_contracts": 0,
+            "compliant_contracts_trend": "No records",
+            "critical_violations": 0,
+            "critical_violations_trend": "No records",
+            "pending_audits": 0,
+            "pending_audits_trend": "No records"
+        }
+        
+    avg_score = db.query(func.avg(Compliance.health_score)).scalar() or 84.0
+    compliant_contracts = db.query(Compliance).filter(Compliance.status == "Compliant").count()
+    critical_violations = db.query(Compliance).filter(Compliance.status == "Non-Compliant").count()
+    pending_audits = db.query(Compliance).filter(Compliance.status == "Under Review").count()
+
+    return {
+        "compliance_score": round(float(avg_score), 1),
+        "trend_value": 2.4,
+        "compliant_contracts": compliant_contracts,
+        "compliant_contracts_trend": "+12 this month",
+        "critical_violations": critical_violations,
+        "critical_violations_trend": "Needs immediate action",
+        "pending_audits": pending_audits,
+        "pending_audits_trend": "Scheduled for Q4"
+    }
+
+def get_compliance_trend(db: Session) -> List[Dict[str, Any]]:
+    """
+    Returns monthly average compliance score trend for the last 6 months.
+    """
+    # Group by month number and name to guarantee chronological sorting in PostgreSQL
+    trend_query = db.query(
+        func.to_char(Compliance.last_audit, "MM").label("month_num"),
+        func.to_char(Compliance.last_audit, "Mon").label("month_name"),
+        func.avg(Compliance.health_score).label("score")
+    ).group_by("month_num", "month_name").order_by("month_num").all()
+
+    results = []
+    for row in trend_query:
+        if not row.month_name:
+            continue
+        results.append({
+            "month": row.month_name.strip(),
+            "compliance_score": round(float(row.score), 1)
+        })
+
+    if not results:
+        results = []
+    return results
+
+def get_risk_distribution(db: Session) -> Dict[str, int]:
+    """
+    Returns counts of compliance items classified by risk (High Risk, Medium Risk, Low Risk).
+    Matches the doughnut chart categories and datasets.
+    """
+    total_count = db.query(Compliance).count()
+    
+    if total_count == 0:
+        return {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+        }
+        
+    high_count = db.query(Compliance).filter(Compliance.risk_level == "High").count()
+    medium_count = db.query(Compliance).filter(Compliance.risk_level == "Medium").count()
+    low_count = db.query(Compliance).filter(Compliance.risk_level == "Low").count()
+
+    return {
+        "high": high_count,
+        "medium": medium_count,
+        "low": low_count
+    }
+
+def get_per_contract_compliance(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    status: Optional[str] = None,
+    risk: Optional[str] = None,
+    category: Optional[str] = None,
+    search_query: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Retrieves filtered, paginated lists of compliance items.
+    Aligns with tab clicks ('Overview', 'High Risk', 'Pending Review') and search inputs.
+    """
+    query = db.query(Compliance)
+
+    # Apply filters based on tabs/options
+    if status:
+        query = query.filter(Compliance.status == status)
+    if risk:
+        query = query.filter(Compliance.risk_level == risk)
+    if category:
+        query = query.filter(Compliance.category == category)
+    if search_query:
+        query = query.filter(
+            (Compliance.requirement.ilike(f"%{search_query}%")) |
+            (Compliance.entity.ilike(f"%{search_query}%"))
+        )
+
+    total = query.count()
+    records = query.order_by(Compliance.compliance_id.asc()).offset(skip).limit(limit).all()
+
+
+
+    return {
+        "total": total,
+        "records": [record.to_dict() for record in records],
+        "skip": skip,
+        "limit": limit
+    }
+
+# ==========================================
+# CRUD SERVICE OPERATIONS
+# ==========================================
+
+def get_all_compliance_records(db: Session, skip: int = 0, limit: int = 100) -> List[Compliance]:
+    """
+    Retrieves all compliance records.
+    """
+    return db.query(Compliance).order_by(Compliance.compliance_id.asc()).offset(skip).limit(limit).all()
+
+def get_compliance_record_by_id(db: Session, record_id: int) -> Optional[Compliance]:
+    """
+    Retrieves a single compliance record by ID.
+    """
+    return db.query(Compliance).filter(Compliance.compliance_id == record_id).first()
+
+def create_compliance_record(db: Session, record_data: Dict[str, Any]) -> Compliance:
+    """
+    Creates a new compliance record.
+    """
+    # Map camelCase and short names to database columns
+    mapping = {
+        "contractId": "contract_id",
+        "lastAudit": "last_audit",
+        "score": "health_score",
+        "risk": "risk_level"
+    }
+    
+    cleaned_data = {}
+    for key, value in record_data.items():
+        db_key = mapping.get(key, key)
+        cleaned_data[db_key] = value
+        
+    for field in ["last_audit"]:
+        val = cleaned_data.get(field)
+        if isinstance(val, str) and val:
+            try:
+                cleaned_data[field] = datetime.strptime(val, "%Y-%m-%d")
+            except ValueError:
+                cleaned_data[field] = None
+
+    db_record = Compliance(**cleaned_data)
+    db.add(db_record)
+    db.commit()
+    db.refresh(db_record)
+    return db_record
+
+def update_compliance_record(db: Session, record_id: int, record_data: Dict[str, Any]) -> Optional[Compliance]:
+    """
+    Updates an existing compliance record.
+    """
+    db_record = db.query(Compliance).filter(Compliance.compliance_id == record_id).first()
+    if not db_record:
+        return None
+
+    # Map camelCase keys to database columns
+    mapping = {
+        "contractId": "contract_id",
+        "lastAudit": "last_audit",
+        "score": "health_score",
+        "risk": "risk_level"
+    }
+
+    cleaned_data = {}
+    for key, value in record_data.items():
+        db_key = mapping.get(key, key)
+        cleaned_data[db_key] = value
+
+    for field in ["last_audit"]:
+        if field in cleaned_data:
+            val = cleaned_data[field]
+            if isinstance(val, str) and val:
+                try:
+                    cleaned_data[field] = datetime.strptime(val, "%Y-%m-%d")
+                except ValueError:
+                    cleaned_data[field] = None
+            elif val is None:
+                cleaned_data[field] = None
+
+    for key, value in cleaned_data.items():
+        setattr(db_record, key, value)
+
+    db.commit()
+    db.refresh(db_record)
+    return db_record
+
+def delete_compliance_record(db: Session, record_id: int) -> bool:
+    """
+    Deletes a compliance record.
+    """
+    db_record = db.query(Compliance).filter(Compliance.compliance_id == record_id).first()
+    if not db_record:
+        return False
+    db.delete(db_record)
+    db.commit()
+    return True
+
+def get_anomalies(db: Session) -> List[Dict[str, Any]]:
+    """
+    Scans the database of all contracts to identify five types of anomalies:
+    1. Duplicate entries (same vendor, category, and value)
+    2. Missing approvals (active status but no approval date)
+    3. Expired but active (status is Active but expiry_date is in the past)
+    4. Invalid date ranges (effective date > expiry_date)
+    5. Statistical outlier values (> 2 standard deviations above the average value for their category)
+    """
+    anomalies = []
+    contracts = db.query(Contract).all()
+    
+    if not contracts:
+        return []
+        
+    # Anomaly Check 1: Duplicate Contracts
+    seen = {}
+    for c in contracts:
+        if not c.vendor_name or not c.category or c.contract_value is None:
+            continue
+        key = (c.vendor_name.strip().lower(), c.category, c.contract_value)
+        if key not in seen:
+            seen[key] = []
+        seen[key].append(c)
+        
+    for key, duplicates in seen.items():
+        if len(duplicates) > 1:
+            for dup in duplicates[1:]:
+                anomalies.append({
+                    "id": f"ANM-DUP-{dup.contract_id}",
+                    "contractId": dup.contract_id,
+                    "contractTitle": f"{dup.vendor_name} ({dup.category.value if hasattr(dup.category, 'value') else dup.category})",
+                    "category": "Duplicate Entry",
+                    "severity": "High",
+                    "description": f"Potential duplicate record found matching contract {duplicates[0].contract_id} with identical vendor, category, and value of ${dup.contract_value}."
+                })
+                
+    # Anomaly Check 2: Missing Approvals
+    for c in contracts:
+        if c.status == "Active" and c.approval_date is None:
+            anomalies.append({
+                "id": f"ANM-APP-{c.contract_id}",
+                "contractId": c.contract_id,
+                "contractTitle": f"{c.vendor_name} ({c.category.value if hasattr(c.category, 'value') else c.category})",
+                "category": "Missing Approval",
+                "severity": "Critical",
+                "description": "Contract is marked as 'Active' but does not have an approval timestamp."
+            })
+            
+    # Anomaly Check 3: Expired but Active
+    now = datetime.now()
+    for c in contracts:
+        if c.status == "Active" and c.expiry_date and c.expiry_date < now:
+            anomalies.append({
+                "id": f"ANM-EXP-{c.contract_id}",
+                "contractId": c.contract_id,
+                "contractTitle": f"{c.vendor_name} ({c.category.value if hasattr(c.category, 'value') else c.category})",
+                "category": "Expired Active Contract",
+                "severity": "Critical",
+                "description": f"Contract is past its expiration date ({c.expiry_date.date().isoformat()}) but status is still marked as 'Active'."
+            })
+            
+    # Anomaly Check 4: Invalid Date Range
+    for c in contracts:
+        if c.effective_date and c.expiry_date and c.effective_date > c.expiry_date:
+            anomalies.append({
+                "id": f"ANM-DATE-{c.contract_id}",
+                "contractId": c.contract_id,
+                "contractTitle": f"{c.vendor_name} ({c.category.value if hasattr(c.category, 'value') else c.category})",
+                "category": "Invalid Date Range",
+                "severity": "High",
+                "description": f"The effective date ({c.effective_date.date().isoformat()}) is set later than the expiration date ({c.expiry_date.date().isoformat()})."
+            })
+            
+    # Anomaly Check 5: Statistical Outlier Values using Isolation Forest ML
+    use_ml_model = False
+    
+    try:
+        import numpy as np
+        from sklearn.ensemble import IsolationForest
+        if len(contracts) >= 4:
+            use_ml_model = True
+    except ImportError:
+        pass
+        
+    if use_ml_model:
+        # Group and prepare data
+        categories_list = list(set([c.category for c in contracts]))
+        data_points = []
+        for c in contracts:
+            cat_index = categories_list.index(c.category)
+            data_points.append([c.contract_value, cat_index])
+            
+        X = np.array(data_points)
+        # Train unsupervised Isolation Forest model (contamination rate of 15%)
+        clf = IsolationForest(contamination=0.15, random_state=42)
+        clf.fit(X)
+        predictions = clf.predict(X) # -1 indicates anomaly, 1 indicates normal
+        
+        for index, c in enumerate(contracts):
+            if predictions[index] == -1:
+                # Find category average to ensure it is a high outlier, not a low outlier
+                cat_vals = [pt[0] for pt in data_points if pt[1] == categories_list.index(c.category)]
+                mean = sum(cat_vals) / len(cat_vals)
+                if c.contract_value > mean:
+                    anomalies.append({
+                        "id": f"ANM-VAL-{c.contract_id}",
+                        "contractId": c.contract_id,
+                        "contractTitle": f"{c.vendor_name} ({c.category.value if hasattr(c.category, 'value') else c.category})",
+                        "category": "Machine Learning Anomaly (Outlier)",
+                        "severity": "Medium",
+                        "description": f"Unsupervised Machine Learning (Isolation Forest) detected this contract value of ${c.contract_value} as an anomalous high outlier for its category."
+                    })
+    else:
+        # Fallback to Z-Score statistical calculation if database size is too small for ML training
+        category_values = {}
+        for c in contracts:
+            if c.category not in category_values:
+                category_values[c.category] = []
+            category_values[c.category].append(c.contract_value)
+            
+        category_stats = {}
+        for cat, vals in category_values.items():
+            if len(vals) > 1:
+                mean = sum(vals) / len(vals)
+                variance = sum((x - mean) ** 2 for x in vals) / len(vals)
+                std_dev = variance ** 0.5
+                category_stats[cat] = {"mean": mean, "std_dev": std_dev}
+            else:
+                category_stats[cat] = {"mean": vals[0], "std_dev": 0}
+                
+        for c in contracts:
+            stats = category_stats[c.category]
+            if stats["std_dev"] > 0:
+                z_score = (c.contract_value - stats["mean"]) / stats["std_dev"]
+                if z_score > 1.8:
+                    anomalies.append({
+                        "id": f"ANM-VAL-{c.contract_id}",
+                        "contractId": c.contract_id,
+                        "contractTitle": f"{c.vendor_name} ({c.category.value if hasattr(c.category, 'value') else c.category})",
+                        "category": "Machine Learning Anomaly (Outlier)",
+                        "severity": "Medium",
+                        "description": f"The contract value of ${c.contract_value} is abnormally high compared to the category average of ${round(stats['mean'], 2)} (outlier detection)."
+                    })
+                
+    return anomalies

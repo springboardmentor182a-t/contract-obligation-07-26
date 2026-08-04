@@ -1,21 +1,24 @@
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, HTTPException, Cookie, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 import random
+from sqlalchemy.exc import IntegrityError
 
-from database.core import get_db, SessionLocal
-from entities.user import User
-from entities.otp import OTP
-from core.config import settings
-from audit_logs.service import create_audit_log
-from auth.mail import send_otp
-from auth.service import (
+
+from src.auth.service import verify_password
+from src.database.core import get_db
+from src.entities.user import User
+from src.entities.otp import OTP
+from src.audit_logs.service import create_audit_log
+from src.auth.mail import send_otp
+from src.auth.mail import send_otp
+from src.auth.service import (
     hash_password,
     verify_password,
     create_access_token,
     verify_token,
 )
-from auth.models import (
+from src.auth.models import (
     UserResponse,
     UserLogin,
     UserCreate,
@@ -24,6 +27,7 @@ from auth.models import (
     VerifyOTPRequest,
     NewPassword,
 )
+from src.users.service import admin_required
 
 router = APIRouter(
     prefix="/auth",
@@ -31,30 +35,47 @@ router = APIRouter(
 )
 
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register")
 def register_user(
     user_data: UserCreate,
     response: Response,
+    current_user: User = Depends(admin_required),
     db: Session = Depends(get_db),
 ):
-    try:
-        user = User(
-            role=user_data.role,
-            full_name=user_data.full_name,
-            email=user_data.email,
-            phone=user_data.phone,
-            password=hash_password(user_data.password),
-            employee_id=user_data.employee_id,
-            company_name=user_data.company_name,
-            department=user_data.department,
-            designation=user_data.designation,
-            location=user_data.location,
+    user = User(
+        role=user_data.role,
+        full_name=user_data.full_name,
+        email=user_data.email,
+        phone=user_data.phone,
+        password=hash_password(user_data.password),
+        employee_id=user_data.employee_id,
+        organization_id=user_data.organization_id,
+        company_name=user_data.company_name,
+        department=user_data.department,
+        designation=user_data.designation,
+        location=user_data.location,
+    )
+
+    existing_user = db.query(User).filter(User.email == user_data.email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=400, detail="User with this email already exists."
         )
+
+    try:
         db.add(user)
         db.commit()
         db.refresh(user)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400, detail="User with this email already exists."
+        )
     except Exception as e:
-        raise HTTPException(status_code=404, detail=e)
+        db.rollback()
+        raise HTTPException(
+            status_code=500, detail="An error occurred while creating the user."
+        )
 
     create_audit_log(
         db=db,
@@ -63,7 +84,7 @@ def register_user(
         action="register user",
         status="success",
         module="Authentication",
-        description="register new user.",
+        description="register new user by admin.",
     )
 
     return user
@@ -72,8 +93,10 @@ def register_user(
 @router.get("/user/{user_id}", response_model=UserResponse)
 def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.user_id == user_id).first()
+
     if not user:
         raise HTTPException(status_code=404, detail="User not exist!!")
+
     return user
 
 
@@ -94,6 +117,7 @@ def login_user(request: UserLogin, response: Response, db: Session = Depends(get
             module="Authentication",
             description="User your login password.but Incorect password!!",
         )
+
         raise HTTPException(status_code=404, detail="Incorect password!!")
 
     create_audit_log(
@@ -109,13 +133,13 @@ def login_user(request: UserLogin, response: Response, db: Session = Depends(get
     token = create_access_token(
         {"sub": user.email, "user_id": user.user_id, "role": user.role}
     )
-
     return {"access_token": token, "token_type": "bearer"}
 
 
 @router.get("/profile", response_model=UserResponse)
 def get_profile(payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload["sub"]).first()
+
     return user
 
 
@@ -126,6 +150,7 @@ def update_user(
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.email == payload["sub"]).first()
+
     if not user:
         raise HTTPException(status_code=404, detail="User not exist!!")
 
@@ -139,8 +164,12 @@ def update_user(
     user.designation = user_data.designation
     user.location = user_data.location
 
-    db.commit()
-    db.refresh(user)
+    try:
+        db.commit()
+        db.refresh(user)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
     create_audit_log(
         db=db,
@@ -157,6 +186,7 @@ def update_user(
 
 @router.get("/logout")
 def logout_user(response: Response):
+
     response.delete_cookie("access_token")
 
     return {"message": "Logout successful"}
@@ -184,7 +214,6 @@ def change_password(
             description="User change your login password.but incorrect old password!!",
         )
         raise HTTPException(status_code=404, detail="incorrect old password!!")
-
     user.password = hash_password(request.new_password)
 
     db.commit()
@@ -199,7 +228,6 @@ def change_password(
         module="Authentication",
         description="User change your login password.",
     )
-
     return user
 
 
@@ -220,6 +248,7 @@ async def change_password(
     db.add(otp_data)
     db.commit()
     await send_otp(user.full_name, user.email, otp=generatedOTP)
+
     create_audit_log(
         db=db,
         user_id=user.user_id,
@@ -229,7 +258,6 @@ async def change_password(
         module="Authentication",
         description="OTP has been sent to your registered email.",
     )
-
     return {"success": True, "message": "OTP has been sent to your registered email."}
 
 
@@ -250,10 +278,8 @@ def verify_otp(request: VerifyOTPRequest, db: Session = Depends(get_db)):
         raise HTTPException(400, "Invalid OTP")
 
     record.is_verified = True
-
     db.commit()
     db.refresh(record)
-
     return {"message": "OTP verified successfully"}
 
 
@@ -292,8 +318,6 @@ def change_password(
 
     user.password = hash_password(request.new_password)
     record.is_verified = False
-
     db.commit()
     db.refresh(user)
-
     return user

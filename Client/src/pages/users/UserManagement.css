@@ -1,0 +1,45 @@
+/* UserManagement.css */
+
+.user-table-card {
+  overflow: visible;
+}
+
+.user-table-wrapper {
+  overflow: visible;
+}
+
+/* For mobile devices, enable horizontal scrolling for the table */
+@media (max-width: 768px) {
+  .user-table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    /* Hide overflow-y to prevent double scrollbars, but dropdowns might be clipped */
+    overflow-y: hidden !important; 
+  }
+}
+
+@media (max-width: 480px) {
+  /* The Dashboard.css hides column 4 and 5 for .activity-table. 
+     We need to override this for .user-table because they contain Status and Actions */
+  .activity-table.user-table th:nth-child(4),
+  .activity-table.user-table td:nth-child(4),
+  .activity-table.user-table th:nth-child(5),
+  .activity-table.user-table td:nth-child(5) {
+    display: table-cell !important;
+  }
+  
+  .user-header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .user-header-actions .header-search {
+    width: 100%;
+    max-width: 100% !important;
+  }
+  
+  .user-header-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}

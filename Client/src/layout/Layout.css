@@ -128,6 +128,16 @@
   color: #fca5a5;
 }
 
+.logout-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  margin-top: 0.25rem;
+}
+
 /* ===== Header / Navbar ===== */
 .header {
   height: 70px;
@@ -231,13 +241,21 @@
 
 .notification-badge {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 8px;
-  height: 8px;
+  top: 0px;
+  right: -4px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
   background-color: var(--color-danger);
-  border-radius: 50%;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
   border: 2px solid var(--color-white);
+  box-sizing: content-box;
 }
 
 /* Divider between bell and profile */

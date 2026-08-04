@@ -27,6 +27,8 @@ https://www.figma.com/design/ijFi89rf2f2GV8GSv5g6HW/ContractIQ---UI-wireframes?n
 🔗 **Figma Design Public:**
 https://pivot-jury-03978791.figma.site/
 
+updated README.
+
 > The design includes:
 > - Admin Dashboard
 > - Contract Repository

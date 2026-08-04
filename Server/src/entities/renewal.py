@@ -1,13 +1,15 @@
 from enum import Enum
-
 from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from database.core import Base
+
+from src.database.core import Base
+
 
 
 class RenewalStatus(str, Enum):
+    
     UPCOMING = "Upcoming"
     IN_PROGRESS = "In Progress"
     RENEWED = "Renewed"
@@ -16,12 +18,14 @@ class RenewalStatus(str, Enum):
 
 
 class ApprovalStatus(str, Enum):
+    
     PENDING = "Pending"
     APPROVED = "Approved"
     REJECTED = "Rejected"
 
 
 class Renewal(Base):
+    
     """A contract renewal tracked independently from the contracts module."""
 
     __tablename__ = "renewals"
@@ -32,6 +36,7 @@ class Renewal(Base):
     category = Column(String(150), nullable=False)
     vendor = Column(String(255), nullable=False)
     owner = Column(String(255), nullable=False)
+    
     expiry_date = Column(DateTime, nullable=False, index=True)
     notice_period_days = Column(Integer, nullable=False, default=30)
     value = Column(Float, nullable=False, default=0.0)
@@ -46,6 +51,7 @@ class Renewal(Base):
 
 
 class RenewalApproval(Base):
+    
     __tablename__ = "renewal_approvals"
 
     approval_id = Column(Integer, primary_key=True, index=True)
@@ -61,9 +67,11 @@ class RenewalApproval(Base):
 
 
 class RenewalReminder(Base):
+    
     __tablename__ = "renewal_reminders"
 
     reminder_id = Column(Integer, primary_key=True, index=True)
+    
     renewal_id = Column(Integer, ForeignKey("renewals.renewal_id"), nullable=False, index=True)
     reminder_date = Column(DateTime, nullable=False)
     message = Column(String(1000), nullable=True)
@@ -74,10 +82,13 @@ class RenewalReminder(Base):
     renewal = relationship("Renewal", back_populates="reminders")
 
 
+
 class RenewalHistory(Base):
+    
     __tablename__ = "renewal_history"
 
     history_id = Column(Integer, primary_key=True, index=True)
+    
     renewal_id = Column(Integer, ForeignKey("renewals.renewal_id"), nullable=False, index=True)
     action = Column(String(500), nullable=False)
     performed_by = Column(String(255), nullable=False)
@@ -85,3 +96,4 @@ class RenewalHistory(Base):
     created_at = Column(DateTime, nullable=False, server_default=func.now())
 
     renewal = relationship("Renewal", back_populates="history")
+

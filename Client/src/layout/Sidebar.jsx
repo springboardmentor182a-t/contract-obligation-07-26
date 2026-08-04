@@ -15,7 +15,8 @@ import {
   Bell,
   Activity,
   Briefcase,
-  User
+  User,
+  Building
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -31,6 +32,7 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
           { path: '/notifications', label: 'Notifications', icon: <Bell size={20} /> },
           { path: '/audit-logs', label: 'Audit Logs', icon: <Activity size={20} /> },
           { path: '/users', label: 'User Management', icon: <Users size={20} /> },
+          { path: '/organizations', label: 'Organization Management', icon: <Building size={20} /> },
         ];
     } else if (normalizedRole === 'legal manager') {
         return [
@@ -90,23 +92,18 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
       </nav>
 
       <div className="sidebar-footer">
-        <nav className="sidebar-footer-nav">
-          <NavLink to="/settings" className="nav-item" onClick={closeSidebar}>
-            <Settings size={20} />
-            <span>Settings</span>
-          </NavLink>
-          <button 
-            className="nav-item nav-item-danger" 
-            style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}
-            onClick={() => {
-              closeSidebar();
-              logout();
-            }}
-          >
-            <LogOut size={20} />
-            <span>Logout</span>
-          </button>
-        </nav>
+        <NavLink 
+          to="/settings" 
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          onClick={closeSidebar}
+        >
+          <Settings size={20} />
+          <span>Settings</span>
+        </NavLink>
+        <button className="nav-item nav-item-danger logout-btn" onClick={logout}>
+          <LogOut size={20} />
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
   );

@@ -38,6 +38,33 @@
   --transition-normal: all 0.3s ease;
 }
 
+[data-theme='dark'] {
+  --color-primary: #8AB4F8;
+  --color-primary-light: #304C68;
+  --color-primary-hover: #AECBFA;
+  --color-secondary: #10B981;
+  --color-bg: #0F172A;
+  --color-surface: #1E293B;
+  --color-text: #E2E8F0;
+  --color-text-muted: #94A3B8;
+  --color-border: #334155;
+  --color-danger: #F87171;
+  --color-warning: #FBBF24;
+  --color-accent: #1E3A5F;
+  --color-success: #34D399;
+
+  --color-white: #1E293B;
+  --color-bg-light: #172033;
+  --color-text-dark: #F8FAFC;
+  --color-text-light: #94A3B8;
+  --color-primary-dark: #6085A6;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 4px 10px -2px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 15px rgba(138, 180, 248, 0.15);
+}
+
 /* ===== Reset ===== */
 * {
   box-sizing: border-box;
@@ -276,7 +303,7 @@ h3 {
   padding: 0.75rem 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  background-color: #fafcfd;
+  background-color: var(--color-bg-light);
   color: var(--color-text-dark);
   font-family: inherit;
   font-size: 0.95rem;
@@ -287,14 +314,14 @@ h3 {
 .form-input:hover,
 .form-select:hover {
   border-color: var(--color-primary-light);
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
 }
 
 .form-input:focus,
 .form-select:focus {
   outline: none;
   border-color: var(--color-primary);
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
   box-shadow: 0 0 0 3px rgba(107, 142, 177, 0.15), inset 0 1px 2px rgba(0,0,0,0.01);
   transform: translateY(-1px);
 }

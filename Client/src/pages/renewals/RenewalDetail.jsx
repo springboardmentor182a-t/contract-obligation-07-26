@@ -2,14 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Calendar, User, Building2, Tag, Clock, DollarSign,
-<<<<<<< Updated upstream
-  CheckCircle, XCircle, RefreshCw, AlertTriangle, Shield,
-  Bell, FileText, PlayCircle
-=======
   CheckCircle, XCircle, RefreshCw, Shield, Bell, FileText, PlayCircle,
   Ban, AlertTriangle
->>>>>>> Stashed changes
 } from 'lucide-react';
+
 import Button from '../../components/Buttons/Button';
 import {
   getRenewalById,
@@ -65,20 +61,9 @@ const RenewalDetail = () => {
   const handleStatusChange = async (newStatus) => {
     setActionLoading('status');
     try {
-<<<<<<< Updated upstream
-      const res = await fetch(`${API_BASE}/renewals/${id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus, performed_by: 'Current User' }),
-      });
-      if (res.ok) {
-        await fetchDetail();
-      }
-=======
       await updateRenewalStatus(id, newStatus, 'Current User');
       setFeedback({ type: 'success', message: `Status updated to ${newStatus}.` });
       await fetchDetail();
->>>>>>> Stashed changes
     } catch (err) {
       console.error('Status update failed:', err);
       setFeedback({ type: 'error', message: err.message || 'Failed to update status.' });
@@ -111,11 +96,11 @@ const RenewalDetail = () => {
 
   const getStatusBadge = (status) => {
     const config = {
-      'Upcoming':    { icon: <Clock size={14} />, className: 'rd-badge-upcoming' },
+      'Upcoming': { icon: <Clock size={14} />, className: 'rd-badge-upcoming' },
       'In Progress': { icon: <RefreshCw size={14} />, className: 'rd-badge-progress' },
-      'Renewed':     { icon: <CheckCircle size={14} />, className: 'rd-badge-renewed' },
-      'Expired':     { icon: <XCircle size={14} />, className: 'rd-badge-expired' },
-      'Cancelled':   { icon: <XCircle size={14} />, className: 'rd-badge-cancelled' },
+      'Renewed': { icon: <CheckCircle size={14} />, className: 'rd-badge-renewed' },
+      'Expired': { icon: <XCircle size={14} />, className: 'rd-badge-expired' },
+      'Cancelled': { icon: <XCircle size={14} />, className: 'rd-badge-cancelled' },
     };
     const c = config[status] || { icon: null, className: '' };
     return (
@@ -197,6 +182,7 @@ const RenewalDetail = () => {
             {getStatusBadge(renewal.status)}
           </div>
         </div>
+
         <div className="rd-header-actions">
           <Button
             variant="outline"
@@ -250,6 +236,7 @@ const RenewalDetail = () => {
           <h2 className="rd-panel-title">
             <FileText size={18} /> Contract Information
           </h2>
+
           <div className="rd-info-grid">
             <div className="rd-info-item">
               <span className="rd-info-label"><Building2 size={14} /> Vendor</span>
@@ -263,24 +250,29 @@ const RenewalDetail = () => {
               <span className="rd-info-label"><User size={14} /> Owner</span>
               <span className="rd-info-value">{renewal.owner}</span>
             </div>
+
             <div className="rd-info-item">
               <span className="rd-info-label"><DollarSign size={14} /> Contract Value</span>
               <span className="rd-info-value">{formatValue(renewal.value)}</span>
             </div>
+
             <div className="rd-info-item">
               <span className="rd-info-label"><Calendar size={14} /> Expiry Date</span>
               <span className="rd-info-value">{formatDate(renewal.expiry_date)}</span>
             </div>
+
             <div className="rd-info-item">
               <span className="rd-info-label"><Clock size={14} /> Days Until Expiry</span>
               <span className={`rd-info-value ${renewal.days_until_expiry <= 30 ? 'rd-text-danger' : renewal.days_until_expiry <= 90 ? 'rd-text-warning' : 'rd-text-success'}`}>
                 {renewal.days_until_expiry < 0 ? 'Expired' : `${renewal.days_until_expiry} days`}
               </span>
             </div>
+
             <div className="rd-info-item">
               <span className="rd-info-label"><Shield size={14} /> Notice Period</span>
               <span className="rd-info-value">{renewal.notice_period_days} days</span>
             </div>
+
             <div className="rd-info-item">
               <span className="rd-info-label"><RefreshCw size={14} /> Auto-Renew</span>
               <span className="rd-info-value">{renewal.auto_renew ? 'Yes' : 'No'}</span>
@@ -308,6 +300,7 @@ const RenewalDetail = () => {
                       )}
                     </div>
                   </div>
+
                   <div className="rd-step-right">
                     {step.status === 'Pending' ? (
                       <div className="rd-step-actions">
@@ -350,6 +343,7 @@ const RenewalDetail = () => {
         <h2 className="rd-panel-title">
           <Clock size={18} /> Renewal History
         </h2>
+
         {renewal.history && renewal.history.length > 0 ? (
           <div className="rd-timeline">
             {renewal.history.map((event) => (

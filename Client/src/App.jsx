@@ -1,12 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+
 import PageContainer from './layout/PageContainer';
 import AuthLayout from './layout/AuthLayout';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import DashboardRouter from './pages/dashboards/DashboardRouter';
 import UserManagement from './pages/users/UserManagement';
+import OrganizationManagement from './pages/organizations/OrganizationManagement';
 import ContractRepository from './pages/contracts/ContractRepository';
 import ContractDetails from './pages/contracts/ContractDetails';
 import ArchivedContracts from './pages/contracts/ArchivedContracts';
@@ -19,6 +21,8 @@ import RenewalDetail from './pages/renewals/RenewalDetail';
 import AuditLogs from './pages/auditLogs/AuditLogs';
 import Settings from './pages/settings/Settings';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import NotificationEngine from './features/notifications/NotificationEngine';
+
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('access_token');
@@ -51,6 +55,7 @@ const RoleProtectedRoute = ({ module, children }) => {
       'Notifications': { admin: true, legal: true, compliance: true, contract: true, default: true },
       'Audit Logs': { admin: true, legal: false, compliance: false, contract: false, default: false },
       'User Management': { admin: true, legal: true, compliance: false, contract: false, default: false },
+      'Organization Management': { admin: true, legal: false, compliance: false, contract: false, default: false },
       'Settings': { admin: true, legal: true, compliance: true, contract: true, default: true }
     };
 
@@ -93,6 +98,7 @@ const PlaceholderPage = ({ title }) => (
 function App() {
   return (
     <AuthProvider>
+      <NotificationEngine />
       <BrowserRouter>
         <Routes>
           {/* Default Route */}
@@ -101,7 +107,6 @@ function App() {
           {/* Auth Routes */}
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
           
@@ -127,6 +132,7 @@ function App() {
 
             {/* Role-Specific New Routes (Placeholders except users) */}
             <Route path="users" element={<RoleProtectedRoute module="User Management"><UserManagement /></RoleProtectedRoute>} />
+            <Route path="organizations" element={<RoleProtectedRoute module="Organization Management"><OrganizationManagement /></RoleProtectedRoute>} />
             <Route path="audit-logs" element={<RoleProtectedRoute module="Audit Logs"><AuditLogs /></RoleProtectedRoute>} />
             <Route path="approvals" element={<PlaceholderPage title="Contract Approvals" />} />
             <Route path="my-contracts" element={<PlaceholderPage title="My Contracts" />} />

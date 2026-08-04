@@ -9,14 +9,18 @@ from sqlalchemy import (
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
-from database.core import Base
+
+from src.database.core import Base
 
 
 class Obligation(Base):
+    
     __tablename__ = "obligations"
 
     obligation_id = Column(Integer, primary_key=True, index=True)
+    
     contract_id = Column(Integer, ForeignKey("contracts.contract_id"), nullable=False)
+    
     title = Column(String(250), nullable=False)
     description = Column(String(1000), nullable=True)
     assigned_to = Column(String(200), nullable=False)

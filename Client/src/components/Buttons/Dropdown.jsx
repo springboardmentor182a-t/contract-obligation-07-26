@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 
-const Dropdown = ({ label, items = [], onSelect, className = '', hideArrow = false }) => {
+const Dropdown = ({ label, items = [], onSelect, className = '' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -22,7 +22,7 @@ const Dropdown = ({ label, items = [], onSelect, className = '', hideArrow = fal
         onClick={() => setIsOpen(!isOpen)}
         type="button"
       >
-        {label} {!hideArrow && <ChevronDown size={16} />}
+        {label} <ChevronDown size={16} />
       </button>
       {isOpen && (
         <div className="dropdown-menu">

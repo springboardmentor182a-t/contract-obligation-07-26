@@ -16,7 +16,6 @@ from src.entities.obligation import Obligation
 from src.audit_logs.service import create_audit_log
 
 
-
 def auto_update_expired_statuses(db: Session):
     """Automatically update any UPCOMING renewals past their expiry date to EXPIRED status."""
     now = datetime.utcnow()
@@ -144,6 +143,7 @@ def get_renewals(
             "updated_at": r.updated_at.isoformat() if r.updated_at else None,
             "days_until_expiry": days_left,
         }
+        
         result.append(renewal_dict)
 
     return result
@@ -164,6 +164,7 @@ def create_renewal(db: Session, data):
     )
     db.commit()
     db.refresh(renewal)
+    
     return renewal
 
 
@@ -172,6 +173,7 @@ def get_renewal_detail(db: Session, renewal_id: int):
     renewal = (
         db.query(Renewal).filter(Renewal.renewal_id == renewal_id).first()
     )
+    
     if not renewal:
         return None
 
@@ -206,6 +208,7 @@ def get_renewal_detail(db: Session, renewal_id: int):
             }
             for a in renewal.approvals
         ],
+        
         "reminders": [
             {
                 "reminder_id": rm.reminder_id,
@@ -288,9 +291,7 @@ def submit_approval(db: Session, renewal_id: int, step_name: str, action: str, a
             acted_at=datetime.utcnow(),
         )
         db.add(approval)
-
     else:
-
         approval.status = action
         approval.approver = approver
         approval.comments = comments
@@ -303,12 +304,12 @@ def submit_approval(db: Session, renewal_id: int, step_name: str, action: str, a
         performed_by=approver,
         details=comments or f"Step {step_name} marked as {action}",
     )
+    
     db.add(history)
+    create_audit_log(db, user_name=approver, action=action.lower() + " renewal", module="Renewals", category="Approval", entity_type="Renewal", entity_id=renewal_id, description=f"{step_name} {action.lower()} by {approver}", new_value={"approval_status": action, "comments": comments})
 
-    # If approved at final step,
-    # update status to Renewed
+    # If approved at final step, update status to Renewed
     if action == ApprovalStatus.APPROVED.value:
-
         all_approvals = (
             db.query(RenewalApproval)
             .filter(RenewalApproval.renewal_id == renewal_id)
@@ -334,12 +335,14 @@ def submit_approval(db: Session, renewal_id: int, step_name: str, action: str, a
 
     db.commit()
     db.refresh(approval)
+    
     return approval
 
 
 def schedule_reminder(db: Session, renewal_id: int, reminder_date: datetime, message: str = None):
     """Schedule a reminder for a renewal."""
     renewal = db.query(Renewal).filter(Renewal.renewal_id == renewal_id).first()
+    
     if not renewal:
         return None
 
@@ -361,6 +364,7 @@ def schedule_reminder(db: Session, renewal_id: int, reminder_date: datetime, mes
 
     db.commit()
     db.refresh(reminder)
+    
     return reminder
 
 
@@ -391,7 +395,7 @@ def send_reminder_action(db: Session, renewal_id: int):
     db.add(history)
 
     db.commit()
-
+    
     return {"sent_count": len(reminders)}
 
 

@@ -11,7 +11,8 @@ from src.renewals.models import (
     ApprovalActionRequest,
     ReminderCreateRequest,
 )
-from renewals.service import (
+
+from src.renewals.service import (
     get_dashboard_summary,
     get_renewals,
     get_renewal_detail,
@@ -22,6 +23,7 @@ from renewals.service import (
     create_renewal,
     generate_renewals_from_contracts,
 )
+
 
 router = APIRouter(
     prefix="/renewals",
@@ -49,7 +51,6 @@ def list_renewals(
 @router.post("/", status_code=201)
 def add_renewal(request: RenewalCreate, db: Session = Depends(get_db)):
     """Create a renewal record from the dashboard form."""
-    # Validate status using the enum
     valid_values = [s.value for s in RenewalStatus]
     if request.status not in valid_values:
         raise HTTPException(
@@ -158,6 +159,7 @@ def create_reminder(
 def send_reminder(renewal_id: int, db: Session = Depends(get_db)):
     """Send pending reminders for a renewal."""
     result = send_reminder_action(db, renewal_id)
+
     if not result:
         raise HTTPException(
             status_code=404, detail="No pending reminders found for this renewal"
