@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from typing import Optional
 
 from src.database.core import get_db
 from src.contracts import service
@@ -15,77 +16,126 @@ router = APIRouter(
 )
 
 
-@router.post(
-    "/",
-    response_model=ContractResponse
-)
-def create(
-    contract: ContractCreate,
-    db: Session = Depends(get_db)
-):
-    return service.create_contract(db, contract)
-
-
 @router.get(
     "/",
     response_model=list[ContractResponse]
 )
 def get_all(
+    search: Optional[str] = Query(None, description="Search contracts by title"),
+    status: Optional[str] = Query(None, description="Filter by status"),
     db: Session = Depends(get_db)
 ):
-    return service.get_contracts(db)
+    """Get all contracts with optional search and status filtering."""
+    return service.get_contracts(db, search=search, status=status)
 
 
 @router.get(
-    "/{id}",
+    "/archived",
+    response_model=list[ContractResponse]
+)
+def get_archived(
+    db: Session = Depends(get_db)
+):
+    """Get all archived contracts."""
+    return service.get_archived_contracts(db)
+
+
+@router.get(
+    "/search/{keyword}",
+    response_model=list[ContractResponse]
+)
+def search(
+    keyword: str,
+    db: Session = Depends(get_db)
+):
+    """Search contracts by title keyword."""
+    return service.search_contract(db, keyword)
+
+
+@router.get(
+    "/status/{status}",
+    response_model=list[ContractResponse]
+)
+def status_filter(
+    status: str,
+    db: Session = Depends(get_db)
+):
+    """Filter contracts by status."""
+    return service.filter_status(db, status)
+
+
+@router.get(
+    "/{contract_id}",
     response_model=ContractResponse
 )
 def get_one(
-    id: int,
+    contract_id: int,
     db: Session = Depends(get_db)
 ):
-    contract = service.get_contract_by_id(db, id)
+    """Get a single contract by ID."""
+    contract = service.get_contract_by_id(db, contract_id)
 
     if not contract:
         raise HTTPException(
             status_code=404,
-            detail="Contract not found"
+            detail=f"Contract with ID {contract_id} not found"
         )
 
     return contract
+
+
+@router.post(
+    "/",
+    response_model=ContractResponse,
+    status_code=201
+)
+def create(
+    contract: ContractCreate,
+    db: Session = Depends(get_db)
+):
+    """Create a new contract."""
+    try:
+        return service.create_contract(db, contract)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to create contract: {str(e)}"
+        )
 
 
 @router.put(
-    "/{id}",
+    "/{contract_id}",
     response_model=ContractResponse
 )
 def update(
-    id: int,
+    contract_id: int,
     data: ContractUpdate,
     db: Session = Depends(get_db)
 ):
-    contract = service.update_contract(db, id, data)
+    """Update an existing contract."""
+    contract = service.update_contract(db, contract_id, data)
 
     if not contract:
         raise HTTPException(
             status_code=404,
-            detail="Contract not found"
+            detail=f"Contract with ID {contract_id} not found"
         )
 
     return contract
 
 
-@router.delete("/{id}")
+@router.delete("/{contract_id}")
 def delete(
-    id: int,
+    contract_id: int,
     db: Session = Depends(get_db)
 ):
-    contract = service.delete_contract(db, id)
+    """Delete a contract."""
+    success = service.delete_contract(db, contract_id)
 
-    if not contract:
+    if not success:
         raise HTTPException(
             status_code=404,
-            detail="Contract not found"
+            detail=f"Contract with ID {contract_id} not found"
         )
 
     return {
@@ -93,17 +143,41 @@ def delete(
     }
 
 
-@router.get("/search/{keyword}")
-def search(
-    keyword: str,
+@router.put(
+    "/{contract_id}/archive",
+    response_model=ContractResponse
+)
+def archive(
+    contract_id: int,
     db: Session = Depends(get_db)
 ):
-    return service.search_contract(db, keyword)
+    """Archive a contract."""
+    contract = service.archive_contract(db, contract_id)
+
+    if not contract:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Contract with ID {contract_id} not found"
+        )
+
+    return contract
 
 
-@router.get("/status/{status}")
-def status_filter(
-    status: str,
+@router.put(
+    "/{contract_id}/restore",
+    response_model=ContractResponse
+)
+def restore(
+    contract_id: int,
     db: Session = Depends(get_db)
 ):
-    return service.filter_status(db, status)
+    """Restore an archived contract."""
+    contract = service.restore_contract(db, contract_id)
+
+    if not contract:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Contract with ID {contract_id} not found"
+        )
+
+    return contract

@@ -177,3 +177,10 @@ def delete_compliance_record(record_id: int, db: Session = Depends(get_db)):
             detail=f"Compliance record with ID {record_id} not found"
         )
     return {"message": f"Compliance record {record_id} deleted successfully"}
+
+@router.get("/anomalies", response_model=List[dict])
+def get_compliance_anomalies(db: Session = Depends(get_db)):
+    """
+    Retrieve all detected compliance and contract anomalies (AI Anomaly Detection).
+    """
+    return service.get_anomalies(db)

@@ -11,7 +11,7 @@ class AuditLog(Base):
     __tablename__ = "audit_logs"
 
     audit_id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.user_id",ondelete="CASCADE"), nullable=True)
     
     user_name = Column(String(200), nullable=False, default="System")
     action = Column(String(100), nullable=False)

@@ -14,6 +14,7 @@ export const signupService = async (userData) => {
       phone: userData.phone,
       password: userData.password,
       employee_id: userData.employeeId,
+      organization_id: userData.organization_id ? parseInt(userData.organization_id) : null,
       company_name: userData.companyName || "",
       department: userData.department,
       designation: userData.designation,
@@ -22,10 +23,13 @@ export const signupService = async (userData) => {
 
     console.log(payload);
 
+    const token = localStorage.getItem("access_token");
+
     const response = await fetch(`${BASE_URL}/auth/register`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify(payload)
     });

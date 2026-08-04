@@ -4,13 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 from src.core.config import settings
-from src.database.core import create_tables, SessionLocal
-from src.renewals import controller as renewals_controller
-from src.entities.notification import Notification
-
-# Import entities so tables are created
-from src.database.seed import seed_db
-from src.entities.compliance import Compliance
+from src.database.core import create_tables
 from src.api import router
 
 
@@ -18,9 +12,9 @@ create_tables()
 
 # Auto-seed renewals when the table is empty
 def _auto_seed_renewals():
-    from database.core import SessionLocal
-    from renewals.service import seed_renewals
-    from entities.renewal import Renewal
+    from src.database.core import SessionLocal
+    from src.renewals.service import seed_renewals
+    from src.entities.renewal import Renewal
 
     db = SessionLocal()
     

@@ -21,7 +21,11 @@ const ContractDetails = ({ contract, onBack, onEditClick }) => {
             ["Vendor", contract.vendor],
             ["Type", contract.type],
             ["Value", contract.value],
-            ["End Date", contract.end_date || contract.end_date],
+            ["Effective Date", contract.effective_date || 'N/A'],
+            ["End Date", contract.end_date || 'N/A'],
+            ["Expiry Date", contract.expiry_date || contract.end_date || 'N/A'],
+            ["Approved Date", contract.approved_date || 'N/A'],
+            ["Review Date", contract.review_date || 'N/A'],
             ["Owner", contract.owner],
             ["Status", contract.status],
             ["Compliance", contract.compliance]
@@ -72,12 +76,24 @@ const ContractDetails = ({ contract, onBack, onEditClick }) => {
       {/* Quick Dates & Owner Metadata Stripe */}
       <div className="metadata-grid-stripe">
         <div className="meta-block">
-          <span className="meta-label">Start Date</span>
-          <span className="meta-value">{contract.startDate || '2024-01-15'}</span>
+          <span className="meta-label">Effective Date</span>
+          <span className="meta-value">{contract.effective_date || 'N/A'}</span>
         </div>
         <div className="meta-block">
           <span className="meta-label">End Date</span>
-          <span className="meta-value">{contract.end_date || contract.end_date}</span>
+          <span className="meta-value">{contract.end_date || 'N/A'}</span>
+        </div>
+        <div className="meta-block">
+          <span className="meta-label">Expiry Date</span>
+          <span className="meta-value">{contract.expiry_date || contract.end_date || 'N/A'}</span>
+        </div>
+        <div className="meta-block">
+          <span className="meta-label">Approved Date</span>
+          <span className="meta-value">{contract.approved_date ? new Date(contract.approved_date).toLocaleDateString() : 'N/A'}</span>
+        </div>
+        <div className="meta-block">
+          <span className="meta-label">Review Date</span>
+          <span className="meta-value">{contract.review_date ? new Date(contract.review_date).toLocaleDateString() : 'N/A'}</span>
         </div>
         <div className="meta-block">
           <span className="meta-label">Owner</span>
