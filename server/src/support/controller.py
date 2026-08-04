@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from pydantic import BaseModel, ConfigDict
 from typing import List
 from src.database.core import get_db
@@ -20,8 +20,8 @@ class TicketCreate(BaseModel):
     description: str
 
 @router.get("/faqs", response_model=List[FaqResponse])
-def list_faqs(db: Session = Depends(get_db)):
-    result = db.execute(select(FAQ).order_by(FAQ.sort_order.asc()))
+async def list_faqs(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(FAQ).order_by(FAQ.sort_order.asc()))
     items = result.scalars().all()
     return [
         FaqResponse(
@@ -32,7 +32,7 @@ def list_faqs(db: Session = Depends(get_db)):
     ]
 
 @router.post("/support/tickets", status_code=status.HTTP_201_CREATED)
-def create_ticket(payload: TicketCreate, db: Session = Depends(get_db)):
+async def create_ticket(payload: TicketCreate, db: AsyncSession = Depends(get_db)):
     ticket = SupportTicket(
         user_id=1,  # default logged in user
         subject=payload.subject,
@@ -41,6 +41,6 @@ def create_ticket(payload: TicketCreate, db: Session = Depends(get_db)):
         status="Open"
     )
     db.add(ticket)
-    db.commit()
-    db.refresh(ticket)
+    await db.commit()
+    await db.refresh(ticket)
     return {"id": ticket.id, "status": "created"}
