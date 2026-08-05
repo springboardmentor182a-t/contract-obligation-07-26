@@ -4,7 +4,7 @@ import os
 
 SQLALCHEMY_DATABASE_URL = os.getenv(
     "DATABASE_URL", 
-    "postgresql://postgres:adin123@localhost:5432/contractiq"
+    "postgresql://postgres:admin123@localhost:5432/contractiq"
     
 )
 
