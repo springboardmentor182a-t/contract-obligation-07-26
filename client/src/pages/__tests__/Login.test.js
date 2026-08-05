@@ -4,6 +4,12 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
 import Login from "../Login";
+import {
+  canAccessRoute,
+  getDefaultRouteForRole,
+  isKnownRole,
+  sidebarPermissions,
+} from "../../utils/sidebarPermissions";
 
 const mockNavigate = jest.fn();
 
@@ -34,6 +40,42 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.restoreAllMocks();
+});
+
+
+test("FE_RBAC_001: Employee has full configured sidebar and route access", () => {
+  const expectedPermissions = [
+    "Dashboard",
+    "Contract Repository",
+    "Obligation Tracker",
+    "Renewal Dashboard",
+    "Compliance",
+    "Reports & Analytics",
+    "Notifications",
+    "Audit Logs",
+    "User Management",
+    "Settings",
+  ];
+  const expectedRoutes = [
+    "/dashboard",
+    "/repository",
+    "/contract-repository",
+    "/obligations",
+    "/renewal-dashboard",
+    "/compliance",
+    "/reports",
+    "/notifications",
+    "/audit",
+    "/user-management",
+    "/settings",
+  ];
+
+  expect(sidebarPermissions.Employee).toEqual(expectedPermissions);
+  expect(isKnownRole("Employee")).toBe(true);
+  expect(getDefaultRouteForRole("Employee")).toBe("/dashboard");
+  expectedRoutes.forEach((route) => {
+    expect(canAccessRoute("Employee", route)).toBe(true);
+  });
 });
 
 
@@ -87,7 +129,7 @@ test("FE_AUTH_002: shows validation for empty email and password", async () => {
 });
 
 
-test("FE_AUTH_003: logs in successfully and redirects to dashboard", async () => {
+test("FE_AUTH_003: logs in successfully and redirects to the permitted default page", async () => {
   global.fetch.mockResolvedValueOnce({
     ok: true,
     json: async () => ({
@@ -149,7 +191,7 @@ test("FE_AUTH_003: logs in successfully and redirects to dashboard", async () =>
 
   await waitFor(() => {
     expect(mockNavigate).toHaveBeenCalledWith(
-      "/dashboard"
+      "/notifications"
     );
   });
 });

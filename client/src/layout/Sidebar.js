@@ -3,6 +3,10 @@ import { NavLink } from "react-router-dom";
 import { useUI } from "../context/UIContext";
 import { useHealthCheck } from "../hooks/useHealthCheck";
 import {
+  canAccessSidebarItem,
+  getCurrentUserRole,
+} from "../utils/sidebarPermissions";
+import {
   GridIcon,
   FileIcon,
   ClipboardIcon,
@@ -32,9 +36,13 @@ const MENU = [
 ];
 
 export default function Sidebar({ collapsed = false, mobileOpen = false }) {
-  const { notificationCount, showToast } = useUI();
+  const { notificationCount, showToast, user } = useUI();
   const [statusCollapsed, setStatusCollapsed] = useState(false);
   const health = useHealthCheck(15000);
+  const currentRole = getCurrentUserRole(user?.role);
+  const visibleMenuItems = MENU.filter((item) =>
+    canAccessSidebarItem(currentRole, item.label)
+  );
 
   if (collapsed && !mobileOpen) return null;
 
@@ -72,7 +80,7 @@ export default function Sidebar({ collapsed = false, mobileOpen = false }) {
       <div className="sb-menu-label">MAIN MENU</div>
 
       <div className="sb-nav">
-        {MENU.map((item) => (
+        {visibleMenuItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
