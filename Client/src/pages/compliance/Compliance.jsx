@@ -29,6 +29,7 @@ const Compliance = () => {
   const [trend, setTrend] = useState([]);
   const [riskDistribution, setRiskDistribution] = useState(null);
   const [complianceItems, setComplianceItems] = useState([]);
+  const [anomalies, setAnomalies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -69,22 +70,29 @@ const Compliance = () => {
         setRiskDistribution(await riskRes.json());
       }
 
-      let url = `${API_URL}/compliance/contracts?limit=100`;
-      
-      if (activeTab === 'High Risk') {
-        url += '&risk=High';
-      } else if (activeTab === 'Pending Review') {
-        url += '&status=Under%20Review';
-      }
-      
-      if (searchTerm) {
-        url += `&search=${encodeURIComponent(searchTerm)}`;
-      }
+      if (activeTab === 'AI Anomalies') {
+        const anomaliesRes = await fetch(`${API_URL}/compliance/anomalies`, { headers: { 'X-User-Role': currentRole } });
+        if (anomaliesRes.ok) {
+          setAnomalies(await anomaliesRes.json());
+        }
+      } else {
+        let url = `${API_URL}/compliance/contracts?limit=100`;
+        
+        if (activeTab === 'High Risk') {
+          url += '&risk=High';
+        } else if (activeTab === 'Pending Review') {
+          url += '&status=Under%20Review';
+        }
+        
+        if (searchTerm) {
+          url += `&search=${encodeURIComponent(searchTerm)}`;
+        }
 
-      const tableRes = await fetch(url, { headers: { 'X-User-Role': currentRole } });
-      if (tableRes.ok) {
-        const data = await tableRes.json();
-        setComplianceItems(data.records || []);
+        const tableRes = await fetch(url, { headers: { 'X-User-Role': currentRole } });
+        if (tableRes.ok) {
+          const data = await tableRes.json();
+          setComplianceItems(data.records || []);
+        }
       }
     } catch (err) {
       console.error("Failed to refresh dashboard data:", err);
@@ -133,24 +141,33 @@ const Compliance = () => {
     if (!isAuthorized) return;
     const fetchTableData = async () => {
       try {
-        let url = `${API_URL}/compliance/contracts?limit=100`;
-        
-        if (activeTab === 'High Risk') {
-          url += '&risk=High';
-        } else if (activeTab === 'Pending Review') {
-          url += '&status=Under%20Review';
-        }
-        
-        if (searchTerm) {
-          url += `&search=${encodeURIComponent(searchTerm)}`;
-        }
+        if (activeTab === 'AI Anomalies') {
+          const res = await fetch(`${API_URL}/compliance/anomalies`, { headers: { 'X-User-Role': currentRole } });
+          if (!res.ok) {
+            throw new Error("Failed to fetch compliance anomalies");
+          }
+          const data = await res.json();
+          setAnomalies(data || []);
+        } else {
+          let url = `${API_URL}/compliance/contracts?limit=100`;
+          
+          if (activeTab === 'High Risk') {
+            url += '&risk=High';
+          } else if (activeTab === 'Pending Review') {
+            url += '&status=Under%20Review';
+          }
+          
+          if (searchTerm) {
+            url += `&search=${encodeURIComponent(searchTerm)}`;
+          }
 
-        const res = await fetch(url, { headers: { 'X-User-Role': currentRole } });
-        if (!res.ok) {
-          throw new Error("Failed to fetch compliance table records");
+          const res = await fetch(url, { headers: { 'X-User-Role': currentRole } });
+          if (!res.ok) {
+            throw new Error("Failed to fetch compliance table records");
+          }
+          const data = await res.json();
+          setComplianceItems(data.records || []);
         }
-        const data = await res.json();
-        setComplianceItems(data.records || []);
       } catch (err) {
         console.error("Error fetching filtered table data:", err);
       }
@@ -425,7 +442,7 @@ const Compliance = () => {
       {/* Main Content Area */}
       <div className="comp-main-area">
         <div className="comp-tabs">
-          {['Overview', 'High Risk', 'Pending Review', 'Audit Log'].map(tab => (
+          {['Overview', 'High Risk', 'Pending Review', 'AI Anomalies', 'Audit Log'].map(tab => (
             <button 
               key={tab} 
               className={`comp-tab-btn ${activeTab === tab ? 'active' : ''}`}
@@ -437,69 +454,125 @@ const Compliance = () => {
         </div>
 
         <div className="comp-table-card">
-          <div className="comp-table-toolbar">
-            <div className="comp-search-wrapper">
-              <Search size={18} className="search-icon" />
-              <input 
-                type="text" 
-                placeholder="Search compliance requirements or entities..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-              />
+          {activeTab !== 'AI Anomalies' && (
+            <div className="comp-table-toolbar">
+              <div className="comp-search-wrapper">
+                <Search size={18} className="search-icon" />
+                <input 
+                  type="text" 
+                  placeholder="Search compliance requirements or entities..." 
+                  value={searchTerm} 
+                  onChange={(e) => setSearchTerm(e.target.value)} 
+                />
+              </div>
+              <Button variant="outline" icon={Filter}>Filters</Button>
             </div>
-            <Button variant="outline" icon={Filter}>Filters</Button>
-          </div>
+          )}
 
-          <div className="comp-table-container">
-            <table className="comp-data-table">
-              <thead>
-                <tr>
-                  <th>Requirement & Category</th>
-                  <th>Entity & Contract</th>
-                  <th>Risk Profile</th>
-                  <th>Health Score</th>
-                  <th>Status</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {complianceItems.map((item, index) => (
-                  <tr key={item.id} className="comp-table-row" style={{ animationDelay: `${index * 0.05}s` }}>
-                    <td>
-                      <div className="req-title">{item.requirement}</div>
-                      <div className="req-category">{item.category} • {item.id}</div>
-                    </td>
-                    <td>
-                      <div className="entity-name">{item.entity}</div>
-                      <div className="req-category">ID: {item.contractId}</div>
-                    </td>
-                    <td>
-                      {getRiskLevel(item.risk)}
-                    </td>
-                    <td>
-                      <div className="health-score-cell">
-                        <span className={`score-text ${item.score < 50 ? 'text-danger' : item.score < 80 ? 'text-warning' : 'text-success'}`}>{item.score}/100</span>
-                        <div className="mini-progress-bg">
-                          <div className={`mini-progress-fill ${item.score < 50 ? 'bg-danger' : item.score < 80 ? 'bg-warning' : 'bg-success'}`} style={{ width: `${item.score}%` }}></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>{getStatusBadge(item.status)}</td>
-                    <td className="action-cell">
-                      <button className="comp-action-btn" onClick={() => { setSelectedItem(item); setIsDetailsModalOpen(true); }}><ChevronRight size={20} /></button>
-                    </td>
-                  </tr>
-                ))}
-                {complianceItems.length === 0 && (
+          {activeTab === 'AI Anomalies' ? (
+            <div className="comp-table-container">
+              <table className="comp-data-table">
+                <thead>
                   <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-                      No matching compliance requirements found.
-                    </td>
+                    <th>Anomaly ID</th>
+                    <th>Contract Details</th>
+                    <th>Anomaly Type</th>
+                    <th>Severity</th>
+                    <th>Description</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {anomalies.map((item, index) => (
+                    <tr key={item.id} className="comp-table-row" style={{ animationDelay: `${index * 0.05}s` }}>
+                      <td style={{ fontWeight: '600', color: '#ef4444' }}>
+                        {item.id}
+                      </td>
+                      <td>
+                        <div className="entity-name" style={{ fontWeight: '500' }}>{item.contractTitle}</div>
+                        <div className="req-category">ID: {item.contractId}</div>
+                      </td>
+                      <td>
+                        <span className="status-pill status-warning" style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}>{item.category}</span>
+                      </td>
+                      <td>
+                        {item.severity === 'Critical' ? (
+                          <span className="status-pill status-danger" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><AlertOctagon size={14} /> Critical</span>
+                        ) : item.severity === 'High' ? (
+                          <span className="status-pill status-danger">High</span>
+                        ) : item.severity === 'Medium' ? (
+                          <span className="status-pill status-warning">Medium</span>
+                        ) : (
+                          <span className="status-pill status-success">Low</span>
+                        )}
+                      </td>
+                      <td style={{ color: '#4b5563', fontSize: '0.9rem', paddingRight: '1rem', lineHeight: '1.4' }}>
+                        {item.description}
+                      </td>
+                    </tr>
+                  ))}
+                  {anomalies.length === 0 && (
+                    <tr>
+                      <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
+                        <ShieldCheck size={40} style={{ color: '#10b981', marginBottom: '0.5rem', display: 'block', margin: '0 auto' }} />
+                        No anomalies detected. Your contracts are fully compliant!
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="comp-table-container">
+              <table className="comp-data-table">
+                <thead>
+                  <tr>
+                    <th>Requirement & Category</th>
+                    <th>Entity & Contract</th>
+                    <th>Risk Profile</th>
+                    <th>Health Score</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {complianceItems.map((item, index) => (
+                    <tr key={item.id} className="comp-table-row" style={{ animationDelay: `${index * 0.05}s` }}>
+                      <td>
+                        <div className="req-title">{item.requirement}</div>
+                        <div className="req-category">{item.category} • {item.id}</div>
+                      </td>
+                      <td>
+                        <div className="entity-name">{item.entity}</div>
+                        <div className="req-category">ID: {item.contractId}</div>
+                      </td>
+                      <td>
+                        {getRiskLevel(item.risk)}
+                      </td>
+                      <td>
+                        <div className="health-score-cell">
+                          <span className={`score-text ${item.score < 50 ? 'text-danger' : item.score < 80 ? 'text-warning' : 'text-success'}`}>{item.score}/100</span>
+                          <div className="mini-progress-bg">
+                            <div className={`mini-progress-fill ${item.score < 50 ? 'bg-danger' : item.score < 80 ? 'bg-warning' : 'bg-success'}`} style={{ width: `${item.score}%` }}></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{getStatusBadge(item.status)}</td>
+                      <td className="action-cell">
+                        <button className="comp-action-btn" onClick={() => { setSelectedItem(item); setIsDetailsModalOpen(true); }}><ChevronRight size={20} /></button>
+                      </td>
+                    </tr>
+                  ))}
+                  {complianceItems.length === 0 && (
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                        No matching compliance requirements found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
 
