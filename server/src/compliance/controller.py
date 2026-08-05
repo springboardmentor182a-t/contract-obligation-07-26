@@ -135,16 +135,44 @@ def add_compliance_log(control_id: str, payload: ComplianceLogCreate, db: Sessio
     db.commit()
     db.refresh(log)
 
+    normalized_status = (log.status or "").strip().lower()
+
+    if normalized_status == "verified":
+        event_type = "APPROVE"
+        action = "Compliance Verified"
+        description = (
+            f"Verified compliance control: {ctrl.title} "
+            f"(ID: {ctrl.id}, log ID: {log.id})"
+        )
+    elif normalized_status == "approved":
+        event_type = "APPROVE"
+        action = "Compliance Approved"
+        description = (
+            f"Approved compliance control: {ctrl.title} "
+            f"(ID: {ctrl.id}, log ID: {log.id})"
+        )
+    elif normalized_status == "rejected":
+        event_type = "REJECT"
+        action = "Compliance Rejected"
+        description = (
+            f"Rejected compliance control: {ctrl.title} "
+            f"(ID: {ctrl.id}, log ID: {log.id})"
+        )
+    else:
+        event_type = "UPDATE"
+        action = "Compliance Verification Recorded"
+        description = (
+            f"Recorded compliance verification for: {ctrl.title} "
+            f"(ID: {ctrl.id}, status: {log.status})"
+        )
+
     create_audit_log(
         db=db,
         user_id=None,
-        event_type="UPDATE",
-        action="Compliance Verification Recorded",
+        event_type=event_type,
+        action=action,
         module="Compliance",
-        description=(
-            f"Recorded compliance verification for: {ctrl.title} "
-            f"(ID: {ctrl.id}, status: {log.status})"
-        ),
+        description=description,
     )
 
     return ComplianceLogResponse(
