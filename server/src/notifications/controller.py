@@ -7,6 +7,7 @@ from typing import List, Optional
 from jose import JWTError, jwt as jose_jwt
 from datetime import datetime, timezone
 
+from src.audit.service import create_audit_log
 from src.auth.jwt import SECRET_KEY, ALGORITHM
 from src.database.core import get_db
 from src.database.models import Notification
@@ -95,6 +96,19 @@ def mark_as_read(
     item.is_read = True
     db.add(item)
     db.commit()
+
+    create_audit_log(
+        db=db,
+        user_id=user_id,
+        event_type="UPDATE",
+        action="Notification Marked Read",
+        module="Notifications",
+        description=(
+            f"Marked notification as read: {item.title} "
+            f"(ID: {item.id})"
+        ),
+    )
+
     return {"status": "success"}
 
 
@@ -107,8 +121,28 @@ def mark_all_read(
     q = update(Notification).values(is_read=True)
     if user_id:
         q = q.where(Notification.user_id == user_id)
-    db.execute(q)
+    result = db.execute(q)
     db.commit()
+
+    scope = f"user ID: {user_id}" if user_id else "all users"
+    affected_count = getattr(result, "rowcount", None)
+    count_description = (
+        f", affected: {affected_count}"
+        if affected_count is not None
+        else ""
+    )
+    create_audit_log(
+        db=db,
+        user_id=user_id,
+        event_type="UPDATE",
+        action="All Notifications Marked Read",
+        module="Notifications",
+        description=(
+            f"Marked all notifications as read for {scope}"
+            f"{count_description}"
+        ),
+    )
+
     return {"status": "success"}
 
 
@@ -125,6 +159,21 @@ def dismiss_notification(
     item = db.execute(q).scalars().first()
     if not item:
         raise HTTPException(status_code=404, detail="Notification not found")
+    notification_id = item.id
+    notification_title = item.title
     db.delete(item)
     db.commit()
+
+    create_audit_log(
+        db=db,
+        user_id=user_id,
+        event_type="DELETE",
+        action="Notification Dismissed",
+        module="Notifications",
+        description=(
+            f"Dismissed notification: {notification_title} "
+            f"(ID: {notification_id})"
+        ),
+    )
+
     return {"status": "success"}

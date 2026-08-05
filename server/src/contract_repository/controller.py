@@ -10,6 +10,7 @@ from fastapi import (
     File,
     status,
 )
+from src.audit.service import create_audit_log
 from fastapi.responses import FileResponse
 from sqlalchemy import select
 from typing import List
@@ -72,6 +73,14 @@ def create_contract(
     db.add(contract)
     db.commit()
     db.refresh(contract)
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="CREATE",
+        action="Contract Created",
+        module="Contract Repository",
+        description=f"Created contract: {contract.contract_name}",
+  )
 
     return contract
 
@@ -103,6 +112,14 @@ def update_contract(
 
     db.commit()
     db.refresh(contract)
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="UPDATE",
+        action="Contract Updated",
+        module="Contract Repository",
+        description=f"Updated contract: {contract.contract_name}",
+    )
 
     return contract
 
@@ -122,9 +139,18 @@ def delete_contract(
             status_code=404,
             detail="Contract not found",
         )
-
+    contract_name = contract.contract_name
     db.delete(contract)
     db.commit()
+
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="DELETE",
+        action="Contract Deleted",
+        module="Contract Repository",
+        description=f"Deleted contract: {contract_name}",
+    )
 
     return {
         "message": "Contract deleted successfully"
@@ -196,6 +222,19 @@ def upload_document(
     db.add(document)
     db.commit()
     db.refresh(document)
+
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="CREATE",
+        action="Contract Document Uploaded",
+        module="Contract Repository",
+        description=(
+            f"Uploaded document: {document.original_name} "
+            f"to contract: {contract.contract_name} "
+            f"(ID: {contract.id})"
+        ),
+    )
 
     return {
         "message": "Document uploaded successfully.",
@@ -316,6 +355,8 @@ def delete_document(
             detail="Document not found",
         )
 
+    original_name = document.original_name
+    contract_id = document.contract_id
     file_path = Path(document.file_path)
 
     if file_path.exists():
@@ -323,6 +364,18 @@ def delete_document(
 
     db.delete(document)
     db.commit()
+
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="DELETE",
+        action="Contract Document Deleted",
+        module="Contract Repository",
+        description=(
+            f"Deleted document: {original_name} "
+            f"from contract ID: {contract_id}"
+        ),
+    )
 
     return {
         "message": "Document deleted successfully"
