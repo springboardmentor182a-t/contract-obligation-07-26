@@ -1,6 +1,6 @@
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, Boolean, DateTime
 from sqlalchemy.orm import relationship
-from datetime import datetime
 from .db import Base
 
 class User(Base):
@@ -63,11 +63,12 @@ class Transaction(Base):
 class AuditLog(Base):
     __tablename__ = "audit_logs"
     id = Column(Integer, primary_key=True, index=True)
-    time = Column(String)
-    user = Column(String)
-    action = Column(String)
-    target = Column(String)
-    ip = Column(String)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    actor = Column(String, index=True)          # e.g. "Priya Volkov"
+    action = Column(String)                     # e.g. "created contract"
+    target = Column(String, index=True)         # e.g. "Non-Disclosure Agreement"
+    category = Column(String, index=True)        # Contract | Obligation | User | Approval | Security | Auth
+    ip_address = Column(String)
 
 class TaxEstimator(Base):
     __tablename__ = "tax_estimators"
