@@ -56,7 +56,7 @@ const Dashboard = () => {
       return {
         icon: 'fa-solid fa-calendar-days',
         color: isDarkMode ? 'text-amber-400' : 'text-amber-700',
-        bg: isDarkMode ? 'bg-amber-500/15' : 'bg-amber-100',
+        bg: isDarkMode ? 'bg-amber-500/10' : 'bg-amber-50',
         border: isDarkMode ? 'border-amber-500/30' : 'border-amber-200'
       };
     }
@@ -64,7 +64,7 @@ const Dashboard = () => {
       return {
         icon: 'fa-solid fa-circle-check',
         color: isDarkMode ? 'text-emerald-400' : 'text-emerald-700',
-        bg: isDarkMode ? 'bg-emerald-500/15' : 'bg-emerald-100',
+        bg: isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-50',
         border: isDarkMode ? 'border-emerald-500/30' : 'border-emerald-200'
       };
     }
@@ -72,7 +72,7 @@ const Dashboard = () => {
       return {
         icon: 'fa-solid fa-shield-halved',
         color: isDarkMode ? 'text-rose-400' : 'text-rose-700',
-        bg: isDarkMode ? 'bg-rose-500/15' : 'bg-rose-100',
+        bg: isDarkMode ? 'bg-rose-500/10' : 'bg-rose-50',
         border: isDarkMode ? 'border-rose-500/30' : 'border-rose-200'
       };
     }
@@ -80,14 +80,14 @@ const Dashboard = () => {
       return {
         icon: 'fa-solid fa-clipboard-check',
         color: isDarkMode ? 'text-blue-400' : 'text-blue-700',
-        bg: isDarkMode ? 'bg-blue-500/15' : 'bg-blue-100',
+        bg: isDarkMode ? 'bg-blue-500/10' : 'bg-blue-50',
         border: isDarkMode ? 'border-blue-500/30' : 'border-blue-200'
       };
     }
     return {
       icon: 'fa-solid fa-bolt',
       color: isDarkMode ? 'text-purple-400' : 'text-purple-700',
-      bg: isDarkMode ? 'bg-purple-500/15' : 'bg-purple-100',
+      bg: isDarkMode ? 'bg-purple-500/10' : 'bg-purple-50',
       border: isDarkMode ? 'border-purple-500/30' : 'border-purple-200'
     };
   };
@@ -114,29 +114,34 @@ const Dashboard = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className={`text-2xl sm:text-3xl font-extrabold tracking-tight m-0 ${isDarkMode ? 'text-white' : 'text-[#1E3A8A]'}`}>
+          <h1 className={`text-2xl sm:text-3xl font-bold tracking-tight m-0 ${isDarkMode ? 'text-white' : 'text-[#1E293B]'}`}>
             Good morning, {firstName}
           </h1>
-          <p className={`text-sm mt-1 m-0 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+          <p className={`text-sm mt-1 m-0 ${isDarkMode ? 'text-[#8E9BAE]' : 'text-[#64748B]'}`}>
             Here's what needs your attention across the organization today.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border ${
-            isDarkMode ? 'bg-slate-800/80 border-slate-700/80 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border ${
+            isDarkMode ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
           }`}>
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>PostgreSQL Live Sync</span>
           </div>
           <button
             onClick={() => window.print()}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg border transition-all ${
-              isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' : 'bg-white hover:bg-gray-100 text-slate-700 border-gray-200 shadow-sm'
+            className={`px-3.5 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+              isDarkMode ? 'bg-[#161F2E] hover:bg-slate-800 text-slate-200 border-[#2A364F]' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-sm'
             }`}
           >
+            <i className="fa-solid fa-file-export mr-1.5"></i>
             Export
           </button>
-          <button onClick={() => navigate('/contracts')} className="premium-button" style={{ width: 'auto', padding: '8px 18px', marginTop: 0 }}>
+          <button
+            onClick={() => navigate('/contracts')}
+            className="px-4 py-2 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-sm hover:shadow transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <i className="fa-solid fa-plus"></i>
             New Contract
           </button>
         </div>
@@ -153,22 +158,22 @@ const Dashboard = () => {
       </div>
 
       {/* Live Database Notifications Card on Screen */}
-      <div className={`rounded-2xl border p-5 sm:p-6 transition-all ${
-        isDarkMode ? 'bg-[#161f2e] border-slate-700/80 shadow-lg' : 'bg-white border-gray-200 shadow-sm'
+      <div className={`rounded-xl border p-5 sm:p-6 transition-all ${
+        isDarkMode ? 'bg-[#161F2E] border-[#2A364F] shadow-lg' : 'bg-white border-slate-200 shadow-sm'
       }`}>
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-700/40">
+        <div className={`flex items-center justify-between pb-4 mb-4 border-b ${isDarkMode ? 'border-[#2A364F]' : 'border-slate-100'}`}>
           <div className="flex items-center gap-2.5">
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${
-              isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-[#1E3A8A]'
+              isDarkMode ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-50 text-blue-600'
             }`}>
               <i className="fa-solid fa-bell"></i>
             </div>
             <div>
-              <h2 className={`text-base font-bold m-0 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+              <h2 className={`text-sm sm:text-base font-bold m-0 ${isDarkMode ? 'text-white' : 'text-[#1E293B]'}`}>
                 Live Database Notifications & Alerts
               </h2>
-              <span className="text-[11px] text-slate-500">
-                Directly queried from PostgreSQL <code className="text-[10px] px-1 py-0.5 rounded bg-slate-800 text-slate-300">notifications</code> table
+              <span className={`text-[11px] ${isDarkMode ? 'text-[#8E9BAE]' : 'text-slate-500'}`}>
+                Directly queried from PostgreSQL <code className={`text-[10px] px-1 py-0.5 rounded ${isDarkMode ? 'bg-[#0B1121] text-slate-300' : 'bg-slate-100 text-slate-700'}`}>notifications</code> table
               </span>
             </div>
           </div>
@@ -176,7 +181,7 @@ const Dashboard = () => {
           <div className="flex items-center gap-2">
             {unreadCount > 0 && (
               <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
-                isDarkMode ? 'bg-blue-500/15 text-blue-400 border-blue-500/30' : 'bg-blue-50 text-blue-700 border-blue-200'
+                isDarkMode ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' : 'bg-blue-50 text-blue-700 border-blue-200'
               }`}>
                 {unreadCount} Unread
               </span>
@@ -184,7 +189,7 @@ const Dashboard = () => {
             <button
               onClick={() => navigate('/notifications')}
               className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
-                isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-blue-400 border-slate-700' : 'bg-gray-50 hover:bg-gray-100 text-[#1E3A8A] border-gray-200 shadow-sm'
+                isDarkMode ? 'bg-[#0B1121] hover:bg-slate-800 text-blue-400 border-[#2A364F]' : 'bg-slate-50 hover:bg-slate-100 text-blue-600 border-slate-200 shadow-sm'
               }`}
             >
               <span>View All Feed</span>
@@ -195,7 +200,7 @@ const Dashboard = () => {
 
         {/* Notifications Grid */}
         {dashboardFeed.length === 0 ? (
-          <div className="py-6 text-center text-xs text-slate-500">
+          <div className={`py-6 text-center text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
             {notifLoading ? 'Fetching notifications from database...' : 'No notifications in database.'}
           </div>
         ) : (
@@ -215,11 +220,11 @@ const Dashboard = () => {
                   className={`p-3.5 rounded-xl border flex items-start gap-3 cursor-pointer transition-all ${
                     isDarkMode
                       ? (isUnread 
-                          ? 'bg-slate-800/90 border-blue-500/50 hover:bg-slate-800 shadow-[0_0_15px_rgba(59,130,246,0.1)]' 
-                          : 'bg-slate-900/60 border-slate-800/80 hover:bg-slate-800/60 text-slate-300')
+                          ? 'bg-[#0B1121] border-blue-500/40 hover:border-blue-500/60 shadow-[0_0_15px_rgba(59,130,246,0.1)]' 
+                          : 'bg-[#0B1121]/60 border-[#2A364F] hover:bg-[#0B1121] text-slate-300')
                       : (isUnread
-                          ? 'bg-blue-50/50 border-blue-300 hover:bg-blue-50 shadow-sm'
-                          : 'bg-gray-50/60 border-gray-200 hover:bg-gray-100/80 text-slate-700')
+                          ? 'bg-blue-50/40 border-blue-200 hover:bg-blue-50/70 shadow-sm'
+                          : 'bg-slate-50/60 border-slate-200 hover:bg-slate-100/80 text-slate-700')
                   }`}
                 >
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm flex-shrink-0 border ${iconStyle.bg} ${iconStyle.color} ${iconStyle.border}`}>
@@ -229,16 +234,16 @@ const Dashboard = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1 mb-0.5">
                       <h3 className={`text-xs truncate font-bold ${
-                        isDarkMode ? (isUnread ? 'text-white' : 'text-slate-200') : (isUnread ? 'text-slate-900' : 'text-slate-700')
+                        isDarkMode ? (isUnread ? 'text-white' : 'text-slate-200') : (isUnread ? 'text-[#1E293B]' : 'text-slate-700')
                       }`}>
                         {item.title}
                       </h3>
-                      <span className="text-[10px] text-slate-500 whitespace-nowrap">
+                      <span className={`text-[10px] whitespace-nowrap ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                         {formatShortTime(item.created_at)}
                       </span>
                     </div>
                     <p className={`text-[11px] line-clamp-2 leading-relaxed m-0 ${
-                      isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                      isDarkMode ? 'text-[#8E9BAE]' : 'text-[#64748B]'
                     }`}>
                       {item.message}
                     </p>
@@ -263,16 +268,16 @@ const Dashboard = () => {
                 <AreaChart data={complianceTrend} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="complianceFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="#3B82F6" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#2563EB" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="#2563EB" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                  <YAxis domain={[60, 100]} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                  <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                  <Area type="monotone" dataKey="target" stroke="#CBD5E1" strokeDasharray="4 4" fill="none" />
-                  <Area type="monotone" dataKey="compliance" stroke="#3B82F6" strokeWidth={3} fill="url(#complianceFill)" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#2A364F' : '#E2E8F0'} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: isDarkMode ? '#8E9BAE' : '#64748B', fontSize: 12 }} />
+                  <YAxis domain={[60, 100]} axisLine={false} tickLine={false} tick={{ fill: isDarkMode ? '#8E9BAE' : '#64748B', fontSize: 12 }} />
+                  <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#161F2E' : '#FFFFFF', borderColor: isDarkMode ? '#2A364F' : '#E2E8F0', borderRadius: '8px', color: isDarkMode ? '#FFF' : '#1E293B' }} />
+                  <Area type="monotone" dataKey="target" stroke={isDarkMode ? '#64748B' : '#94A3B8'} strokeDasharray="4 4" fill="none" />
+                  <Area type="monotone" dataKey="compliance" stroke="#2563EB" strokeWidth={3} fill="url(#complianceFill)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -299,7 +304,7 @@ const Dashboard = () => {
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: RISK_COLORS[r.name] || '#CBD5E1', display: 'inline-block' }} />
                     {r.name}
                   </span>
-                  <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>{r.percent}%</strong>
+                  <strong className={isDarkMode ? 'text-white' : 'text-[#1E293B]'}>{r.percent}%</strong>
                 </div>
               ))}
             </div>
@@ -318,7 +323,7 @@ const Dashboard = () => {
                     <Cell key={entry.name} fill={STATUS_COLORS[entry.name] || '#94A3B8'} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#161F2E' : '#FFFFFF', borderColor: isDarkMode ? '#2A364F' : '#E2E8F0', borderRadius: '8px', color: isDarkMode ? '#FFF' : '#1E293B' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -328,9 +333,9 @@ const Dashboard = () => {
           <div style={{ width: '100%', height: 170 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={renewalTimeline} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} interval={0} angle={-30} textAnchor="end" height={40} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} allowDecimals={false} />
-                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: isDarkMode ? '#8E9BAE' : '#64748B', fontSize: 10 }} interval={0} angle={-30} textAnchor="end" height={40} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: isDarkMode ? '#8E9BAE' : '#64748B', fontSize: 12 }} allowDecimals={false} />
+                <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#161F2E' : '#FFFFFF', borderColor: isDarkMode ? '#2A364F' : '#E2E8F0', borderRadius: '8px', color: isDarkMode ? '#FFF' : '#1E293B' }} />
                 <Bar dataKey="renewals" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -343,10 +348,10 @@ const Dashboard = () => {
               <div key={d.department}>
                 <div className="flex justify-between text-xs mb-1">
                   <span className={`font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>{d.department}</span>
-                  <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{d.performance}%</span>
+                  <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-[#1E293B]'}`}>{d.performance}%</span>
                 </div>
-                <div className={`h-1.5 rounded-full ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
-                  <div style={{ height: '100%', width: `${d.performance}%`, borderRadius: '999px', background: 'linear-gradient(90deg,#3B82F6,#8B5CF6)' }} />
+                <div className={`h-1.5 rounded-full ${isDarkMode ? 'bg-[#0B1121]' : 'bg-slate-100'}`}>
+                  <div style={{ height: '100%', width: `${d.performance}%`, borderRadius: '999px', background: 'linear-gradient(90deg,#2563EB,#8B5CF6)' }} />
                 </div>
               </div>
             ))}
@@ -355,39 +360,64 @@ const Dashboard = () => {
       </div>
 
       {/* Recent Contracts Table */}
-      <div className={`rounded-2xl border p-5 ${
-        isDarkMode ? 'bg-[#161f2e] border-slate-700/80 shadow-lg' : 'bg-white border-gray-200 shadow-sm'
+      <div className={`rounded-xl border p-5 transition-all ${
+        isDarkMode ? 'bg-[#161F2E] border-[#2A364F] shadow-lg' : 'bg-white border-slate-200 shadow-sm'
       }`}>
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-700/40">
-          <h2 className={`text-base font-bold m-0 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Recent Contracts</h2>
-          <button className="premium-button" style={{ width: 'auto', padding: '6px 14px', marginTop: 0 }} onClick={() => navigate('/contracts')}>View All</button>
+        <div className={`flex items-center justify-between pb-4 mb-4 border-b ${isDarkMode ? 'border-[#2A364F]' : 'border-slate-100'}`}>
+          <h2 className={`text-base font-bold m-0 ${isDarkMode ? 'text-white' : 'text-[#1E293B]'}`}>Recent Contracts</h2>
+          <button 
+            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+              isDarkMode ? 'bg-[#0B1121] hover:bg-slate-800 text-slate-200 border-[#2A364F]' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 shadow-sm'
+            }`}
+            onClick={() => navigate('/contracts')}
+          >
+            View All
+          </button>
         </div>
-        <table className="premium-table">
-          <thead>
-            <tr>
-              <th>Contract</th>
-              <th>Owner</th>
-              <th>Status</th>
-              <th>Risk</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentContracts.map((contract, index) => (
-              <tr key={index}>
-                <td style={{ fontWeight: 500 }}>{contract.type} · {contract.vendor}</td>
-                <td>{contract.owner}</td>
-                <td><span className={`badge ${String(contract.status || '').toLowerCase()}`}>{contract.status}</span></td>
-                <td>
-                  <span style={{ color: RISK_COLORS[contract.risk] || '#64748B', fontWeight: 600, fontSize: '13px' }}>
-                    {contract.risk}
-                  </span>
-                </td>
-                <td>{fmtValue(contract.value)}</td>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+            <thead className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'bg-[#0B1121]/60 text-[#8E9BAE]' : 'bg-slate-50 text-slate-500'} border-b ${isDarkMode ? 'border-[#2A364F]' : 'border-slate-200'}`}>
+              <tr>
+                <th className="px-4 py-3">Contract</th>
+                <th className="px-4 py-3">Owner</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Risk</th>
+                <th className="px-4 py-3">Value</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className={`divide-y ${isDarkMode ? 'divide-[#2A364F]/60' : 'divide-slate-100'}`}>
+              {recentContracts.map((contract, index) => {
+                const isCompliant = ['active', 'approved', 'completed'].includes(String(contract.status || '').toLowerCase());
+                const isPending = ['pending', 'in review'].includes(String(contract.status || '').toLowerCase());
+
+                const badgeClass = isCompliant
+                  ? (isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
+                  : isPending
+                  ? (isDarkMode ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' : 'bg-amber-50 text-amber-700 border border-amber-200')
+                  : (isDarkMode ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30' : 'bg-rose-50 text-rose-700 border border-rose-200');
+
+                return (
+                  <tr key={index} className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors`}>
+                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">{contract.type} · {contract.vendor}</td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{contract.owner}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${badgeClass}`}>
+                        {contract.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span style={{ color: RISK_COLORS[contract.risk] || '#64748B', fontWeight: 600, fontSize: '13px' }}>
+                        {contract.risk}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{fmtValue(contract.value)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Upcoming Deadlines + Recent Activity */}
@@ -396,13 +426,15 @@ const Dashboard = () => {
           <div className="flex flex-col gap-3 mt-1.5">
             {deadlines.length === 0 && <p className="text-xs text-slate-500">Nothing due soon.</p>}
             {deadlines.map(d => (
-              <div key={d.id} className="flex justify-between items-center pb-2.5 border-b border-slate-700/30">
+              <div key={d.id} className={`flex justify-between items-center pb-2.5 border-b ${isDarkMode ? 'border-[#2A364F]' : 'border-slate-100'}`}>
                 <div>
-                  <div className={`text-xs font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{d.title}</div>
-                  <div className="text-[11px] text-slate-400">{d.contract} · due {d.dueDate}</div>
+                  <div className={`text-xs font-bold ${isDarkMode ? 'text-white' : 'text-[#1E293B]'}`}>{d.title}</div>
+                  <div className={`text-[11px] ${isDarkMode ? 'text-[#8E9BAE]' : 'text-slate-500'}`}>{d.contract} · due {d.dueDate}</div>
                 </div>
-                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                  d.daysLeft <= 7 ? 'text-rose-500 bg-rose-500/10' : 'text-blue-500 bg-blue-500/10'
+                <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                  d.daysLeft <= 7 
+                    ? (isDarkMode ? 'text-rose-400 bg-rose-500/10 border-rose-500/30' : 'text-rose-700 bg-rose-50 border-rose-200')
+                    : (isDarkMode ? 'text-blue-400 bg-blue-500/10 border-blue-500/30' : 'text-blue-700 bg-blue-50 border-blue-200')
                 }`}>
                   {d.daysLeft}d left
                 </span>
@@ -415,12 +447,12 @@ const Dashboard = () => {
           <div className="flex flex-col gap-3.5 mt-1.5">
             {activity.map(a => (
               <div key={a.id} className="flex gap-2.5 items-start">
-                <div className="w-8 h-8 flex-shrink-0 rounded-full bg-[#1E3A8A] text-white text-[11px] font-bold flex items-center justify-center">
+                <div className="w-8 h-8 flex-shrink-0 rounded-full bg-blue-600 text-white text-[11px] font-bold flex items-center justify-center shadow-sm">
                   {initials(a.user)}
                 </div>
                 <div>
-                  <div className={`text-xs ${isDarkMode ? 'text-white' : 'text-slate-900'}`}><strong>{a.user}</strong> {a.action}</div>
-                  <div className="text-[11px] text-slate-400">{a.target} · {a.time}</div>
+                  <div className={`text-xs ${isDarkMode ? 'text-white' : 'text-[#1E293B]'}`}><strong className="font-semibold">{a.user}</strong> {a.action}</div>
+                  <div className={`text-[11px] ${isDarkMode ? 'text-[#8E9BAE]' : 'text-slate-500'}`}>{a.target} · {a.time}</div>
                 </div>
               </div>
             ))}
@@ -433,12 +465,12 @@ const Dashboard = () => {
 
 const StatBox = ({ isDarkMode, label, value, trend, dir }) => (
   <div className={`rounded-xl border p-4 transition-all ${
-    isDarkMode ? 'bg-[#161f2e] border-slate-700/70' : 'bg-white border-gray-200 shadow-sm'
+    isDarkMode ? 'bg-[#161F2E] border-[#2A364F]' : 'bg-white border-slate-200 shadow-sm'
   }`}>
-    <div className={`text-[11px] font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{label}</div>
-    <div className={`text-2xl font-bold my-1.5 ${isDarkMode ? 'text-white' : 'text-[#1E3A8A]'}`}>{value}</div>
+    <div className={`text-[11px] font-bold uppercase tracking-wider ${isDarkMode ? 'text-[#8E9BAE]' : 'text-slate-500'}`}>{label}</div>
+    <div className={`text-2xl font-bold my-1.5 ${isDarkMode ? 'text-white' : 'text-[#1E293B]'}`}>{value}</div>
     {trend && (
-      <span className={`text-[11px] font-bold ${dir === 'up' ? 'text-emerald-500' : dir === 'down' ? 'text-rose-500' : 'text-slate-400'}`}>
+      <span className={`text-[11px] font-bold ${dir === 'up' ? 'text-emerald-500' : dir === 'down' ? 'text-rose-500' : isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
         {dir === 'up' ? '↑' : dir === 'down' ? '↓' : '·'} {trend}
       </span>
     )}
@@ -446,11 +478,11 @@ const StatBox = ({ isDarkMode, label, value, trend, dir }) => (
 );
 
 const Card = ({ isDarkMode, title, subtitle, children }) => (
-  <div className={`rounded-2xl border p-5 transition-all ${
-    isDarkMode ? 'bg-[#161f2e] border-slate-700/80 shadow-lg' : 'bg-white border-gray-200 shadow-sm'
+  <div className={`rounded-xl border p-5 transition-all ${
+    isDarkMode ? 'bg-[#161F2E] border-[#2A364F] shadow-lg' : 'bg-white border-slate-200 shadow-sm'
   }`}>
-    <h3 className={`text-sm font-bold m-0 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{title}</h3>
-    {subtitle && <p className={`text-xs mt-1 mb-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{subtitle}</p>}
+    <h3 className={`text-sm font-bold m-0 ${isDarkMode ? 'text-white' : 'text-[#1E293B]'}`}>{title}</h3>
+    {subtitle && <p className={`text-xs mt-1 mb-3 ${isDarkMode ? 'text-[#8E9BAE]' : 'text-slate-500'}`}>{subtitle}</p>}
     {children}
   </div>
 );

@@ -1,96 +1,81 @@
 import React, { useState, useEffect } from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const TaxEstimators = () => {
-  const [taxData, setTaxData] = useState(null);
+  const [contractValue, setContractValue] = useState(100000);
+  const [taxRate, setTaxRate] = useState(15);
+  const [withholdingRate, setWithholdingRate] = useState(5);
 
   useEffect(() => {
     fetch('/api/tax-estimators')
       .then(res => res.json())
-      .then(data => setTaxData(data))
+      .then(data => {
+        if (data.taxRate) setTaxRate(parseFloat(data.taxRate) || 15);
+        if (data.netIncome) setContractValue(parseFloat(data.netIncome.replace(/[^0-9.]/g, '')) || 100000);
+      })
       .catch(console.error);
   }, []);
 
-  if (!taxData) {
-    return <div>Loading tax estimations...</div>;
-  }
-
-  const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6'];
-  const chartData = taxData.breakdown.map(item => ({
-    name: item.category,
-    value: parseFloat(item.amount.replace(/[^0-9.-]+/g, "")) || 0
-  }));
+  const calculatedTax = (contractValue * (taxRate / 100)).toFixed(2);
+  const calculatedWithholding = (contractValue * (withholdingRate / 100)).toFixed(2);
+  const netValue = (contractValue - calculatedWithholding).toFixed(2);
+  const totalWithTax = (parseFloat(contractValue) + parseFloat(calculatedTax)).toFixed(2);
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: '28px', color: 'var(--primary-color)' }}>Tax Estimators</h1>
-          <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)' }}>Automated estimations for contract liabilities and deductions.</p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white m-0">
+          Tax & Exposure Estimator
+        </h1>
+        <p className="text-sm text-[#64748B] dark:text-[#8E9BAE] mt-1 m-0">
+          Calculate corporate tax liabilities, VAT/GST estimates, and withholding on contracts.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="stat-card">
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '8px' }}>Estimated Total Tax</h3>
-          <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--primary-color)' }}>{taxData.estimatedTax}</div>
-        </div>
-        <div className="stat-card">
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '8px' }}>Effective Tax Rate</h3>
-          <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--warning-color)' }}>{taxData.taxRate}</div>
-        </div>
-        <div className="stat-card">
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '8px' }}>Total Deductions</h3>
-          <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--success-color)' }}>{taxData.deductions}</div>
-        </div>
-        <div className="stat-card">
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '8px' }}>Projected Net Income</h3>
-          <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--secondary-color)' }}>{taxData.netIncome}</div>
-        </div>
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="premium-table-container flex-1">
-          <h2 className="table-title border-b p-4 mb-0">Tax Breakdown</h2>
-          <table className="premium-table">
-            <thead>
-              <tr>
-                <th>Jurisdiction / Category</th>
-                <th>Estimated Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {taxData.breakdown.map((item, idx) => (
-                <tr key={idx}>
-                  <td style={{ fontWeight: 500 }}>{item.category} Tax</td>
-                  <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{item.amount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white dark:bg-[#161F2E] border border-slate-200 dark:border-[#2A364F] rounded-xl p-6 shadow-sm space-y-4">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white m-0 pb-3 border-b border-slate-100 dark:border-[#2A364F]">
+            Contract Parameters
+          </h3>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">Gross Contract Value ($)</label>
+            <input type="number" className="w-full px-4 py-2.5 rounded-lg text-sm bg-white dark:bg-[#0B1121] border border-slate-300 dark:border-[#2A364F] text-slate-900 dark:text-white" value={contractValue} onChange={(e) => setContractValue(Number(e.target.value))} />
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">VAT / GST Rate (%)</label>
+            <input type="number" className="w-full px-4 py-2.5 rounded-lg text-sm bg-white dark:bg-[#0B1121] border border-slate-300 dark:border-[#2A364F] text-slate-900 dark:text-white" value={taxRate} onChange={(e) => setTaxRate(Number(e.target.value))} />
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">Withholding Tax Rate (%)</label>
+            <input type="number" className="w-full px-4 py-2.5 rounded-lg text-sm bg-white dark:bg-[#0B1121] border border-slate-300 dark:border-[#2A364F] text-slate-900 dark:text-white" value={withholdingRate} onChange={(e) => setWithholdingRate(Number(e.target.value))} />
+          </div>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl p-6 flex-1 h-[400px]">
-          <h2 className="text-xl font-bold text-gray-200 mb-4 text-center">Tax Distribution</h2>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={chartData}
-                cx="50%"
-                cy="50%"
-                innerRadius={80}
-                outerRadius={120}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={{ backgroundColor: '#1E3A8A', border: 'none', borderRadius: '8px', color: '#fff' }} />
-              <Legend verticalAlign="bottom" height={36}/>
-            </PieChart>
-          </ResponsiveContainer>
+        <div className="bg-white dark:bg-[#161F2E] border border-slate-200 dark:border-[#2A364F] rounded-xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white m-0 pb-3 border-b border-slate-100 dark:border-[#2A364F]">Estimated Breakdown</h3>
+            <div className="mt-4 space-y-3 text-sm">
+              <div className="flex justify-between py-2 border-b border-slate-100 dark:border-[#2A364F]/60">
+                <span className="text-[#64748B] dark:text-[#8E9BAE]">Base Value:</span>
+                <span className="font-semibold text-slate-900 dark:text-white">${Number(contractValue).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-slate-100 dark:border-[#2A364F]/60">
+                <span className="text-[#64748B] dark:text-[#8E9BAE]">Estimated VAT/GST ({taxRate}%):</span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400">+${Number(calculatedTax).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-slate-100 dark:border-[#2A364F]/60">
+                <span className="text-[#64748B] dark:text-[#8E9BAE]">Withholding ({withholdingRate}%):</span>
+                <span className="font-semibold text-rose-600 dark:text-rose-400">-${Number(calculatedWithholding).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-slate-100 dark:border-[#2A364F]/60">
+                <span className="text-[#64748B] dark:text-[#8E9BAE]">Net Payout:</span>
+                <span className="font-semibold text-slate-900 dark:text-white">${Number(netValue).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-6 pt-4 border-t border-slate-200 dark:border-[#2A364F] flex justify-between items-center">
+            <span className="text-sm font-bold text-slate-900 dark:text-white">Total Value:</span>
+            <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">${Number(totalWithTax).toLocaleString()}</span>
+          </div>
         </div>
       </div>
     </div>

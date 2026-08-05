@@ -59,6 +59,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             </div>
             Contracts
           </Link>
+          <Link to="/ai-analysis" onClick={() => setIsOpen(false)} className={`${linkClass} ${isActive('/ai-analysis') || isActive('/contract-details')}`}>
+            <div className="p-2 rounded-lg bg-gradient-to-tr from-blue-600 to-teal-500 text-white mr-3 shadow-md">
+              <i className="fa-solid fa-microchip-ai w-5 h-5 flex items-center justify-center"></i>
+            </div>
+            AI Risk & Fraud
+          </Link>
           <Link to="/obligations" onClick={() => setIsOpen(false)} className={`${linkClass} ${isActive('/obligations')}`}>
             <div className="p-2 rounded-lg bg-amber-500/20 text-amber-300 mr-3">
               <ObligationsIcon className="w-5 h-5" />

@@ -1,135 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from src.database.db import get_db
-from src.database.models import Notification, User
+from src.database.models import Notification
 from typing import Optional, List
-from datetime import datetime, timedelta
+from pydantic import BaseModel
+from datetime import datetime
 import uuid
 
 router = APIRouter()
 
-def ensure_initial_notifications(db: Session, user_email: Optional[str] = None):
-    """Seed initial realistic enterprise notifications if table is empty"""
-    count = db.query(Notification).count()
-    if count == 0:
-        now = datetime.utcnow()
-        sample_notifs = [
-            # --- New / Today ---
-            Notification(
-                notification_id=f"NOTIF-{uuid.uuid4().hex[:6].upper()}",
-                user_id=user_email or "all",
-                type="renewal",
-                title="Action Required: TechFlow Inc MSA Expiring",
-                message="TechFlow Inc MSA (CTR-2026-002) is expiring in 15 days. Action required for contract renewal.",
-                details="The Master Services Agreement CTR-2026-002 with TechFlow Inc is scheduled to expire in 15 days. Review commercial terms and initiate vendor renewal discussions before expiration.",
-                link="/renewals",
-                is_read=False,
-                created_at=now - timedelta(minutes=25)
-            ),
-            Notification(
-                notification_id=f"NOTIF-{uuid.uuid4().hex[:6].upper()}",
-                user_id=user_email or "all",
-                type="risk",
-                title="High Risk Clause Detected: Unlimited Liability",
-                message="SecureNet agreement flagged for non-standard indemnification and liability exposure.",
-                details="AI Contract Risk Scanner detected clause 14.2 in the SecureNet contract lacks standard limitation of liability caps. VP Legal approval recommended prior to signing.",
-                link="/contracts",
-                is_read=False,
-                created_at=now - timedelta(hours=1, minutes=45)
-            ),
-            Notification(
-                notification_id=f"NOTIF-{uuid.uuid4().hex[:6].upper()}",
-                user_id=user_email or "all",
-                type="obligation",
-                title="Upcoming Milestone Deadline: Quarterly True-up",
-                message="Quarterly True-up Report obligation for Acme Corp is due in 3 days.",
-                details="Obligation OBL-001 requires submission of audited usage reports to Acme Corp before end of week to maintain SLA compliance.",
-                link="/obligations",
-                is_read=False,
-                created_at=now - timedelta(hours=3, minutes=10)
-            ),
-            Notification(
-                notification_id=f"NOTIF-{uuid.uuid4().hex[:6].upper()}",
-                user_id=user_email or "all",
-                type="system",
-                title="PostgreSQL Automated Backup Completed",
-                message="ContractIQ PostgreSQL database snapshot verified and encrypted in secure vault.",
-                details="Daily database snapshot completed with 0 errors. All contract tables, audit logs, and obligation records successfully indexed and archived in PostgreSQL.",
-                link="/audit-logs",
-                is_read=False,
-                created_at=now - timedelta(hours=5)
-            ),
-            # --- Earlier / Yesterday ---
-            Notification(
-                notification_id=f"NOTIF-{uuid.uuid4().hex[:6].upper()}",
-                user_id=user_email or "all",
-                type="approval",
-                title="Contract SOW Approved by Legal Review",
-                message="Initech Statement of Work (SOW-2026-08) has been approved by Legal Review.",
-                details="Legal compliance and risk review completed with zero objections. The agreement is now moved to Pending Signature status.",
-                link="/contracts",
-                is_read=True,
-                created_at=now - timedelta(days=1, hours=2)
-            ),
-            Notification(
-                notification_id=f"NOTIF-{uuid.uuid4().hex[:6].upper()}",
-                user_id=user_email or "all",
-                type="renewal",
-                title="Vendor Agreement Auto-Renewal Notice",
-                message="Global Logistics agreement (CTR-2026-003) auto-renews in 30 days.",
-                details="Notice window for renegotiation or contract termination closes at the end of the current billing cycle. Current annual value: $150,000.",
-                link="/renewals",
-                is_read=True,
-                created_at=now - timedelta(days=1, hours=6)
-            ),
-            Notification(
-                notification_id=f"NOTIF-{uuid.uuid4().hex[:6].upper()}",
-                user_id=user_email or "all",
-                type="system",
-                title="SOC2 Compliance Audit Cleared",
-                message="Q2 Security and Compliance Audit signed off by Enterprise Security Officer.",
-                details="The quarterly compliance audit has been verified with 100% adherence score. All obligation audit logs are synced in the database.",
-                link="/compliance",
-                is_read=True,
-                created_at=now - timedelta(days=1, hours=11)
-            ),
-            # --- Earlier / Older ---
-            Notification(
-                notification_id=f"NOTIF-{uuid.uuid4().hex[:6].upper()}",
-                user_id=user_email or "all",
-                type="approval",
-                title="Mutual NDA Executed: Globex Inc",
-                message="Globex Inc NDA (CTR-2026-002) is now fully executed and archived.",
-                details="Both parties completed electronic signatures. Document encrypted and indexed in the secure PostgreSQL contract repository.",
-                link="/contracts",
-                is_read=True,
-                created_at=now - timedelta(days=3, hours=4)
-            ),
-            Notification(
-                notification_id=f"NOTIF-{uuid.uuid4().hex[:6].upper()}",
-                user_id=user_email or "all",
-                type="obligation",
-                title="Deliverable Phase 1 Acceptance Completed",
-                message="Deliverable 1 Approval obligation marked completed by stakeholder.",
-                details="Milestone payment of $75,000 has been cleared for processing following formal acceptance verification.",
-                link="/obligations",
-                is_read=True,
-                created_at=now - timedelta(days=5, hours=8)
-            ),
-            Notification(
-                notification_id=f"NOTIF-{uuid.uuid4().hex[:6].upper()}",
-                user_id=user_email or "all",
-                type="renewal",
-                title="Umbrella Corp MSA Terminated / Replaced",
-                message="Expired MSA replaced with new Enterprise Master Agreement.",
-                details="Previous contract CTR-2026-005 archived following completion of migration to unified enterprise tier.",
-                link="/renewals",
-                is_read=True,
-                created_at=now - timedelta(days=7, hours=14)
-            )
-        ]
-        db.add_all(sample_notifs)
-        db.commit()
+class NotificationCreate(BaseModel):
+    title: str
+    message: str
+    type: Optional[str] = "system"  # obligation, renewal, approval, risk, system
+    details: Optional[str] = None
+    link: Optional[str] = None
+    user_id: Optional[str] = "all"
 
 def serialize_notification(n: Notification) -> dict:
     return {
@@ -153,11 +39,8 @@ def get_notifications(
 ):
     """
     GET /api/notifications
-    Fetch all notifications from the PostgreSQL notifications table.
+    Fetch all live notifications directly from the PostgreSQL notifications table.
     """
-    ensure_initial_notifications(db, user_id)
-    
-    # Query PostgreSQL notifications table
     query = db.query(Notification)
     if user_id and user_id.lower() not in ["all", "admin", "admin user"]:
         user_clean = user_id.strip().lower()
@@ -171,6 +54,32 @@ def get_notifications(
         
     notifications = query.order_by(Notification.created_at.desc()).all()
     return [serialize_notification(n) for n in notifications]
+
+@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
+def create_notification(
+    payload: NotificationCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    POST /api/notifications
+    Insert a new notification directly into the PostgreSQL database.
+    """
+    new_notif = Notification(
+        notification_id=f"NOTIF-{uuid.uuid4().hex[:6].upper()}",
+        user_id=payload.user_id or "all",
+        type=payload.type or "system",
+        title=payload.title,
+        message=payload.message,
+        details=payload.details,
+        link=payload.link,
+        is_read=False,
+        created_at=datetime.utcnow()
+    )
+    db.add(new_notif)
+    db.commit()
+    db.refresh(new_notif)
+    return serialize_notification(new_notif)
 
 @router.put("/read-all")
 def mark_all_as_read(
@@ -210,8 +119,8 @@ def mark_notification_as_read(
     db: Session = Depends(get_db)
 ):
     """
-    PUT /api/notifications/{id}/read
-    Mark a specific notification as read in the PostgreSQL database.
+    PUT /api/notifications/{notification_id}/read
+    Mark a specific notification as read in PostgreSQL.
     """
     n = None
     if notification_id.isdigit():
@@ -221,9 +130,30 @@ def mark_notification_as_read(
         n = db.query(Notification).filter(Notification.notification_id == notification_id).first()
         
     if not n:
-        raise HTTPException(status_code=404, detail="Notification not found in database")
+        raise HTTPException(status_code=404, detail="Notification not found in PostgreSQL database")
         
     n.is_read = True
     db.commit()
     db.refresh(n)
     return serialize_notification(n)
+
+@router.delete("/{notification_id}")
+def delete_notification(
+    notification_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    DELETE /api/notifications/{notification_id}
+    Delete a notification from PostgreSQL.
+    """
+    n = None
+    if notification_id.isdigit():
+        n = db.query(Notification).filter(Notification.id == int(notification_id)).first()
+    if not n:
+        n = db.query(Notification).filter(Notification.notification_id == notification_id).first()
+    if not n:
+        raise HTTPException(status_code=404, detail="Notification not found in PostgreSQL database")
+        
+    db.delete(n)
+    db.commit()
+    return {"status": "success", "message": f"Notification {notification_id} removed from PostgreSQL database"}

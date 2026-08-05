@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const NotificationContext = createContext();
 
-const API_BASE = process.env.REACT_APP_API_URL || '';
+const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
@@ -11,7 +11,7 @@ export const NotificationProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch notifications from FastAPI backend
+  // Fetch notifications directly from PostgreSQL via FastAPI backend
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
@@ -32,35 +32,21 @@ export const NotificationProvider = ({ children }) => {
         setUnreadCount(unread);
       }
     } catch (err) {
-      console.error('Failed to fetch notifications:', err);
-      // Fallback try with localhost:8000 if proxy isn't routing
-      try {
-        const directUrl = `http://127.0.0.1:8000/api/notifications`;
-        const res = await axios.get(directUrl);
-        if (Array.isArray(res.data)) {
-          setNotifications(res.data);
-          setUnreadCount(res.data.filter(n => !n.is_read).length);
-          return;
-        }
-      } catch (directErr) {
-        console.error('Direct fallback failed:', directErr);
-        setError(err.message || 'Failed to load notifications');
-      }
+      console.error('Failed to fetch notifications from PostgreSQL:', err);
+      setError(err.message || 'Failed to load notifications from database');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Fetch on mount and periodically
+  // Fetch on mount and periodically sync every 30 seconds
   useEffect(() => {
     fetchNotifications();
-    
-    // Periodically sync every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
-  // Mark a single notification as read
+  // Mark a single notification as read in PostgreSQL
   const markAsRead = async (notificationId) => {
     // Optimistically update local state immediately
     setNotifications(prev =>
@@ -73,20 +59,15 @@ export const NotificationProvider = ({ children }) => {
     setUnreadCount(prev => Math.max(0, prev - 1));
 
     try {
-      try {
-        await axios.put(`${API_BASE}/api/notifications/${notificationId}/read`);
-      } catch (err) {
-        // Fallback direct request
-        await axios.put(`http://127.0.0.1:8000/api/notifications/${notificationId}/read`);
-      }
+      await axios.put(`${API_BASE}/api/notifications/${notificationId}/read`);
     } catch (err) {
       console.error(`Failed to mark notification ${notificationId} as read:`, err);
-      // Refresh to ensure consistent state
+      // Refresh to ensure consistent database state
       fetchNotifications();
     }
   };
 
-  // Mark all notifications as read
+  // Mark all notifications as read in PostgreSQL
   const markAllAsRead = async () => {
     // Optimistically update all to read
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
@@ -95,13 +76,40 @@ export const NotificationProvider = ({ children }) => {
     try {
       const userEmail = localStorage.getItem('userEmail') || localStorage.getItem('userName');
       const url = `${API_BASE}/api/notifications/read-all${userEmail ? `?user_id=${encodeURIComponent(userEmail)}` : ''}`;
-      try {
-        await axios.put(url);
-      } catch (err) {
-        await axios.put(`http://127.0.0.1:8000/api/notifications/read-all`);
-      }
+      await axios.put(url);
     } catch (err) {
       console.error('Failed to mark all notifications as read:', err);
+      fetchNotifications();
+    }
+  };
+
+  // Create a new notification directly in PostgreSQL
+  const createNotification = async (payload) => {
+    try {
+      const url = `${API_BASE}/api/notifications`;
+      const response = await axios.post(url, payload, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (response.data) {
+        setNotifications(prev => [response.data, ...prev]);
+        if (!response.data.is_read) {
+          setUnreadCount(prev => prev + 1);
+        }
+      }
+      return response.data;
+    } catch (err) {
+      console.error('Failed to create notification in PostgreSQL:', err);
+      throw err;
+    }
+  };
+
+  // Delete notification from PostgreSQL
+  const deleteNotification = async (notificationId) => {
+    setNotifications(prev => prev.filter(n => n.id !== notificationId && n.notification_id !== notificationId));
+    try {
+      await axios.delete(`${API_BASE}/api/notifications/${notificationId}`);
+    } catch (err) {
+      console.error(`Failed to delete notification ${notificationId}:`, err);
       fetchNotifications();
     }
   };
@@ -113,9 +121,12 @@ export const NotificationProvider = ({ children }) => {
         unreadCount,
         loading,
         error,
+        apiBaseUrl: API_BASE,
         fetchNotifications,
         markAsRead,
-        markAllAsRead
+        markAllAsRead,
+        createNotification,
+        deleteNotification
       }}
     >
       {children}

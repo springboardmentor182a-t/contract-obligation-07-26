@@ -1,6 +1,5 @@
 from src.database.models import User
 from src.auth.models import LoginRequest, SignupRequest
-from src.notifications.controller import ensure_initial_notifications
 import uuid
 import hashlib
 from datetime import datetime
@@ -36,9 +35,6 @@ def login_user(data: LoginRequest, db):
     user.lastLogin = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     db.commit()
     db.refresh(user)
-    
-    # Ensure notifications exist for this user in PostgreSQL
-    ensure_initial_notifications(db, user.email)
     
     token = f"jwt-session-{uuid.uuid4().hex}"
     return {
@@ -87,9 +83,6 @@ def signup_user(data: SignupRequest, db):
         db.commit()
         db.refresh(user)
         
-    # Seed initial database notifications for the new account
-    ensure_initial_notifications(db, user.email)
-    
     token = f"jwt-session-{uuid.uuid4().hex}"
     return {
         "token": token,
