@@ -1,7 +1,16 @@
 import axios from "axios";
 
+// Supports both Vite and Create React App
+const API_BASE =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
+  process.env.REACT_APP_API_BASE_URL ||
+  "https://contract-obligation-demo-group-c.onrender.com/api";
+
 const API = axios.create({
-  baseURL: "https://contract-obligation-demo-group-c.onrender.com/api",
+  baseURL: API_BASE,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 export const getUsers = async () => {
@@ -18,3 +27,5 @@ export const deleteUser = async (id) => {
   const response = await API.delete(`/users/${id}`);
   return response.data;
 };
+
+export default API;
