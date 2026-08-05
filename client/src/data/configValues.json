@@ -1,6 +1,6 @@
 {
   "appName": "ContractIQ",
-  "apiBaseUrl": "http://localhost:8000",
+  "apiBaseUrl": "/api",
   "defaultCurrency": "USD",
   "defaultDateFormat": "MMM D, YYYY",
   "sessionTimeoutMinutes": 30,
