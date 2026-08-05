@@ -4,6 +4,7 @@ import secrets
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.future import select
 
+from src.audit.service import create_audit_log
 from src.database.core import get_db
 from src.database.models import User, UserInvitation
 from .schemas import (
@@ -84,6 +85,19 @@ def invite_user(
     db.refresh(new_invitation)
     db.refresh(new_user)
 
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="CREATE",
+        action="User Invited",
+        module="User Management",
+        description=(
+            f"Invited user: {new_user.full_name} "
+            f"(ID: {new_user.id}, email: {new_user.email}, "
+            f"role: {new_user.role})"
+        ),
+    )
+
     return UserInviteResponse(
         id=new_invitation.id,
         email=new_invitation.email,
@@ -131,6 +145,9 @@ def update_user(
             detail="User not found",
         )
 
+    previous_role = user.role
+    previous_status = user.status
+
     user.full_name = payload.full_name
     user.name = payload.full_name
     user.email = payload.email
@@ -140,6 +157,19 @@ def update_user(
 
     db.commit()
     db.refresh(user)
+
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="UPDATE",
+        action="User Updated",
+        module="User Management",
+        description=(
+            f"Updated user: {user.full_name} "
+            f"(ID: {user.id}, role: {previous_role} -> {user.role}, "
+            f"status: {previous_status} -> {user.status})"
+        ),
+    )
 
     return UserResponse(
         id=user.id,
@@ -168,8 +198,24 @@ def delete_user(
             detail="User not found",
         )
 
+    deleted_user_id = user.id
+    deleted_user_name = user.full_name
+    deleted_user_email = user.email
+
     db.delete(user)
     db.commit()
+
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="DELETE",
+        action="User Deleted",
+        module="User Management",
+        description=(
+            f"Deleted user: {deleted_user_name} "
+            f"(ID: {deleted_user_id}, email: {deleted_user_email})"
+        ),
+    )
 
     return {
         "message": "User deleted successfully"

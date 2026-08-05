@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from typing import List
 
+from src.audit.service import create_audit_log
 from src.database.core import get_db
 from src.database.models import ComplianceControl, ComplianceLog
 from .schemas import (
@@ -93,6 +94,19 @@ def create_compliance_control(payload: ComplianceControlCreate, db: Session = De
     db.add(ctrl)
     db.commit()
     db.refresh(ctrl)
+
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="CREATE",
+        action="Compliance Control Created",
+        module="Compliance",
+        description=(
+            f"Created compliance control: {ctrl.title} "
+            f"(ID: {ctrl.id}, status: {ctrl.status})"
+        ),
+    )
+
     return ComplianceControlResponse(
         id=ctrl.id,
         title=ctrl.title,
@@ -120,6 +134,19 @@ def add_compliance_log(control_id: str, payload: ComplianceLogCreate, db: Sessio
     db.add(log)
     db.commit()
     db.refresh(log)
+
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="UPDATE",
+        action="Compliance Verification Recorded",
+        module="Compliance",
+        description=(
+            f"Recorded compliance verification for: {ctrl.title} "
+            f"(ID: {ctrl.id}, status: {log.status})"
+        ),
+    )
+
     return ComplianceLogResponse(
         id=log.id,
         timestamp=_format_iso(log.timestamp),

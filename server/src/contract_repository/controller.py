@@ -223,6 +223,19 @@ def upload_document(
     db.commit()
     db.refresh(document)
 
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="CREATE",
+        action="Contract Document Uploaded",
+        module="Contract Repository",
+        description=(
+            f"Uploaded document: {document.original_name} "
+            f"to contract: {contract.contract_name} "
+            f"(ID: {contract.id})"
+        ),
+    )
+
     return {
         "message": "Document uploaded successfully.",
         "document": document,
@@ -342,6 +355,8 @@ def delete_document(
             detail="Document not found",
         )
 
+    original_name = document.original_name
+    contract_id = document.contract_id
     file_path = Path(document.file_path)
 
     if file_path.exists():
@@ -349,6 +364,18 @@ def delete_document(
 
     db.delete(document)
     db.commit()
+
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="DELETE",
+        action="Contract Document Deleted",
+        module="Contract Repository",
+        description=(
+            f"Deleted document: {original_name} "
+            f"from contract ID: {contract_id}"
+        ),
+    )
 
     return {
         "message": "Document deleted successfully"

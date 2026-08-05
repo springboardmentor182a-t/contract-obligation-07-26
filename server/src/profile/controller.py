@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from src.audit.service import create_audit_log
 from src.auth.jwt import SECRET_KEY, ALGORITHM
 from src.database.core import get_db
 from src.database.models import User
@@ -105,5 +106,18 @@ def update_profile(
     except Exception as exc:
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to update profile") from exc
+
+    changed_fields = ", ".join(sorted(update_data)) or "none"
+    create_audit_log(
+        db=db,
+        user_id=current_user.id,
+        event_type="UPDATE",
+        action="Profile Updated",
+        module="Profile",
+        description=(
+            f"Updated profile: {current_user.email} "
+            f"(ID: {current_user.id}, fields: {changed_fields})"
+        ),
+    )
 
     return _build_response(current_user)
