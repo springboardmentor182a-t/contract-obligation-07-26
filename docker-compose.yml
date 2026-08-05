@@ -23,6 +23,7 @@ services:
     environment:
       - DATABASE_URL=postgresql+psycopg2://postgres:postgrespassword@db:5432/contract_iq
       - ALLOWED_ORIGINS=["http://localhost","http://localhost:5173","http://127.0.0.1:5173","http://localhost:80"]
+      - DISABLE_CHATBOT_MODEL=true
     ports:
       - "8000:8000"
     depends_on:
