@@ -57,6 +57,26 @@
   display: flex;
   gap: 0.75rem;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.rd-cancel-btn {
+  border-color: #6b7280 !important;
+  color: #6b7280 !important;
+}
+
+.rd-cancel-btn:hover {
+  background: rgba(107, 114, 128, 0.08) !important;
+}
+
+.rd-expire-btn {
+  border-color: #ef4444 !important;
+  color: #ef4444 !important;
+}
+
+.rd-expire-btn:hover {
+  background: rgba(239, 68, 68, 0.08) !important;
 }
 
 /* Status Badges */
