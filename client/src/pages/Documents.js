@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PageContainer from '../layout/PageContainer';
 import Navbar from '../layout/Navbar';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 const Documents = () => {
   const [tableData, setTableData] = useState([]);

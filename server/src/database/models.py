@@ -3,14 +3,9 @@ from .core import Base
 
 class Contract(Base):
     __tablename__ = "contracts"
-    __table_args__ = {'extend_existing': True} 
-    
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    party = Column(String)
     __table_args__ = {"extend_existing": True}
 
-    id = Column(String, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
 
     company = Column(String)
     contract = Column(String)
