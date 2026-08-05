@@ -189,7 +189,7 @@ export default function Audit() {
       const queryString = query.toString();
 
       const response = await fetch(
-        `${API_BASE_URL}/api/audit-logs${queryString ? `?${queryString}` : ""}`,
+        `${API_BASE_URL}/audit-logs${queryString ? `?${queryString}` : ""}`,
         {
           method: "GET",
           headers: {
@@ -327,7 +327,7 @@ export default function Audit() {
       query.set("format", "csv");
 
       const response = await fetch(
-        `${API_BASE_URL}/api/audit-logs/export?${query.toString()}`,
+        `${API_BASE_URL}/audit-logs/export?${query.toString()}`,
         {
           method: "GET",
           credentials: "include",
