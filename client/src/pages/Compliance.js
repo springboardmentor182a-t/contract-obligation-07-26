@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { ShieldIcon, DownloadIcon } from "../components/Icons";
 import "./Compliance.css";
+import ComplianceDetailsModal from "../components/AICompliance/ComplianceDetailsModal";
 import { API_BASE } from "../config/api";
 import { getComplianceDashboard } from "../services/complianceAPI";
-
+import PriorityTasks from "../components/AICompliance/PriorityTasks";
 import SummaryCards from "../components/AICompliance/SummaryCards";
 import ComplianceTable from "../components/AICompliance/ComplianceTable";
 import AlertsPanel from "../components/AICompliance/AlertsPanel";
@@ -16,6 +17,8 @@ export default function Compliance() {
   const [searchTerm, setSearchTerm] = useState("");
   const [riskFilter, setRiskFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     async function fetchControls() {
@@ -213,29 +216,51 @@ export default function Compliance() {
     </div>
 
     {guardianDashboard && (
-        <>
-            <SummaryCards
-                data={guardianDashboard.summary}
-            />
+    <>
+        <SummaryCards
+            data={guardianDashboard.summary}
+        />
 
-            <Filters
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              riskFilter={riskFilter}
-              setRiskFilter={setRiskFilter}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-            />
+        <PriorityTasks
+    data={guardianDashboard.priority_tasks}
+    onReview={(task) => {
+        const record = guardianDashboard.records.find(
+            (r) => r.contract_id === task.contract_id
+        );
 
-            <ComplianceTable
-                data={filteredRecords}
-            />
+        if (record) {
+            setSelectedRecord(record);
+            setShowModal(true);
+        }
+    }}
+/>
 
-            <AlertsPanel
-                alerts={guardianDashboard.alerts}
-            />
-        </>
-    )}
+        <Filters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            riskFilter={riskFilter}
+            setRiskFilter={setRiskFilter}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+        />
+
+        <ComplianceTable
+            data={filteredRecords}
+        />
+
+        <AlertsPanel
+            alerts={guardianDashboard.alerts}
+        />
+        <ComplianceDetailsModal
+    isOpen={showModal}
+    record={selectedRecord}
+    onClose={() => {
+        setShowModal(false);
+        setSelectedRecord(null);
+    }}
+/>
+    </>
+)}
 
 </section>
 

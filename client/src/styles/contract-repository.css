@@ -1094,9 +1094,11 @@
 .view-contract-modal {
   width: 650px;
   max-width: 90%;
+  max-height: 90vh;      /* Keeps modal inside the viewport */
   background: #fff;
   border-radius: 12px;
-  overflow: hidden;
+  overflow-y: auto;      /* Scroll when content is too tall */
+  overflow-x: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
@@ -1283,7 +1285,58 @@
 .modal-actions .primary-btn {
     min-width: 150px;
 }
+.card-menu {
+  position: relative;
+}
 
+.menu-btn {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.menu-btn:hover {
+  background: #f3f4f6;
+}
+
+.card-dropdown {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  width: 150px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.12);
+  z-index: 999;
+  overflow: hidden;
+}
+
+.card-dropdown button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.card-dropdown button:hover {
+  background: #f8fafc;
+}
+
+.delete-option {
+  color: #dc2626;
+}
 
 /* ==========================================
    DOCUMENT MANAGEMENT
@@ -1641,4 +1694,4 @@
 [data-theme="dark"] .status-badge.pending-review  { background: rgba(37,99,235,0.2);  color: #93C5FD; }
 [data-theme="dark"] .status-badge.expiring-soon   { background: rgba(217,119,6,0.2);  color: #FCD34D; }
 [data-theme="dark"] .status-badge.draft           { background: rgba(100,116,139,0.2); color: #94A3B8; }
-[data-theme="dark"] .status-badge.expired         { background: rgba(220,38,38,0.2);  color: #F87171; }
+[data-theme="dark"] .status-badge.expired         { background: rgba(220,38,38,0.2);  color: #F87171; }

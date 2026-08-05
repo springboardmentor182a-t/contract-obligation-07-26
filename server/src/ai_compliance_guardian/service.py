@@ -22,28 +22,30 @@ class ComplianceService:
 
         records = []
         alerts = []
+        priority_tasks = []
 
         for contract in contracts:
 
-            # -------------------------
-            # Calculate days remaining
-            # -------------------------
+            # ---------------------------------
+            # Days Remaining
+            # ---------------------------------
             days_left = None
 
             if contract.end_date:
-                days_left = (contract.end_date - today).days
+                days_left = max((contract.end_date - today).days, 0)
 
-            # -------------------------
-            # Check uploaded documents
-            # -------------------------
+            # ---------------------------------
+            # Documents
+            # ---------------------------------
             has_documents = len(contract.documents) > 0
 
-            # -------------------------
-            # Contract obligations
-            # -------------------------
+            # ---------------------------------
+            # Contract Obligations
+            # ---------------------------------
             contract_obligations = [
-                o for o in obligations
-                if o.contract_id == contract.id
+                obligation
+                for obligation in obligations
+                if obligation.contract_id == contract.id
             ]
 
             overdue = sum(
@@ -53,18 +55,18 @@ class ComplianceService:
                 and obligation.status != "Completed"
             )
 
-            # -------------------------
-            # Approval Status
-            # -------------------------
+            # ---------------------------------
+            # Approval
+            # ---------------------------------
             approval_status = (
                 "Approved"
                 if contract.status == "Active"
                 else "Pending"
             )
 
-            # -------------------------
+            # ---------------------------------
             # Risk Level
-            # -------------------------
+            # ---------------------------------
             risk_level = "Low"
 
             if overdue > 0 or not has_documents:
@@ -73,35 +75,35 @@ class ComplianceService:
             elif days_left is not None and days_left <= 30:
                 risk_level = "Medium"
 
-            # -------------------------
+            # ---------------------------------
             # Compliance Status
-            # -------------------------
+            # ---------------------------------
             compliance_status = (
                 "Compliant"
                 if risk_level == "Low"
                 else "Attention Required"
             )
 
-            # -------------------------
+            # ---------------------------------
             # Recommendation
-            # -------------------------
+            # ---------------------------------
             recommendation = "No action required."
 
-            if overdue:
-                recommendation = "Complete overdue obligations."
+            if not has_documents:
+                recommendation = "Missing mandatory contract documents."
 
-            elif not has_documents:
-                recommendation = "Upload mandatory contract documents."
+            elif overdue > 0:
+                recommendation = "Overdue obligations detected."
 
             elif approval_status == "Pending":
-                recommendation = "Complete contract approval."
+                recommendation = "Approval pending."
 
             elif days_left is not None and days_left <= 30:
-                recommendation = "Review renewal before deadline."
+                recommendation = "Renewal approaching."
 
-            # -------------------------
-            # Update Summary
-            # -------------------------
+            # ---------------------------------
+            # Summary
+            # ---------------------------------
             if compliance_status == "Compliant":
                 summary["compliant_contracts"] += 1
 
@@ -117,9 +119,9 @@ class ComplianceService:
             if approval_status == "Pending":
                 summary["missing_approvals"] += 1
 
-            # -------------------------
+            # ---------------------------------
             # Alerts
-            # -------------------------
+            # ---------------------------------
             if risk_level != "Low":
                 alerts.append(
                     {
@@ -129,9 +131,40 @@ class ComplianceService:
                     }
                 )
 
-            # -------------------------
-            # Table Record
-            # -------------------------
+            # ---------------------------------
+            # Priority Calculation
+            # ---------------------------------
+            priority = "Low"
+
+            if not has_documents:
+                priority = "Critical"
+
+            elif overdue > 0:
+                priority = "High"
+
+            elif approval_status == "Pending":
+                priority = "High"
+
+            elif days_left is not None and days_left <= 15:
+                priority = "Medium"
+
+            # Only show actionable tasks
+            if priority != "Low":
+                priority_tasks.append(
+                    {
+                        "contract_id": contract.id,
+                        "contract_name": contract.contract_name,
+                        "vendor": contract.vendor,
+                        "priority": priority,
+                        "reason": recommendation,
+                        "days_left": days_left,
+                        "deadline": contract.end_date,
+                    }
+                )
+
+            # ---------------------------------
+            # Compliance Table
+            # ---------------------------------
             records.append(
                 {
                     "contract_id": contract.id,
@@ -147,8 +180,27 @@ class ComplianceService:
                 }
             )
 
+        # ---------------------------------
+        # Sort Priority Tasks
+        # ---------------------------------
+        priority_order = {
+            "Critical": 0,
+            "High": 1,
+            "Medium": 2,
+        }
+
+        priority_tasks.sort(
+            key=lambda task: (
+                priority_order.get(task["priority"], 3),
+                task["days_left"]
+                if task["days_left"] is not None
+                else 9999,
+            )
+        )
+
         return {
             "summary": summary,
+            "priority_tasks": priority_tasks,
             "records": records,
             "alerts": alerts,
         }
