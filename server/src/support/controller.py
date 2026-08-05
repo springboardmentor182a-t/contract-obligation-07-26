@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.future import select
+from sqlalchemy.orm import Session
 from pydantic import BaseModel, ConfigDict
 from typing import List
+from src.audit.service import create_audit_log
 from src.database.core import get_db
 from src.database.models import FAQ, SupportTicket
 
@@ -20,8 +21,8 @@ class TicketCreate(BaseModel):
     description: str
 
 @router.get("/faqs", response_model=List[FaqResponse])
-async def list_faqs(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(FAQ).order_by(FAQ.sort_order.asc()))
+def list_faqs(db: Session = Depends(get_db)):
+    result = db.execute(select(FAQ).order_by(FAQ.sort_order.asc()))
     items = result.scalars().all()
     return [
         FaqResponse(
@@ -32,7 +33,7 @@ async def list_faqs(db: AsyncSession = Depends(get_db)):
     ]
 
 @router.post("/support/tickets", status_code=status.HTTP_201_CREATED)
-async def create_ticket(payload: TicketCreate, db: AsyncSession = Depends(get_db)):
+def create_ticket(payload: TicketCreate, db: Session = Depends(get_db)):
     ticket = SupportTicket(
         user_id=1,  # default logged in user
         subject=payload.subject,
@@ -42,5 +43,19 @@ async def create_ticket(payload: TicketCreate, db: AsyncSession = Depends(get_db
     )
     db.add(ticket)
     db.commit()
-    await db.refresh(ticket)
+    db.refresh(ticket)
+
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="CREATE",
+        action="Support Ticket Created",
+        module="Support",
+        description=(
+            f"Created support ticket: {ticket.subject} "
+            f"(ID: {ticket.id}, severity: {ticket.severity}, "
+            f"status: {ticket.status})"
+        ),
+    )
+
     return {"id": ticket.id, "status": "created"}

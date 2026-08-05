@@ -1,5 +1,7 @@
 from datetime import date, datetime
 
+from src.audit.service import create_audit_log
+
 from .models import Renewal
 from .repository import RenewalRepository
 
@@ -15,7 +17,23 @@ class RenewalService:
     def create(self, db, data):
         payload = data.dict() if hasattr(data, "dict") else data.model_dump()
         renewal = Renewal(**payload)
-        return self.repo.create(db, renewal)
+        created_renewal = self.repo.create(db, renewal)
+
+        create_audit_log(
+            db=db,
+            user_id=None,
+            event_type="CREATE",
+            action="Renewal Created",
+            module="Renewal Dashboard",
+            description=(
+                f"Created renewal: {created_renewal.contract_name} "
+                f"(ID: {created_renewal.id}, "
+                f"status: {created_renewal.status}, "
+                f"approval: {created_renewal.approval_status})"
+            ),
+        )
+
+        return created_renewal
 
     def _days_until(self, target_date):
         if not target_date:

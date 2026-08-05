@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import Session
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
+from src.audit.service import create_audit_log
 from src.database.core import get_db
 from src.database.models import UserSetting, ApiKey
 
@@ -49,8 +50,8 @@ class GatewayUpdate(BaseModel):
     renewalAlerts: bool
 
 @router.get("", response_model=SettingsResponse)
-async def get_settings(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(UserSetting).where(UserSetting.user_id == 1))
+def get_settings(db: Session = Depends(get_db)):
+    result = db.execute(select(UserSetting).where(UserSetting.user_id == 1))
     settings = result.scalars().first()
     if not settings:
         settings = UserSetting(user_id=1)
@@ -60,8 +61,8 @@ async def get_settings(db: AsyncSession = Depends(get_db)):
     return settings
 
 @router.patch("", response_model=SettingsResponse)
-async def update_settings(payload: SettingsUpdate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(UserSetting).where(UserSetting.user_id == 1))
+def update_settings(payload: SettingsUpdate, db: Session = Depends(get_db)):
+    result = db.execute(select(UserSetting).where(UserSetting.user_id == 1))
     settings = result.scalars().first()
     if not settings:
         raise HTTPException(status_code=404, detail="Settings record not found")
@@ -86,14 +87,32 @@ async def update_settings(payload: SettingsUpdate, db: AsyncSession = Depends(ge
     db.add(settings)
     db.commit()
     db.refresh(settings)
+    changed_fields = sorted(
+        field
+        for field, value in payload.model_dump().items()
+        if value is not None
+    )
+
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="UPDATE",
+        action="Settings Updated",
+        module="Settings",
+        description=(
+            f"Updated settings for user ID: {settings.user_id} "
+            f"(fields: {', '.join(changed_fields) or 'none'})"
+        ),
+    )
+
     return settings
 
 # ── POST /api/settings/notifications/gateways ──
 @router.post("/notifications/gateways")
-async def update_gateways(payload: GatewayUpdate, db: AsyncSession = Depends(get_db)):
+def update_gateways(payload: GatewayUpdate, db: Session = Depends(get_db)):
     # TODO: Connect API Endpoint here
     # Integrates with SendGrid API for emailNotif, and Twilio REST APIs for smsNotif
-    result = await db.execute(select(UserSetting).where(UserSetting.user_id == 1))
+    result = db.execute(select(UserSetting).where(UserSetting.user_id == 1))
     settings = result.scalars().first()
     if not settings:
         raise HTTPException(status_code=404, detail="Settings record not found")
@@ -103,11 +122,27 @@ async def update_gateways(payload: GatewayUpdate, db: AsyncSession = Depends(get
     # Update Database setting for gateways
     db.add(settings)
     db.commit()
-    return {"status": "success", "message": "Gateways configured successfully"}
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="UPDATE",
+        action="Notification Gateways Updated",
+        module="Settings",
+        description=(
+            f"Updated notification gateways for user ID: {settings.user_id} "
+            f"(email: {payload.emailNotif}, "
+            f"renewal alerts: {payload.renewalAlerts})"
+        ),
+    )
+
+    return {
+        "status": "success",
+        "message": "Gateways configured successfully",
+    }
 
 # ── POST /api/settings/security/apikeys ──
 @router.post("/security/apikeys", response_model=ApiKeyResponse)
-async def create_api_key(payload: ApiKeyCreate, db: AsyncSession = Depends(get_db)):
+def create_api_key(payload: ApiKeyCreate, db: Session = Depends(get_db)):
     # TODO: Connect API Endpoint here
     # Generates a hashed token and writes metadata to "api_keys" table
     import secrets
@@ -121,7 +156,18 @@ async def create_api_key(payload: ApiKeyCreate, db: AsyncSession = Depends(get_d
     db.add(new_key)
     db.commit()
     db.refresh(new_key)
-    
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="CREATE",
+        action="API Key Created",
+        module="Settings",
+        description=(
+            f"Created API key: {new_key.name} "
+            f"(ID: {new_key.id}, user ID: {new_key.user_id})"
+        ),
+    )
+
     return ApiKeyResponse(
         id=new_key.id,
         name=new_key.name,

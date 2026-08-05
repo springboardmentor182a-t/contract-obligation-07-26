@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import Session, selectinload
 from pydantic import BaseModel, ConfigDict
 from typing import List
+from src.audit.service import create_audit_log
 from src.database.core import get_db
 from src.database.models import QuickAction, QuickActionLog
 
@@ -28,8 +28,8 @@ class ExecutePayload(BaseModel):
     action_id: str
 
 @router.get("", response_model=List[QuickActionResponse])
-async def list_quick_actions(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(QuickAction).order_by(QuickAction.id.asc()))
+def list_quick_actions(db: Session = Depends(get_db)):
+    result = db.execute(select(QuickAction).order_by(QuickAction.id.asc()))
     items = result.scalars().all()
     return [
         QuickActionResponse(
@@ -43,7 +43,7 @@ async def list_quick_actions(db: AsyncSession = Depends(get_db)):
     ]
 
 @router.get("/logs", response_model=List[QuickActionLogResponse])
-async def get_logs(db: AsyncSession = Depends(get_db)):
+def get_logs(db: Session = Depends(get_db)):
     result = db.execute(
         select(QuickActionLog)
         .options(selectinload(QuickActionLog.action))
@@ -63,9 +63,9 @@ async def get_logs(db: AsyncSession = Depends(get_db)):
     ]
 
 @router.post("/execute", response_model=QuickActionLogResponse)
-async def execute_action(payload: ExecutePayload, db: AsyncSession = Depends(get_db)):
+def execute_action(payload: ExecutePayload, db: Session = Depends(get_db)):
     # Verify action exists
-    result = await db.execute(select(QuickAction).where(QuickAction.id == payload.action_id))
+    result = db.execute(select(QuickAction).where(QuickAction.id == payload.action_id))
     action = result.scalars().first()
     if not action:
         raise HTTPException(status_code=404, detail="Quick Action workflow not found")
@@ -79,6 +79,18 @@ async def execute_action(payload: ExecutePayload, db: AsyncSession = Depends(get
     db.add(log)
     db.commit()
     db.refresh(log)
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="CREATE",
+        action="Quick Action Executed",
+        module="Quick Actions",
+        description=(
+            f"Executed quick action: {action.label} "
+            f"(action ID: {action.id}, execution log ID: {log.id}, "
+            f"status: {log.status})"
+        ),
+    )
 
     return QuickActionLogResponse(
         id=log.id,
