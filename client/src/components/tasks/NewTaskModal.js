@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-
-const API_URL = "http://127.0.0.1:8000/api/v1/tasks";
+import { API_BASE_URL } from "../../data/constants";
+const API_URL = `${API_BASE_URL}/tasks`;
 
 function NewTaskModal({
   onClose,

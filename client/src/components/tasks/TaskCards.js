@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_BASE_URL } from "../../data/constants";
 import {
   ClipboardList,
   CheckCircle2,
@@ -6,7 +7,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-const API_URL = "http://127.0.0.1:8000/api/v1/tasks";
+const API_URL = `${API_BASE_URL}/tasks`;
 
 function TaskCards({ refreshKey }) {
   const [stats, setStats] = useState({
