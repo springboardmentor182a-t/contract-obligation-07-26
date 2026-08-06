@@ -60,7 +60,7 @@ def ask_with_contract(question, context):
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=64,
+            max_new_tokens=32,
             do_sample=False,
             temperature=0.0,
             repetition_penalty=1.2,
@@ -117,7 +117,7 @@ def general_chat(question: str):
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=64,
+            max_new_tokens=32,
             do_sample=False,
             temperature=0.0,
             repetition_penalty=1.2,
