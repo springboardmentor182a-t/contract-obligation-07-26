@@ -35,6 +35,9 @@ async def upload(file: UploadFile = File(...)):
 def chat(question: str):
     if is_contract_question(question):
         context = retrieve(question)
+        
+        print("Context length:", len(context))
+        print(context[:500])
 
         if context.strip():
             return {"answer": ask_with_contract(question, context)}

@@ -4,6 +4,10 @@ import re
 
 from src.chatbot.model import model, tokenizer
 
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.lsa import LsaSummarizer
+
 CONTRACT_KEYWORDS = [
     "contract",
     "agreement",
