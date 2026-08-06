@@ -4,22 +4,28 @@ from src.database.db import engine, Base, SessionLocal
 from src.database.models import User, Contract, Obligation, Renewal
 
 RISK_LEVELS = ["Low", "Medium", "High", "Critical"]
-RISK_WEIGHTS = [0.55, 0.25, 0.14, 0.06]  # skew toward Low, matches typical portfolios
+RISK_WEIGHTS = [0.55, 0.25, 0.14, 0.06]
 DEPARTMENTS = ["Legal", "Procurement", "HR", "Finance", "Operations", "IT"]
 
-ACTIVITY_VERBS = [
-    "updated", "reviewed", "submitted", "approved", "flagged", "completed"
+FIRST_NAMES = ["Priya", "Marcus", "Elena", "Chen", "Sarah", "Jordan", "Amara",
+               "Kenji", "Isabella", "Rafael", "Nadia", "Aarav"]
+LAST_NAMES = ["Volkov", "Andersson", "Patel", "Chen", "Johnson", "Rodriguez",
+              "Kim", "Nakamura", "Silva", "Okafor", "Andersson", "Chen"]
+
+AUDIT_ACTIONS = [
+    "deactivated user", "assigned owner", "exported report", "signed in",
+    "created contract", "approved contract", "updated obligation",
+    "uploaded document", "sent reminder", "rejected contract",
 ]
-ACTIVITY_TARGETS = [
-    "Provide financial statements", "Onboard new stakeholders", "GDPR compliance review",
-    "Renewal notice submission", "Escrow release confirmation", "Training completion certificate",
-    "Insurance certificate upload", "Data processing addendum",
+AUDIT_TARGETS = [
+    "Enterprise SaaS License", "Cloud Hosting Agreement", "Equipment Purchase Order",
+    "Master Services Agreement", "Non-Disclosure Agreement", "Software Reseller Agreement",
+    "Distribution Agreement", "Executive Employment Contract", "Data Processing Addendum",
+    "IP Assignment Agreement", "Vendor Supply Contract", "Strategic Partnership MOU",
+    "Managed Support Agreement", "Facility Lease Agreement", "Consulting Services",
+    "Marketing Services Contract",
 ]
-ACTIVITY_STATUSES = ["In Progress", "Blocked", "Review", "Done", "Not Started"]
-PEOPLE = [
-    "Chen Okafor", "Sarah Volkov", "Jordan Andersson", "Amara Patel",
-    "Kenji Chen", "Isabella Johnson", "Marcus Delgado", "Priya Nair",
-]
+AUDIT_CATEGORIES = ["Contract", "Obligation", "User", "Approval", "Security", "Auth"]
 
 
 def seed_data():
@@ -32,7 +38,8 @@ def seed_data():
 
     print("Seeding Users...")
     users = [
-        User(user_id=f"USR-10{i}", name=f"User {i}", email=f"user{i}@company.com", role="Admin" if i == 1 else "Manager", status="Active", lastLogin="2026-07-20")
+        User(user_id=f"USR-10{i}", name=f"User {i}", email=f"user{i}@company.com",
+             role="Admin" if i == 1 else "Manager", status="Active", lastLogin="2026-07-20")
         for i in range(1, 16)
     ]
     db.add_all(users)
@@ -63,7 +70,6 @@ def seed_data():
     obligations = []
     renewals = []
     for c in contracts:
-        # Create 1-3 obligations per contract
         for j in range(random.randint(1, 3)):
             o = Obligation(
                 obligation_id=f"OBL-{c.id:03d}-{j}",
@@ -75,7 +81,6 @@ def seed_data():
             )
             obligations.append(o)
 
-        # 1 renewal per contract, spread across the year for the renewal timeline chart
         r = Renewal(
             contract_id=c.id,
             renewal_date=c.date + datetime.timedelta(days=365),
@@ -99,21 +104,21 @@ def seed_data():
     ]
     db.add_all(transactions)
 
-    # Recent Activity feed for the dashboard (newest last, controller reads them id desc)
-    now = datetime.datetime(2026, 7, 26, 15, 0, 0)
+    print("Seeding Audit Logs...")
+    now = datetime.datetime(2026, 7, 30, 15, 0, 0)
     audit_logs = []
-    for i in range(10):
-        actor = random.choice(PEOPLE)
-        target = random.choice(ACTIVITY_TARGETS)
-        contract = random.choice(contracts)
-        status = random.choice(ACTIVITY_STATUSES)
-        ts = now - datetime.timedelta(hours=i)
+    ts = now
+    for i in range(120):
+        # step back a random interval so entries spread across ~7 days
+        ts = ts - datetime.timedelta(minutes=random.randint(20, 240))
+        actor = f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}"
         audit_logs.append(AuditLog(
-            time=ts.strftime("%Y-%m-%d %I:%M %p"),
-            user=actor,
-            action=f"{random.choice(ACTIVITY_VERBS)} {target}",
-            target=f"{contract.type} · {contract.vendor} · {status}",
-            ip="192.168.1.45",
+            timestamp=ts,
+            actor=actor,
+            action=random.choice(AUDIT_ACTIONS),
+            target=random.choice(AUDIT_TARGETS),
+            category=random.choice(AUDIT_CATEGORIES),
+            ip_address=f"10.{random.randint(1,255)}.{random.randint(1,255)}.{random.randint(1,255)}",
         ))
     db.add_all(audit_logs)
 
