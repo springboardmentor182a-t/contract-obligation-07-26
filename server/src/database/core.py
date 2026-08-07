@@ -55,6 +55,19 @@ def initialize_database():
    
 
 
+    # Ensure all models are registered in Base.metadata
+    try:
+        import src.database.models
+        import src.contract_repository.models
+        import src.renewals.models
+    except Exception as e:
+        print("Warning importing models:", e)
+
+    # Strip schema='public' for SQLite compatibility
+    if database_url.startswith("sqlite"):
+        for table in list(Base.metadata.tables.values()):
+            table.schema = None
+
     # Create missing tables automatically (convenience for local development).
     try:
         Base.metadata.create_all(bind=engine)
