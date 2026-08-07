@@ -2,9 +2,7 @@ import axios from "axios";
 
 // Supports both Vite and Create React App
 const API_BASE =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
-  process.env.REACT_APP_API_URL ||
-  "http://localhost:8000/api";
+  process.env.REACT_APP_API_URL || "/api";
 
 const api = axios.create({
   baseURL: API_BASE,

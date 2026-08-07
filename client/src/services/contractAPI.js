@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "/api",
+  baseURL:
+    process.env.REACT_APP_API_URL ||
+    "http://127.0.0.1:8000/api",
 });
 
 // ======================
@@ -75,4 +77,4 @@ export const downloadDocument = (documentId) => {
 export const removeDocument = async (documentId) => {
   const response = await API.delete(`/contracts/documents/${documentId}`);
   return response.data;
-};
+};
