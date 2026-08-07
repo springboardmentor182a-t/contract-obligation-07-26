@@ -1,6 +1,14 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from src.auth.controller import router as auth_router
+from src.todos.controller import router as todos_router
+from src.users.controller import router as users_router
+
+api_router = APIRouter()
+api_router.include_router(auth_router)
+api_router.include_router(todos_router)
+api_router.include_router(users_router)
+
 from src.contracts.controller import router as contracts_router
 from src.dashboard.controller import router as dashboard_router
 from src.obligation.controller import router as obligation_router
@@ -12,8 +20,6 @@ from pydantic import BaseModel
 import uuid
 from datetime import datetime
 
-api_router = APIRouter()
-api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 api_router.include_router(contracts_router, prefix="/contracts", tags=["contracts"])
 api_router.include_router(dashboard_router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(obligation_router, prefix="/obligations", tags=["obligations"])
