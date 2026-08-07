@@ -1,4 +1,6 @@
+import os
 from sqlalchemy.orm import Session
+from fastapi import UploadFile
 from src.entities.contract import Contract
 from src.contracts.models import ContractCreate, ContractUpdate
 
@@ -119,4 +121,25 @@ def restore_contract(db: Session, contract_id: int):
     db.commit()
     db.refresh(contract)
 
+    return contract
+
+
+def upload_contract_file(db: Session, contract_id: int, file: UploadFile):
+    """Upload a PDF file for a contract."""
+    contract = get_contract_by_id(db, contract_id)
+
+    if not contract:
+        return None
+
+    upload_dir = "uploads/contracts"
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    file_path = os.path.join(upload_dir, f"{contract_id}_{file.filename}")
+    with open(file_path, "wb") as buffer:
+        buffer.write(file.file.read())
+        
+    contract.file_path = file_path
+    db.commit()
+    db.refresh(contract)
+    
     return contract

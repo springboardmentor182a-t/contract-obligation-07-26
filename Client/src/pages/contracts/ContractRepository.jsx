@@ -85,7 +85,8 @@ const ContractRepository = () => {
     expiry_date: '',
     owner: '',
     status: 'Active',
-    compliance: 90
+    compliance: 90,
+    contract_file: null
   });
 
   const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api') + '/contracts';
@@ -120,6 +121,10 @@ const ContractRepository = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    setFormData((prev) => ({ ...prev, contract_file: e.target.files[0] }));
   };
 
   // --- CREATE & UPDATE: Combined submit handler ---
@@ -197,7 +202,8 @@ const ContractRepository = () => {
       expiry_date: contract.expiry_date || '',
       owner: contract.owner || '',
       status: contract.status,
-      compliance: isNaN(cleanCompliance) ? 90 : cleanCompliance
+      compliance: isNaN(cleanCompliance) ? 90 : cleanCompliance,
+      contract_file: null
     });
     setIsModalOpen(true);
   };
@@ -208,7 +214,7 @@ const ContractRepository = () => {
     setIsEditing(false);
     setCurrentContractId(null);
     setFormData({
-      title: '', vendor: '', type: 'SaaS License', value: '', effective_date: '', end_date: '', expiry_date: '', owner: '', status: 'Active', compliance: 90
+      title: '', vendor: '', type: 'SaaS License', value: '', effective_date: '', end_date: '', expiry_date: '', owner: '', status: 'Active', compliance: 90, contract_file: null
     });
   };
 
@@ -258,7 +264,8 @@ const ContractRepository = () => {
                 expiry_date: '',
                 owner: '',
                 status: 'Active',
-                compliance: 90
+                compliance: 90,
+                contract_file: null
               });
               setIsModalOpen(true);
             }}
@@ -458,6 +465,11 @@ const ContractRepository = () => {
                     <label className="form-label">Compliance Score (%)</label>
                     <input type="number" name="compliance" min="0" max="100" className="form-input" value={formData.compliance} onChange={handleInputChange} />
                   </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Upload Contract (PDF)</label>
+                  <input type="file" name="contract_file" accept=".pdf" className="form-input" onChange={handleFileChange} />
                 </div>
 
               </div>
