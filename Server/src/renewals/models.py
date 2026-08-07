@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
 
+from src.entities.renewal import RenewalStatus
+
 
 class RenewalBase(BaseModel):
     
@@ -13,7 +15,7 @@ class RenewalBase(BaseModel):
     expiry_date: datetime
     notice_period_days: int = 30
     value: float = 0.0
-    status: str = "Upcoming"
+    status: str = RenewalStatus.UPCOMING.value
     auto_renew: bool = False
 
 

@@ -9,7 +9,7 @@ const getHeaders = () => {
 };
 
 export const getContracts = async () => {
-  const response = await fetch(`${BASE_URL}/contract/contracts`, {
+  const response = await fetch(`${BASE_URL}/contracts/`, {
     method: "GET",
     headers: getHeaders()
   });
@@ -22,7 +22,7 @@ export const getContracts = async () => {
 };
 
 export const getContractById = async (id) => {
-  const response = await fetch(`${BASE_URL}/contract/contracts/${id}`, {
+  const response = await fetch(`${BASE_URL}/contracts/${id}`, {
     method: "GET",
     headers: getHeaders()
   });

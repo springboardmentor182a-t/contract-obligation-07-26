@@ -18,6 +18,9 @@ class NotificationResponse(BaseModel):
     date: datetime
     title: str
     message: str
+    priority: str | None = None
+    priority_score: int | None = None
+    priority_reason: str | None = None
 
     class Config:
         from_attributes = True

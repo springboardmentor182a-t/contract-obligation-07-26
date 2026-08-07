@@ -7,12 +7,12 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_PASSWORD: "siree@3"
       POSTGRES_DB: contract_iq
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
 
   backend:
     build:
@@ -21,7 +21,7 @@ services:
     container_name: contract_iq_backend
     restart: always
     environment:
-      - DATABASE_URL=postgresql+psycopg2://postgres:postgrespassword@db:5432/contract_iq
+      - DATABASE_URL=postgresql+psycopg2://postgres:siree%403@db:5432/contract_iq
       - ALLOWED_ORIGINS=["http://localhost","http://localhost:5173","http://127.0.0.1:5173","http://localhost:80"]
       - DISABLE_CHATBOT_MODEL=true
     ports:
@@ -41,4 +41,4 @@ services:
       - backend
 
 volumes:
-  pgdata:
+  postgres_data:

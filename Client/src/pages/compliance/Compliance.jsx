@@ -59,16 +59,20 @@ const Compliance = () => {
   const refreshDashboardData = async () => {
     if (!isAuthorized) return;
     try {
-      const [summaryRes, trendRes, riskRes] = await Promise.all([
+      const [summaryRes, trendRes, riskRes, anomaliesRes] = await Promise.all([
         fetch(`${API_URL}/compliance/summary`, { headers: { 'X-User-Role': currentRole } }),
         fetch(`${API_URL}/compliance/trend`, { headers: { 'X-User-Role': currentRole } }),
-        fetch(`${API_URL}/compliance/risk-distribution`, { headers: { 'X-User-Role': currentRole } })
+        fetch(`${API_URL}/compliance/risk-distribution`, { headers: { 'X-User-Role': currentRole } }),
+        fetch(`${API_URL}/compliance/anomalies`, { headers: { 'X-User-Role': currentRole } })
       ]);
 
       if (summaryRes.ok && trendRes.ok && riskRes.ok) {
         setSummary(await summaryRes.json());
         setTrend(await trendRes.json());
         setRiskDistribution(await riskRes.json());
+      }
+      if (anomaliesRes.ok) {
+        setAnomalies(await anomaliesRes.json());
       }
 
       if (activeTab === 'AI Anomalies') {
@@ -106,13 +110,14 @@ const Compliance = () => {
     const fetchAnalytics = async () => {
       setLoading(true);
       try {
-        const [summaryRes, trendRes, riskRes] = await Promise.all([
+        const [summaryRes, trendRes, riskRes, anomaliesRes] = await Promise.all([
           fetch(`${API_URL}/compliance/summary`, { headers: { 'X-User-Role': currentRole } }),
           fetch(`${API_URL}/compliance/trend`, { headers: { 'X-User-Role': currentRole } }),
-          fetch(`${API_URL}/compliance/risk-distribution`, { headers: { 'X-User-Role': currentRole } })
+          fetch(`${API_URL}/compliance/risk-distribution`, { headers: { 'X-User-Role': currentRole } }),
+          fetch(`${API_URL}/compliance/anomalies`, { headers: { 'X-User-Role': currentRole } })
         ]);
 
-        if (!summaryRes.ok || !trendRes.ok || !riskRes.ok) {
+        if (!summaryRes.ok || !trendRes.ok || !riskRes.ok || !anomaliesRes.ok) {
           if (summaryRes.status === 403) {
             throw new Error("Access Denied: You do not have permission to view compliance analytics.");
           }
@@ -122,10 +127,12 @@ const Compliance = () => {
         const summaryData = await summaryRes.json();
         const trendData = await trendRes.json();
         const riskData = await riskRes.json();
+        const anomaliesData = await anomaliesRes.json();
 
         setSummary(summaryData);
         setTrend(trendData);
         setRiskDistribution(riskData);
+        setAnomalies(anomaliesData || []);
       } catch (err) {
         console.error("Failed to load compliance analytics:", err);
         setError(err.message);
@@ -476,8 +483,44 @@ const Compliance = () => {
           ))}
         </div>
 
-        <div className="comp-table-card">
-          {activeTab !== 'AI Anomalies' && (
+        {activeTab === 'AI Anomalies' ? (
+          <div className="comp-anomalies-section animate-slide-up">
+            <div className="anomalies-header">
+              <div className="anomalies-title-block">
+                <h3>Detected System Anomalies</h3>
+                <p className="text-muted">Real-time background scanning for data inconsistencies, outlier values, and audit risks.</p>
+              </div>
+              <span className="anomalies-count-badge">{anomalies.length} Alerts</span>
+            </div>
+
+            <div className="anomalies-list-grid">
+              {anomalies.map((anm) => (
+                <div key={anm.id} className={`anomaly-card severity-${anm.severity.toLowerCase()}`}>
+                  <div className="anomaly-card-header">
+                    <span className={`severity-tag tag-${anm.severity.toLowerCase()}`}>{anm.severity} Severity</span>
+                    <span className="anomaly-category">{anm.category}</span>
+                  </div>
+                  <div className="anomaly-card-body">
+                    <h4 className="anomaly-contract-title">{anm.contractTitle}</h4>
+                    <p className="anomaly-description">{anm.description}</p>
+                  </div>
+                  <div className="anomaly-card-footer">
+                    <span className="anomaly-contract-id">Contract ID: {anm.contractId}</span>
+                  </div>
+                </div>
+              ))}
+
+              {anomalies.length === 0 && (
+                <div className="anomalies-empty-state">
+                  <ShieldCheck size={48} className="empty-shield" />
+                  <h4>No anomalies detected!</h4>
+                  <p>Your contract repository is fully compliant and consistent. Background scanning is running.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="comp-table-card">
             <div className="comp-table-toolbar">
               <div className="comp-search-wrapper">
                 <Search size={18} className="search-icon" />
@@ -490,61 +533,7 @@ const Compliance = () => {
               </div>
               <Button variant="outline" icon={Filter}>Filters</Button>
             </div>
-          )}
 
-          {activeTab === 'AI Anomalies' ? (
-            <div className="comp-table-container">
-              <table className="comp-data-table">
-                <thead>
-                  <tr>
-                    <th>Anomaly ID</th>
-                    <th>Contract Details</th>
-                    <th>Anomaly Type</th>
-                    <th>Severity</th>
-                    <th>Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {anomalies.map((item, index) => (
-                    <tr key={item.id} className="comp-table-row" style={{ animationDelay: `${index * 0.05}s` }}>
-                      <td style={{ fontWeight: '600', color: '#ef4444' }}>
-                        {item.id}
-                      </td>
-                      <td>
-                        <div className="entity-name" style={{ fontWeight: '500' }}>{item.contractTitle}</div>
-                        <div className="req-category">ID: {item.contractId}</div>
-                      </td>
-                      <td>
-                        <span className="status-pill status-warning" style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}>{item.category}</span>
-                      </td>
-                      <td>
-                        {item.severity === 'Critical' ? (
-                          <span className="status-pill status-danger" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><AlertOctagon size={14} /> Critical</span>
-                        ) : item.severity === 'High' ? (
-                          <span className="status-pill status-danger">High</span>
-                        ) : item.severity === 'Medium' ? (
-                          <span className="status-pill status-warning">Medium</span>
-                        ) : (
-                          <span className="status-pill status-success">Low</span>
-                        )}
-                      </td>
-                      <td style={{ color: '#4b5563', fontSize: '0.9rem', paddingRight: '1rem', lineHeight: '1.4' }}>
-                        {item.description}
-                      </td>
-                    </tr>
-                  ))}
-                  {anomalies.length === 0 && (
-                    <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
-                        <ShieldCheck size={40} style={{ color: '#10b981', marginBottom: '0.5rem', display: 'block', margin: '0 auto' }} />
-                        No anomalies detected. Your contracts are fully compliant!
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          ) : (
             <div className="comp-table-container">
               <table className="comp-data-table">
                 <thead>
@@ -573,7 +562,7 @@ const Compliance = () => {
                       </td>
                       <td>
                         <div className="health-score-cell">
-                          <span className={`score-text ${item.score < 50 ? 'text-danger' : item.score < 80 ? 'text-warning' : 'text-success'}`}>{item.score}/100</span>
+                           <span className={`score-text ${item.score < 50 ? 'text-danger' : item.score < 80 ? 'text-warning' : 'text-success'}`}>{item.score}/100</span>
                           <div className="mini-progress-bg">
                             <div className={`mini-progress-fill ${item.score < 50 ? 'bg-danger' : item.score < 80 ? 'bg-warning' : 'bg-success'}`} style={{ width: `${item.score}%` }}></div>
                           </div>
@@ -595,8 +584,8 @@ const Compliance = () => {
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Initiate Audit Modal Overlay */}

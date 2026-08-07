@@ -19,7 +19,6 @@ class Setting(BaseSettings):
     ALGORITHM: str = ""
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
-
     # Send Mail
     EMAIL_BACKEND: str = ""
     EMAIL_HOST: str = ""

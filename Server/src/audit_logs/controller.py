@@ -16,6 +16,8 @@ from src.audit_logs.service import (
     seed_audit_data,
     serialize_log,
     summary,
+    query_activities,
+    serialize_activity,
 )
 
 router = APIRouter(prefix="/audit_logs", tags=["Audit Logs"])
@@ -50,6 +52,18 @@ def get_admin_audit_logs(
         for log in query_logs(
             prepared_db(db), search, category, entity_type, status, start_date, end_date
         ).all()
+    ]
+
+
+@router.get("/activities")
+def get_activities(
+    limit: int = 50,
+    current_user: User = Depends(admin_required),
+    db: Session = Depends(get_db),
+):
+    return [
+        serialize_activity(activity)
+        for activity in query_activities(prepared_db(db), limit)
     ]
 
 

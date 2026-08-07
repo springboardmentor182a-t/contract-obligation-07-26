@@ -10,8 +10,12 @@ const getHeaders = () => {
   };
 };
 
-export const getUserNotifications = async () => {
-  const response = await fetch(`${BASE_URL}/notification/notifications`, {
+export const getUserNotifications = async (priority = null) => {
+  let url = `${BASE_URL}/notification/notifications`;
+  if (priority && priority !== "All") {
+    url += `?priority=${priority}`;
+  }
+  const response = await fetch(url, {
     method: "GET",
     headers: getHeaders()
   });
@@ -23,6 +27,18 @@ export const getUserNotifications = async () => {
   return data;
 };
 
+export const getNotificationSummary = async () => {
+  const response = await fetch(`${BASE_URL}/notification/notifications/summary`, {
+    method: "GET",
+    headers: getHeaders()
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    if (response.status === 404) return { critical: 0, high: 0, medium: 0, low: 0 };
+    throw new Error(data.detail || data.message || "Failed to fetch summary");
+  }
+  return data;
+};
 export const getAdminNotifications = async () => {
 
   const response = await fetch(`${BASE_URL}/notification/admin_notifications`, {

@@ -12,7 +12,6 @@ import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modals/Modal';
 import { API_BASE } from "../../constants";
 import './Renewals.css';
-import '../dashboards/Dashboard.css';
 
 
 
@@ -255,42 +254,42 @@ const Renewals = () => {
     {
       label: 'Upcoming',
       count: summary.upcoming,
-      icon: <Clock size={20} />,
-      color: 'var(--color-warning)',
+      icon: <Clock size={22} />,
+      colorClass: 'rnw-card-upcoming',
       desc: 'Pending renewal'
     },
     {
       label: 'In Progress',
       count: summary.in_progress,
-      icon: <RefreshCw size={20} />,
-      color: 'var(--color-primary)',
+      icon: <RefreshCw size={22} />,
+      colorClass: 'rnw-card-progress',
       desc: 'Under review'
     },
     {
       label: 'Renewed',
       count: summary.renewed,
-      icon: <CheckCircle size={20} />,
-      color: 'var(--color-success)',
+      icon: <CheckCircle size={22} />,
+      colorClass: 'rnw-card-renewed',
       desc: 'Successfully renewed'
     },
     {
       label: 'Expired',
       count: summary.expired,
-      icon: <XCircle size={20} />,
-      color: 'var(--color-danger)',
+      icon: <XCircle size={22} />,
+      colorClass: 'rnw-card-expired',
       desc: 'Past expiry date'
     },
     {
       label: 'Cancelled',
       count: summary.cancelled,
-      icon: <AlertTriangle size={20} />,
-      color: 'var(--color-text-light)',
+      icon: <AlertTriangle size={22} />,
+      colorClass: 'rnw-card-cancelled',
       desc: 'Renewal cancelled'
     },
   ] : [];
 
   return (
-    <div className="dashboard-container fade-in">
+    <div className="renewals-dashboard fade-in">
 
       {/* Header */}
       <div className="rnw-header-section">
@@ -316,22 +315,18 @@ const Renewals = () => {
 
       {/* Stat Cards */}
       {summary && (
-        <div className="stats-grid stagger-1">
+        <div className="rnw-stat-cards">
           {summaryCards.map((card) => (
-            <div key={card.label} className="stat-card">
-              <div className="stat-card-header">
-                <p className="stat-label">{card.label}</p>
-                <div className="stat-icon" style={{ color: card.color, backgroundColor: `${card.color}15` }}>
-                  {card.icon}
-                </div>
-              </div>
-              <div className="stat-content">
-                <h3>{card.count}</h3>
-                <div className="stat-footer">
-                  <span className="stat-subtext">{card.desc}</span>
-                </div>
+
+            <div key={card.label} className={`rnw-stat-card ${card.colorClass}`}>
+              <div className="rnw-stat-icon">{card.icon}</div>
+              <div className="rnw-stat-info">
+                <div className="rnw-stat-count">{card.count}</div>
+                <div className="rnw-stat-label">{card.label}</div>
+                <div className="rnw-stat-desc">{card.desc}</div>
               </div>
             </div>
+
           ))}
         </div>
       )}

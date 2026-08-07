@@ -32,6 +32,7 @@ const Notifications = () => {
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'unread', 'system'
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [selectedNotif, setSelectedNotif] = useState(null);
+  const [priorityFilter, setPriorityFilter] = useState('All');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,7 +43,7 @@ const Notifications = () => {
 
   useEffect(() => {
     fetchNotifications();
-  }, [activeTab]);
+  }, [activeTab, priorityFilter]);
 
   const fetchNotifications = async () => {
     setLoading(true);
@@ -51,7 +52,7 @@ const Notifications = () => {
       if (activeTab === 'system' && isAdmin) {
         data = await getAdminNotifications();
       } else {
-        data = await getUserNotifications();
+        data = await getUserNotifications(priorityFilter);
       }
       setNotifications(data);
     } catch (err) {
@@ -139,6 +140,21 @@ const Notifications = () => {
           )}
         </div>
 
+        <div style={{ padding: '0 2rem 1rem 2rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>Priority:</span>
+          <select 
+            value={priorityFilter} 
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid #ccc', backgroundColor: 'var(--color-bg)', color: 'var(--color-text-dark)' }}
+          >
+            <option value="All">All Priorities</option>
+            <option value="Critical">Critical</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+
         <div className="notif-list-container">
 
           {loading ? (
@@ -176,13 +192,32 @@ const Notifications = () => {
                   <div className="notif-content-block">
 
                     <div className="notif-top-row">
-                      <h4 className="notif-item-title">{notif.title || 'Notification'}</h4>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <h4 className="notif-item-title">{notif.title || 'Notification'}</h4>
+                        {notif.priority && (
+                          <span style={{
+                            backgroundColor: notif.priority === 'Critical' ? '#e74c3c' : notif.priority === 'High' ? '#f39c12' : notif.priority === 'Medium' ? '#f1c40f' : '#2ecc71',
+                            color: '#fff',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold'
+                          }}>
+                            {notif.priority} {notif.priority_score ? `(${notif.priority_score}/100)` : ''}
+                          </span>
+                        )}
+                      </div>
                       <span className="notif-timestamp">
                         <Clock size={12} /> {timeStr}
                       </span>
                     </div>
 
                     <p className="notif-item-message">{notif.message}</p>
+                    {notif.priority_reason && (
+                      <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '4px', fontStyle: 'italic' }}>
+                        AI Reason: {notif.priority_reason}
+                      </p>
+                    )}
 
                     <div className="notif-hover-actions">
                       {!isRead && (

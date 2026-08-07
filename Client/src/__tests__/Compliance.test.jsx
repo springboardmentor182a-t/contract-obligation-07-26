@@ -54,6 +54,22 @@ describe('Compliance Dashboard Frontend Tests', () => {
           json: () => Promise.resolve({ high: 3, medium: 5, low: 2 })
         });
       }
+      if (url.includes('/compliance/anomalies')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve([
+            {
+              id: 'ANM-APP-3',
+              contractId: 3,
+              contractTitle: 'Beta Inc (Service Agreements)',
+              category: 'Missing Approval',
+              severity: 'Critical',
+              description: "Contract is marked as 'Active' but does not have an approval timestamp."
+            }
+          ])
+        });
+      }
       if (url.includes('/compliance/contracts')) {
         return Promise.resolve({
           ok: true,
@@ -101,6 +117,27 @@ describe('Compliance Dashboard Frontend Tests', () => {
     await waitFor(() => {
       expect(screen.getByTestId('mock-line')).toBeInTheDocument();
       expect(screen.getByTestId('mock-doughnut')).toBeInTheDocument();
+    });
+  });
+
+  // Test Case 3: Verifies that AI Anomalies tab renders and displays alerts when clicked
+  it('should render AI Anomalies tab and display anomaly alerts when clicked', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    render(<Compliance />);
+
+    // Wait for initial load
+    await waitFor(() => {
+      expect(screen.getByText('AI Anomalies')).toBeInTheDocument();
+    });
+
+    // Click on the AI Anomalies tab
+    fireEvent.click(screen.getByText('AI Anomalies'));
+
+    // Verify it displays the anomalies title and alert card
+    await waitFor(() => {
+      expect(screen.getByText('Detected System Anomalies')).toBeInTheDocument();
+      expect(screen.getByText('Beta Inc (Service Agreements)')).toBeInTheDocument();
+      expect(screen.getByText('Critical Severity')).toBeInTheDocument();
     });
   });
 });

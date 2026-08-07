@@ -71,8 +71,7 @@ def create_audit_log(db: Session, user_id=None, user_name="System", action="view
     db.refresh(log)
     return log
 
-
-def query_logs(db: Session, search=None, category=None, entity_type=None, status=None, start_date=None, end_date=None):
+def query_logs(db: Session, search=None, category=None, entity_type=None, status=None, start_date=None, end_date=None):
     query = db.query(AuditLog)
     if search:
         term = f"%{search}%"
@@ -80,6 +79,9 @@ def query_logs(db: Session, search=None, category=None, entity_type=None, status
                                  AuditLog.description.ilike(term), AuditLog.entity_id.ilike(term)))
     if category and category != "All":
         query = query.filter(AuditLog.category == category)
+    else:
+        query = query.filter(AuditLog.category != "Activity")
+    
     if entity_type and entity_type != "All":
         query = query.filter(AuditLog.entity_type == entity_type)
     if status and status != "All":
@@ -104,8 +106,9 @@ def serialize_log(log):
 
 def summary(db: Session):
     rows = db.query(AuditLog.category).all()
-    categories = ["Activity", "Contract", "Approval", "Security", "Change"]
-    return {"total": len(rows), "categories": {name: sum(row[0] == name for row in rows) for name in categories}}
+    categories = ["Contract", "Approval", "Security", "Change"]
+    valid_rows = [row for row in rows if row[0] != "Activity"]
+    return {"total": len(valid_rows), "categories": {name: sum(row[0] == name for row in valid_rows) for name in categories}}
 
 
 def seed_audit_data(db: Session):
@@ -158,3 +161,18 @@ def export_logs(logs, report_format):
     for log in logs:
         writer.writerow([log.created_at, log.user_name, log.category, log.entity_type, log.entity_id, log.action, log.description, log.severity])
     return output.getvalue().encode(), "text/csv", "audit-report.csv"
+
+def query_activities(db: Session, limit: int = 50):
+    return db.query(Activity).order_by(Activity.created_at.desc()).limit(limit).all()
+
+def serialize_activity(activity):
+    return {
+        "activity_id": activity.activity_id,
+        "user_id": activity.user_id,
+        "user_name": activity.user_name,
+        "action": activity.action,
+        "description": activity.description,
+        "entity_type": activity.entity_type,
+        "entity_id": activity.entity_id,
+        "created_at": activity.created_at.isoformat() if activity.created_at else None,
+    }

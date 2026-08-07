@@ -33,13 +33,13 @@ class DashboardService:
         six_months_ago = datetime.now(timezone.utc) - timedelta(days=180)
         volume_data = (
             db.query(
-                extract("year", Contract.create_at).label("year"),
-                extract("month", Contract.create_at).label("month"),
+                extract("year", Contract.created_at).label("year"),
+                extract("month", Contract.created_at).label("month"),
                 func.count(Contract.contract_id).label("count"),
             )
-            .filter(Contract.create_at >= six_months_ago)
-            .group_by(extract("year", Contract.create_at), extract("month", Contract.create_at))
-            .order_by(extract("year", Contract.create_at), extract("month", Contract.create_at))
+            .filter(Contract.created_at >= six_months_ago)
+            .group_by(extract("year", Contract.created_at), extract("month", Contract.created_at))
+            .order_by(extract("year", Contract.created_at), extract("month", Contract.created_at))
             .all()
         )
         
@@ -214,16 +214,16 @@ class DashboardService:
         # Portfolio Growth (real cumulative growth over 6 months)
         six_months_ago = datetime.now(timezone.utc) - timedelta(days=180)
         growth_data = db.query(
-            extract("year", Contract.create_at).label("year"),
-            extract("month", Contract.create_at).label("month"),
+            extract("year", Contract.created_at).label("year"),
+            extract("month", Contract.created_at).label("month"),
             func.count(Contract.contract_id).label("count")
-        ).filter(Contract.create_at >= six_months_ago)\
-        .group_by(extract("year", Contract.create_at), extract("month", Contract.create_at))\
-        .order_by(extract("year", Contract.create_at), extract("month", Contract.create_at)).all()
+        ).filter(Contract.created_at >= six_months_ago)\
+        .group_by(extract("year", Contract.created_at), extract("month", Contract.created_at))\
+        .order_by(extract("year", Contract.created_at), extract("month", Contract.created_at)).all()
 
         growth_labels = []
         growth_counts = []
-        cumulative = db.query(Contract).filter(Contract.create_at < six_months_ago).count()
+        cumulative = db.query(Contract).filter(Contract.created_at < six_months_ago).count()
         for g in growth_data:
             month_name = datetime(int(g.year), int(g.month), 1).strftime('%b')
             growth_labels.append(month_name)
