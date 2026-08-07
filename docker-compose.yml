@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "siree@3"
+      POSTGRES_DB: contract_iq
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./Server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # We override the localhost part of DATABASE_URL from .env so it can connect to the db service
+      - DATABASE_URL=postgresql+psycopg2://postgres:siree%403@db:5432/contract_iq
+    env_file:
+      - ./Server/.env
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./Client
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"  # Nginx serves on port 80 internally. We map to 5173 as per ALLOWED_ORIGINS.
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

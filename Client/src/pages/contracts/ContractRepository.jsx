@@ -325,7 +325,7 @@ const ContractRepository = () => {
                     onClick={() => setSelectedContract(item)} 
                     style={{ cursor: 'pointer' }}
                   >
-                    <div className="contract-title" style={{ color: '#1e3a8a', fontWeight: '600' }}>
+                    <div className="contract-title">
                       {item.title}
                     </div>
                     <div className="contract-vendor">{item.vendor}</div>
