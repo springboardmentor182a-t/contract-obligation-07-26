@@ -23,14 +23,14 @@
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
 }
 
 .stat-card {
   background: var(--color-white);
   border-radius: var(--radius-xl);
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
@@ -49,7 +49,7 @@
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 }
 
@@ -57,20 +57,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   width: 100%;
 }
 
 .stat-label {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--color-text-light);
 }
 
 .stat-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,9 +79,9 @@
 }
 
 .stat-trend {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 0.2rem 0.5rem;
+  padding: 0.15rem 0.4rem;
   border-radius: var(--radius-md);
   display: inline-flex;
   align-items: center;
@@ -96,9 +96,9 @@
 }
 
 .stat-content h3 {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.35rem;
   line-height: 1;
   color: var(--color-text-dark);
 }
@@ -106,13 +106,13 @@
 .stat-footer {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
 }
 
 .stat-subtext {
   color: var(--color-text-light);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
