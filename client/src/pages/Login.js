@@ -13,7 +13,8 @@ import {
 import AuthLeftPanel from "../components/AuthLeftPanel";
 import { getDefaultRouteForRole } from "../utils/sidebarPermissions";
 import "../styles/Auth.css";
-
+import { API_BASE } from "../config/api";
+const API_BASE_URL = API_BASE;
 const ROLES = [
   "Administrator",
   "Legal Manager",
@@ -51,7 +52,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

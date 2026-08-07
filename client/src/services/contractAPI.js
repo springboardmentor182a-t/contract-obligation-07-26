@@ -1,9 +1,11 @@
 import axios from "axios";
 
+// const API = axios.create({
+//   baseURL: "/api",
+// });
 const API = axios.create({
-  baseURL: "/api",
+  baseURL: "https://contract-obligation-demo-group-c.onrender.com/api",
 });
-
 // ======================
 // Contract APIs
 // ======================
@@ -75,4 +77,4 @@ export const downloadDocument = (documentId) => {
 export const removeDocument = async (documentId) => {
   const response = await API.delete(`/contracts/documents/${documentId}`);
   return response.data;
-};
+};

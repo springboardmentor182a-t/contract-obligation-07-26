@@ -87,12 +87,12 @@ def update_settings(payload: SettingsUpdate, db: Session = Depends(get_db)):
     db.add(settings)
     db.commit()
     db.refresh(settings)
-
     changed_fields = sorted(
         field
         for field, value in payload.model_dump().items()
         if value is not None
     )
+
     create_audit_log(
         db=db,
         user_id=None,
@@ -122,7 +122,6 @@ def update_gateways(payload: GatewayUpdate, db: Session = Depends(get_db)):
     # Update Database setting for gateways
     db.add(settings)
     db.commit()
-
     create_audit_log(
         db=db,
         user_id=None,
@@ -136,7 +135,10 @@ def update_gateways(payload: GatewayUpdate, db: Session = Depends(get_db)):
         ),
     )
 
-    return {"status": "success", "message": "Gateways configured successfully"}
+    return {
+        "status": "success",
+        "message": "Gateways configured successfully",
+    }
 
 # ── POST /api/settings/security/apikeys ──
 @router.post("/security/apikeys", response_model=ApiKeyResponse)
@@ -154,7 +156,6 @@ def create_api_key(payload: ApiKeyCreate, db: Session = Depends(get_db)):
     db.add(new_key)
     db.commit()
     db.refresh(new_key)
-
     create_audit_log(
         db=db,
         user_id=None,
@@ -166,7 +167,7 @@ def create_api_key(payload: ApiKeyCreate, db: Session = Depends(get_db)):
             f"(ID: {new_key.id}, user ID: {new_key.user_id})"
         ),
     )
-    
+
     return ApiKeyResponse(
         id=new_key.id,
         name=new_key.name,

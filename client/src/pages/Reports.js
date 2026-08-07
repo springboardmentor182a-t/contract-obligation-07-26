@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Reports.css";
 import { DownloadIcon, BarIcon, ShieldIcon, InfoIcon } from "../components/Icons";
-
+import { API_BASE } from "../config/api";
 // Static report template config (UI-only, no DB table)
 const REPORT_TEMPLATES = [
   { title: "Compliance Summary", sub: "Score trend + open flags, last 90 days" },
@@ -20,8 +20,8 @@ export default function Reports() {
     async function fetchMetrics() {
       try {
         const [resMetrics, resVolume] = await Promise.all([
-          fetch("/api/analytics/metrics"),
-          fetch("/api/analytics/monthly-volume")
+          fetch(`${API_BASE}/analytics/metrics`),
+          fetch(`${API_BASE}/analytics/monthly-volume`)
         ]);
         if (resMetrics.ok && resVolume.ok) {
           const metricsData = await resMetrics.json();

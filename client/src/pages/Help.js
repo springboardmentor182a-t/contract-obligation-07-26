@@ -3,7 +3,7 @@ import "./Help.css";
 import {
   SearchIcon, ChevDownIcon, SendIcon, CheckIcon, HelpIcon,
 } from "../components/Icons";
-
+import { API_BASE } from "../config/api";
 // Static help category config (UI-only)
 const HELP_CATEGORIES = [
   { title: "Getting Started", sub: "Initial setup and ingesting contract PDFs" },
@@ -43,7 +43,7 @@ export default function Help() {
   useEffect(() => {
     async function loadFaqs() {
       try {
-        const res = await fetch("/api/faqs");
+        const res = await fetch(`${API_BASE}/faqs`);
         if (res.ok) {
           const data = await res.json();
           setFaqs(data);
@@ -68,7 +68,7 @@ export default function Help() {
     };
 
     try {
-      await fetch("/api/support/tickets", {
+      await fetch(`${API_BASE}/support/tickets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

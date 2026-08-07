@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./Profile.css";
-
+import { API_BASE } from "../config/api";
 import { useUI } from "../context/UIContext";
 import {
   UserIcon, LockIcon, GearIcon, EditIcon, CameraIcon, BellIcon
@@ -90,8 +90,10 @@ export default function Profile() {
     async function loadProfile() {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       try {
-        const res = await fetch("/api/profile", {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        const res = await fetch(`${API_BASE}/profile`, {
+          headers: token
+            ? { Authorization: `Bearer ${token}` }
+            : {},
         });
         if (res.ok) {
           const data = await res.json();
@@ -140,7 +142,7 @@ export default function Profile() {
     storage.setItem("email", user.email);
 
     try {
-      const res = await fetch("/api/profile", {
+        const res = await fetch(`${API_BASE}/profile`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

@@ -6,8 +6,8 @@ import {
 } from "../data/constants";
 import ButtonGroup from "../components/Buttons/ButtonGroup";
 import Checkbox from "../components/Form/Checkbox";
-
-const API_URL = "/api/obligations/";
+import { API_BASE } from "../config/api";
+const API_URL = `${API_BASE}/obligations/`;
 
 const FILTERS = [
   { key: "all", label: "All" },

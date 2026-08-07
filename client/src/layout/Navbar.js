@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUI } from "../context/UIContext";
+import { API_BASE } from "../config/api";
 import {
   ChevRightSmIcon, SearchIcon, MoonIcon, SunIcon, HelpIcon, BellIcon, PlusIcon,
   FileIcon, BarIcon, ChevDownIcon, UserIcon, CalendarIcon,
@@ -84,9 +85,10 @@ export default function Navbar({ onToggleSidebar }) {
   useEffect(() => {
     async function loadNotifs() {
       try {
-        const res = await fetch("/api/notifications");
-        if (res.ok) {
-          const data = await res.json();
+        const response = await fetch(`${API_BASE}/notifications`);
+
+        if (response.ok) {
+          const data = await response.json();
           setNotifPreview(data.slice(0, 3));
         }
       } catch (err) {

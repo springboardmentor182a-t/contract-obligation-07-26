@@ -1,4 +1,4 @@
-import { RefreshCcw, Sparkles } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import SummaryCards from "../components/Renewal/SummaryCards";
@@ -21,13 +21,14 @@ function DashboardHeader({ onRefresh, isLoading }) {
       </div>
 
       <div className="renewal-hero-card__actions">
-        <button type="button" className="btn btn-secondary btn-sm" disabled={isLoading} onClick={onRefresh}>
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          disabled={isLoading}
+          onClick={onRefresh}
+        >
           <RefreshCcw size={18} />
           Refresh
-        </button>
-        <button type="button" className="btn btn-primary">
-          <Sparkles size={17} />
-          AI Renewal Prediction
         </button>
       </div>
     </section>

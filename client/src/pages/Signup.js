@@ -15,7 +15,7 @@ import {
 
 import AuthLeftPanel from "../components/AuthLeftPanel";
 import "../styles/Auth.css";
-
+import { API_BASE } from "../config/api";
 const ROLES = [
   "Administrator",
   "Legal Manager",
@@ -114,7 +114,7 @@ function Signup() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

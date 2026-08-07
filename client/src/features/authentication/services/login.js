@@ -4,6 +4,7 @@
 //     method: "POST", headers: { "Content-Type": "application/json" },
 //     body: JSON.stringify({ email, password }),
 //   });
+import { API_BASE } from "../config/api";
 export async function login(email, password) {
   await new Promise((r) => setTimeout(r, 400));
   if (!email || !password) throw new Error("Enter an email and password.");

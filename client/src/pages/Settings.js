@@ -5,7 +5,7 @@ import {
   PlugIcon, BuildingIcon, BellSmIcon, EditIcon, FileIcon, CheckIcon, DownloadIcon, BriefcaseIcon,
   GearIcon, LockIcon, CreditCardIcon, UsersIcon, MoonIcon, SunIcon, PlusIcon, KeyIcon
 } from "../components/Icons";
-
+import { API_BASE } from "../config/api";
 // Static integrations config (UI-only — list of available integration providers)
 const INTEGRATIONS_LIST = [
   { key: "salesforce", name: "Salesforce CRM", desc: "Sync contract records", color: "#3B82F6" },
@@ -79,10 +79,10 @@ export default function Settings() {
     async function loadData() {
       try {
         const [resSettings, resInvites, resApiKeys, resInvoices] = await Promise.all([
-          fetch("/api/settings"),
-          fetch("/api/users/invitations"),
-          fetch("/api/settings/security/apikeys"),
-          fetch("/api/billing/invoices")
+          fetch(`${API_BASE}/settings`),
+          fetch(`${API_BASE}/users/invitations`),
+          fetch(`${API_BASE}/settings/security/apikeys`),
+          fetch(`${API_BASE}/billing/invoices`)
         ]);
         if (resSettings.ok) {
           const data = await resSettings.json();
@@ -143,7 +143,7 @@ export default function Settings() {
       Database mapping: Updates "user_settings" table row matching user_id = 1
     */
     try {
-      await fetch("/api/settings", {
+      await fetch(`${API_BASE}/settings`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -177,7 +177,7 @@ export default function Settings() {
       Database mapping: Updates settings database flags and triggers dispatcher service to reload settings.
     */
     try {
-      await fetch("/api/settings/notifications/gateways", {
+      await fetch(`${API_BASE}/settings/notifications/gateways`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -210,7 +210,7 @@ export default function Settings() {
       Database mapping: Updates "users" password_hash field where id = 1
     */
     try {
-      await fetch("/api/profile/security/password", {
+      await fetch(`${API_BASE}/profile/security/password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -239,7 +239,7 @@ export default function Settings() {
       Database mapping: INSERTS into "api_keys" table containing: id, name, key_hash, created_at, user_id
     */
     try {
-      const res = await fetch("/api/settings/security/apikeys", {
+      const res = await fetch(`${API_BASE}/settings/security/apikeys`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -308,7 +308,7 @@ export default function Settings() {
       Database mapping: INSERTS into "user_invitations" table.
     */
     try {
-      const res = await fetch("/api/users/invite", {
+      const res = await fetch(`${API_BASE}/users/invite`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
