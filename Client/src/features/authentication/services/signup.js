@@ -23,10 +23,13 @@ export const signupService = async (userData) => {
 
     console.log(payload);
 
+    const token = localStorage.getItem("access_token");
+
     const response = await fetch(`${BASE_URL}/auth/register`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify(payload)
     });

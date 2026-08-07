@@ -74,15 +74,15 @@ def contract_graph(
 ):
     data = (
         db.query(
-            extract("year", Contract.create_at).label("year"),
-            extract("quarter", Contract.create_at).label("quarter"),
-            func.sum(Contract.contract_value).label("total"),
+            extract("year", Contract.created_at).label("year"),
+            extract("quarter", Contract.created_at).label("quarter"),
+            func.sum(Contract.value).label("total"),
         )
         .group_by(
-            extract("year", Contract.create_at), extract("quarter", Contract.create_at)
+            extract("year", Contract.created_at), extract("quarter", Contract.created_at)
         )
         .order_by(
-            extract("year", Contract.create_at), extract("quarter", Contract.create_at)
+            extract("year", Contract.created_at), extract("quarter", Contract.created_at)
         )
         .all()
     )
