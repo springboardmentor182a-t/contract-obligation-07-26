@@ -9,7 +9,7 @@ from src.users.controller import router as users_router
 from src.contracts.controller import router as contracts_router
 from src.calendar.controller import router as calendar_router
 from src.renewals.controller import router as renewals_router
-
+from src.tasks.controller import router as tasks_router
 from pydantic import BaseModel
 from datetime import date, datetime, timedelta 
 from typing import Optional 
@@ -32,7 +32,7 @@ app.include_router(users_router, prefix="/api/v1", tags=["Users"])
 app.include_router(contracts_router, prefix="/api/v1", tags=["Contracts"])
 app.include_router(calendar_router, prefix="/api/v1", tags=["Calendar"])
 app.include_router(renewals_router, prefix="/api/v1", tags=["Renewals"])
-
+app.include_router(tasks_router, prefix="/api/v1", tags=["Tasks"])
 class ContractCreate(BaseModel):
     name: str
     party: str
@@ -72,10 +72,10 @@ def get_dashboard_data(db: Session = Depends(get_db)):
         "deadlines": [{"title": d.title, "date": d.date} for d in deadlines],
         "contracts": [{
             "id": c.id, 
-            "name": c.name, 
-            "party": c.party, 
-            "company": c.company or c.party,
-            "contract": c.contract or c.name, 
+            "name": c.contract,
+            "party": c.company, 
+            "company": c.company or c.company,
+            "contract": c.contract or c.contract, 
             "category": c.category or "General", 
             "owner": c.owner or "System",
             "status": c.status, 
@@ -271,8 +271,7 @@ def get_documents_data(db: Session = Depends(get_db)):
             doc_date = datetime.strptime(d.date, "%b %d, %Y")
             if (datetime.now() - doc_date).days <= 7: recently_added += 1
         except: pass 
-            
-    expiring_soon_contracts = [c.name for c in contracts if c.status == "Expiring Soon"]
+    expiring_soon_contracts = [c.contract for c in contracts if c.status == "Expiring Soon"]
     expiring_soon_docs = sum(1 for d in docs if d.contract_name in expiring_soon_contracts)
     
     table_data = [{
@@ -282,7 +281,7 @@ def get_documents_data(db: Session = Depends(get_db)):
         "date": d.date, "time": d.time, "size": d.size, "parentId": d.parent_id
     } for d in docs]
 
-    formatted_contracts = [{"contractId": f"CON-{datetime.now().year}-{c.id:03d}", "name": c.name} for c in contracts]
+    formatted_contracts = [{"contractId": f"CON-{datetime.now().year}-{c.id:03d}", "name": c.cntract} for c in contracts]
     
     db_users = [u.name for u in users if u.name]
     doc_users = [d.uploader for d in docs if d.uploader]

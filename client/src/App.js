@@ -12,6 +12,8 @@ import AddUser from "./pages/AddUser";
 import Documents from './pages/Documents';
 import Notifications from './pages/Notifications';
 import Obligations from "./pages/Obligations";
+import Tasks from "./pages/Tasks";
+
 import ContractRepository from './pages/ContractRepository/ContractRepository';
 import ContractDetails from './pages/ContractDetails/ContractDetails';
 import AddContract from './pages/AddContract/AddContract';
@@ -26,14 +28,18 @@ function App() {
         <Routes>
           {/* Default Redirect */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+          <Route path="/dashboard" element={<Home />} />
+          <Route path="/renewals" element={<Renewals />} />
+          <Route path="/calendar" element={<Calendar />} />
           
           {/* Core Dashboards */}
           <Route path="/dashboard" element={<Home />} />
           <Route path="/renewals" element={<Renewals />} />
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/reports" element={<Reports />} />
-          <Route path="/calendar" element={<Calendar />} />
           <Route path="/obligations" element={<Obligations />} />
+          <Route path="/tasks" element={<Tasks />} />
           <Route path="/documents" element={<Documents />} /> 
           <Route path="/notifications" element={<Notifications />} />
 
@@ -46,6 +52,9 @@ function App() {
           {/* User Management */}
           <Route path="/users" element={<UserManagement />} />
           <Route path="/add-user" element={<AddUser />} />
+
+          <Route path="/documents" element={<Documents />} />
+
           
           {/* Authentication & Settings */}
           <Route path="/login" element={<Login />} />
