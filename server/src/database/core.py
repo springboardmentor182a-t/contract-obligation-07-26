@@ -69,12 +69,25 @@ def initialize_database():
         connect_args=connect_args,
     )
 
-    # Create session factory FIRST
+    # Create session factory
     SessionLocal = sessionmaker(
         autocommit=False,
         autoflush=False,
         bind=engine,
     )
+
+    # Ensure all models are registered
+    try:
+        import src.database.models
+        import src.contract_repository.models
+        import src.renewals.models
+    except Exception as e:
+        print("Warning importing models:", e)
+
+    # SQLite doesn't support schemas
+    if database_url.startswith("sqlite"):
+        for table in list(Base.metadata.tables.values()):
+            table.schema = None
 
     # Create tables
     try:
