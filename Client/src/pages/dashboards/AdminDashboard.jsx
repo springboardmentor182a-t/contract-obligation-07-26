@@ -36,7 +36,7 @@ import FormSelect from '../../components/Form/FormSelect';
 import SignupForm from '../../features/authentication/components/SignupForm';
 import { signupService } from '../../features/authentication/services/signup';
 import { getAllUsers } from '../../features/authentication/services/getAllUsers';
-import { getAuditLogs } from '../../features/auditLogs/services/getAuditLogs';
+import { getAuditLogs, getActivities } from '../../features/auditLogs/services/getAuditLogs';
 import { getUserNotifications, getNotificationSummary } from '../../features/notifications/services/notificationAPI';
 import './Dashboard.css';
 
@@ -61,6 +61,7 @@ const AdminDashboard = () => {
 
   const [users, setUsers] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [notifSummary, setNotifSummary] = useState({ critical: 0, high: 0, medium: 0, low: 0 });
   const [loading, setLoading] = useState(true);
@@ -72,14 +73,16 @@ const AdminDashboard = () => {
 
       setLoading(true);
       try {
-        const [usersData, logsData, notifsData, summaryData] = await Promise.all([
+        const [usersData, logsData, activitiesData, notifsData, summaryData] = await Promise.all([
           getAllUsers().catch(() => []),
           getAuditLogs().catch(() => []),
+          getActivities(10).catch(() => []),
           getUserNotifications().catch(() => []),
           getNotificationSummary().catch(() => ({ critical: 0, high: 0, medium: 0, low: 0 }))
         ]);
         setUsers(usersData);
         setAuditLogs(logsData);
+        setActivities(activitiesData);
         setNotifications(notifsData);
         setNotifSummary(summaryData);
       } catch (err) {
@@ -244,22 +247,19 @@ const AdminDashboard = () => {
     }
   };
 
-  const dynamicActivities = auditLogs
-
-    .sort((a, b) => new Date(b.created_at || b.timestamp) - new Date(a.created_at || a.timestamp))
-    .slice(0, 10)
+  const dynamicActivities = activities
     .map(log => ({
-      id: log.audit_id || log.id || Math.random(),
-      user: log.user_name || log.user || 'System',
-      avatar: (log.user_name || log.user || 'SY').substring(0, 2).toUpperCase(),
+      id: log.activity_id || Math.random(),
+      user: log.user_name || 'System',
+      avatar: (log.user_name || 'SY').substring(0, 2).toUpperCase(),
       action: log.action || 'Performed action',
-      target: log.resource || log.module || '',
-      time: log.created_at || log.timestamp ? new Date(log.created_at || log.timestamp).toLocaleString() : 'Recently',
-      status: log.status || 'Success',
-      type: (log.status || '').toLowerCase().includes('error') ? 'danger' : (log.status || '').toLowerCase().includes('warning') ? 'warning' : 'success'
+      target: log.entity_type || '',
+      time: log.created_at ? new Date(log.created_at).toLocaleString() : 'Recently',
+      status: 'Recorded',
+      type: 'info'
     }));
 
-  const displayedActivities = dynamicActivities.slice(0, 4);
+  const displayedActivities = dynamicActivities.slice(0, 5);
 
   return (
     <div className="dashboard-container fade-in">
@@ -433,7 +433,7 @@ const AdminDashboard = () => {
           <div className="dashboard-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <div className="flex items-center gap-2">
               <Activity size={20} className="text-primary" />
-              <h3 style={{ margin: 0 }}>Recent Audit Logs</h3>
+              <h3 style={{ margin: 0 }}>Recent Activity Logs</h3>
             </div>
             <Button variant="outline" size="sm" onClick={() => navigate('/audit-logs')}>
               View All

@@ -15,6 +15,6 @@ try:
         trust_remote_code=True,
     )
     model.eval()
-except OSError as e:
+except Exception as e:
     print(f"Warning: Failed to load model due to memory constraints. {e}")
     model = None

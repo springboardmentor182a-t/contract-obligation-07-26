@@ -18,6 +18,7 @@ from src.entities.compliance import Compliance
 from src.reports_analytics.generate_pdf import create_pdf
 from src.reports_analytics.generate_csv import create_csv
 from src.reports_analytics.models import ReportRequest, ReportResponse
+from src.audit_logs.service import create_audit_log
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
 
@@ -230,8 +231,21 @@ async def generate_report(
 
 
 @router.get("/download-report/{filename}")
-def download_report(filename: str, current_user: User = Depends(admin_required)):
+def download_report(
+    filename: str, 
+    current_user: User = Depends(admin_required),
+    db: Session = Depends(get_db)
+):
     if os.path.exists(filename):
+        create_audit_log(
+            db=db,
+            user_id=current_user.user_id,
+            user_name=current_user.full_name,
+            status="success",
+            action="download report",
+            module="Reports",
+            description=f"User downloaded report: {filename}",
+        )
         return FileResponse(
             path=filename, filename=filename, media_type="application/pdf"
         )
