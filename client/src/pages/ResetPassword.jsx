@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import '../assets/theme.css';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
