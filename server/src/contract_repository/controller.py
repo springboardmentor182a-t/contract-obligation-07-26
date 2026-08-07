@@ -102,6 +102,7 @@ def update_contract(
             detail="Contract not found",
         )
 
+    previous_status = contract.status
     update_data = payload.model_dump(exclude_unset=True)
 
     for key, value in update_data.items():
@@ -112,13 +113,39 @@ def update_contract(
 
     db.commit()
     db.refresh(contract)
+
+    status_changed = (
+        "status" in update_data
+        and previous_status != contract.status
+    )
+    normalized_status = (contract.status or "").strip().lower()
+
+    if status_changed and normalized_status == "approved":
+        event_type = "APPROVE"
+        action = "Contract Approved"
+        description = (
+            f"Approved contract: {contract.contract_name} "
+            f"(ID: {contract.id}, previous status: {previous_status})"
+        )
+    elif status_changed and normalized_status == "rejected":
+        event_type = "REJECT"
+        action = "Contract Rejected"
+        description = (
+            f"Rejected contract: {contract.contract_name} "
+            f"(ID: {contract.id}, previous status: {previous_status})"
+        )
+    else:
+        event_type = "UPDATE"
+        action = "Contract Updated"
+        description = f"Updated contract: {contract.contract_name}"
+
     create_audit_log(
         db=db,
         user_id=None,
-        event_type="UPDATE",
-        action="Contract Updated",
+        event_type=event_type,
+        action=action,
         module="Contract Repository",
-        description=f"Updated contract: {contract.contract_name}",
+        description=description,
     )
 
     return contract

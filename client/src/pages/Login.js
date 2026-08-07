@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import AuthLeftPanel from "../components/AuthLeftPanel";
+import { getDefaultRouteForRole } from "../utils/sidebarPermissions";
 import "../styles/Auth.css";
 
 const ROLES = [
@@ -83,6 +84,15 @@ function Login() {
         return;
       }
 
+      const authenticatedRole = data.role || role;
+      const defaultRoute = getDefaultRouteForRole(authenticatedRole);
+
+      if (!defaultRoute) {
+        setMessage("This account role is not configured for application access.");
+        setMessageType("error");
+        return;
+      }
+
       localStorage.removeItem("token");
       localStorage.removeItem("role");
       localStorage.removeItem("name");
@@ -96,14 +106,14 @@ function Login() {
       const storage = remember ? localStorage : sessionStorage;
 
       storage.setItem("token", data.access_token);
-      storage.setItem("role", data.role || role);
+      storage.setItem("role", authenticatedRole);
       storage.setItem("name", data.name || "ContractIQ User");
       storage.setItem("email", email.trim());
 
       setMessage("Login successful. Redirecting...");
       setMessageType("success");
 
-      navigate("/dashboard");
+      navigate(defaultRoute);
     } catch (error) {
       console.error("Login error:", error);
 
