@@ -9,6 +9,8 @@ import RenewalForm from "../components/Renewal/RenewalForm";
 import { getDashboard, createRenewal } from "../services/renewalAPI";
 import "../styles/renewal-dashboard.css";
 
+import AIForecast from "../components/AIForecast";
+
 function DashboardHeader({ onRefresh, isLoading }) {
   return (
     <section className="renewal-hero-card">
@@ -120,6 +122,7 @@ export default function RenewalDashboard() {
             />
           </div>
           <ExpiringContracts data={dashboard?.contracts} />
+          <AIForecast />
         </>
       )}
     </div>
