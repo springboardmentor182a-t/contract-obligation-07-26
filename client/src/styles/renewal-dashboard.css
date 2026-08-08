@@ -939,9 +939,39 @@
 
 /* Prediction bars */
 [data-theme="dark"] .progress-track  { background: #1E2D40; }
-[data-theme="dark"] .prediction-card { background: #0D1828; border-color: #1E2D40; }
+[data-theme="dark"] .prediction-card { background: #0F172A; border-color: #1E293B; }
 [data-theme="dark"] .prediction-name { color: #F1F5F9; }
 [data-theme="dark"] .prediction-meta { color: #94A3B8; }
+
+[data-theme="dark"] .prediction-item {
+  background: #162032 !important;
+  border-color: #26354A !important;
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .prediction-item__meta {
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .prediction-item__label {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .prediction-subtitle {
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .contract-item__title {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .contract-item__subtitle {
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .contract-row__details {
+  color: #CBD5E1 !important;
+}
 
 /* Top navbar (renewal page) */
 [data-theme="dark"] .top-navbar {
@@ -1065,4 +1095,51 @@
   border-top: 1px solid #ddd6fe;
   font-size: 13px;
   color: #64748b;
+}
+
+/* ==========================================
+   AI RENEWAL STRATEGY — DARK MODE OVERRIDES
+   ========================================== */
+[data-theme="dark"] .contract-ai-panel {
+  background: #131C2E !important;
+  border: 1px solid rgba(139, 92, 246, 0.4) !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .contract-ai-panel--error {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #FCA5A5 !important;
+}
+
+[data-theme="dark"] .contract-ai-panel__eyebrow {
+  color: #A78BFA !important;
+}
+
+[data-theme="dark"] .contract-ai-panel__title {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .contract-ai-panel__confidence {
+  background: rgba(139, 92, 246, 0.25) !important;
+  color: #C4B5FD !important;
+}
+
+[data-theme="dark"] .contract-ai-panel__meta,
+[data-theme="dark"] .contract-ai-panel__section h5,
+[data-theme="dark"] .contract-ai-panel__section li,
+[data-theme="dark"] .contract-ai-panel__notice {
+  color: #CBD5E1 !important;
+  border-top-color: #1E2D40 !important;
+}
+
+[data-theme="dark"] .contract-row__button--ai {
+  background: rgba(139, 92, 246, 0.2) !important;
+  color: #C4B5FD !important;
+  border-color: rgba(139, 92, 246, 0.4) !important;
+}
+
+[data-theme="dark"] .contract-row__button--ai:hover {
+  background: rgba(139, 92, 246, 0.35) !important;
 }
