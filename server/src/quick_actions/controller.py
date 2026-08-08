@@ -1,13 +1,31 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.future import select
 from sqlalchemy.orm import Session, selectinload
+from sqlalchemy import select
 from pydantic import BaseModel, ConfigDict
-from typing import List
+from typing import List, Optional
+from jose import JWTError, jwt as jose_jwt
+from fastapi.security import OAuth2PasswordBearer
+
+from src.auth.jwt import SECRET_KEY, ALGORITHM
 from src.audit.service import create_audit_log
 from src.database.core import get_db
 from src.database.models import QuickAction, QuickActionLog
 
 router = APIRouter(prefix="/quick-actions", tags=["Quick Actions"])
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+
+
+def _get_user_id(token: Optional[str]) -> int:
+    if token:
+        try:
+            payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            uid = int(payload.get("sub", 0))
+            if uid:
+                return uid
+        except (JWTError, ValueError):
+            pass
+    return 1
+
 
 class QuickActionResponse(BaseModel):
     id: str
@@ -18,70 +36,76 @@ class QuickActionResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class QuickActionLogResponse(BaseModel):
     id: int
     label: str
     time: str
     status: str
 
+
 class ExecutePayload(BaseModel):
     action_id: str
 
+
 @router.get("", response_model=List[QuickActionResponse])
 def list_quick_actions(db: Session = Depends(get_db)):
-    result = db.execute(select(QuickAction).order_by(QuickAction.id.asc()))
-    items = result.scalars().all()
+    items = db.execute(select(QuickAction).order_by(QuickAction.id.asc())).scalars().all()
     return [
         QuickActionResponse(
             id=item.id,
             label=item.label,
-            desc=item.description,
-            icon=item.icon,
-            color=item.color
+            desc=item.description or "",
+            icon=item.icon or "Zap",
+            color=item.color or "#3B82F6"
         )
         for item in items
     ]
 
+
 @router.get("/logs", response_model=List[QuickActionLogResponse])
 def get_logs(db: Session = Depends(get_db)):
-    result = db.execute(
+    items = db.execute(
         select(QuickActionLog)
         .options(selectinload(QuickActionLog.action))
         .order_by(QuickActionLog.id.desc())
         .limit(8)
-    )
-    items = result.scalars().all()
-    
+    ).scalars().all()
+
     return [
         QuickActionLogResponse(
             id=item.id,
             label=item.action.label if item.action else "Unknown Action",
-            time="Just now" if (func_now_diff := True) else item.executed_at.strftime("%H:%M"),
+            time="Just now",
             status=item.status
         )
         for item in items
     ]
 
+
 @router.post("/execute", response_model=QuickActionLogResponse)
-def execute_action(payload: ExecutePayload, db: Session = Depends(get_db)):
-    # Verify action exists
-    result = db.execute(select(QuickAction).where(QuickAction.id == payload.action_id))
-    action = result.scalars().first()
+def execute_action(
+    payload: ExecutePayload,
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    user_id = _get_user_id(token)
+    action = db.execute(select(QuickAction).where(QuickAction.id == payload.action_id)).scalars().first()
     if not action:
         raise HTTPException(status_code=404, detail="Quick Action workflow not found")
 
-    # Log execution
     log = QuickActionLog(
         quick_action_id=payload.action_id,
-        user_id=1,
+        user_id=user_id,
         status="Success"
     )
     db.add(log)
     db.commit()
     db.refresh(log)
+
     create_audit_log(
         db=db,
-        user_id=None,
+        user_id=user_id,
         event_type="CREATE",
         action="Quick Action Executed",
         module="Quick Actions",
@@ -98,3 +122,4 @@ def execute_action(payload: ExecutePayload, db: Session = Depends(get_db)):
         time="Just now",
         status=log.status
     )
+
