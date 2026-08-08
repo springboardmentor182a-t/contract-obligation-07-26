@@ -12,6 +12,7 @@ import {
 
 import AuthLeftPanel from "../components/AuthLeftPanel";
 import { getDefaultRouteForRole } from "../utils/sidebarPermissions";
+import { useUI } from "../context/UIContext";
 import "../styles/Auth.css";
 import { API_BASE } from "../config/api";
 const API_BASE_URL = API_BASE;
@@ -26,6 +27,7 @@ const ROLES = [
 
 function Login() {
   const navigate = useNavigate();
+  const { refreshUser } = useUI();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -77,23 +79,8 @@ function Login() {
         return;
       }
 
-      if (data.role && data.role !== role) {
-        setMessage(
-          `This account belongs to the ${data.role} role. Please select the correct role.`
-        );
-        setMessageType("error");
-        return;
-      }
-
       const authenticatedRole = data.role || role;
-      const defaultRoute = getDefaultRouteForRole(authenticatedRole);
-
-      if (!defaultRoute) {
-        setMessage("This account role is not configured for application access.");
-        setMessageType("error");
-        return;
-      }
-
+      const defaultRoute = getDefaultRouteForRole(authenticatedRole) || "/dashboard";
       localStorage.removeItem("token");
       localStorage.removeItem("role");
       localStorage.removeItem("name");
@@ -114,8 +101,13 @@ function Login() {
       setMessage("Login successful. Redirecting...");
       setMessageType("success");
 
-      navigate(defaultRoute);
+      if (refreshUser) {
+        await refreshUser();
+      }
+
+      navigate(defaultRoute || "/dashboard");
     } catch (error) {
+
       console.error("Login error:", error);
 
       setMessage(
