@@ -47,14 +47,11 @@ const Sidebar = () => {
             </Link>
           </li>
 
-          {/* NEW RENEWALS MENU */}
           <li className={location.pathname === '/renewals' ? 'active' : ''}>
             <Link to="/renewals" style={linkStyle}>
               Renewals
             </Link>
           </li>
-
-         
 
           <li className={location.pathname === '/calendar' ? 'active' : ''}>
             <Link to="/calendar" style={linkStyle}>Calendar</Link>
@@ -90,6 +87,13 @@ const Sidebar = () => {
             </Link>
           </li>
 
+          {/* --- NEW: Help & Support Link --- */}
+          <li className={location.pathname === '/support' ? 'active' : ''}>
+            <Link to="/support" style={linkStyle}>
+              Help & Support
+            </Link>
+          </li>
+
           <li className={location.pathname === '/settings' ? 'active' : ''}>
             <Link to="/settings" style={linkStyle}>
               Settings
@@ -103,20 +107,23 @@ const Sidebar = () => {
           <h4>Need help?</h4>
           <p>We are here to help you anytime</p>
 
-          <button
-            style={{
-              background: '#5f27cd',
-              color: 'white',
-              width: '100%',
-              padding: '10px',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              marginTop: '10px',
-            }}
-          >
-            Manage Plans
-          </button>
+          {/* Pointed this button to the new Support dashboard too */}
+          <Link to="/support" style={{ textDecoration: 'none' }}>
+            <button
+              style={{
+                background: '#5f27cd',
+                color: 'white',
+                width: '100%',
+                padding: '10px',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                marginTop: '10px',
+              }}
+            >
+              Get Support
+            </button>
+          </Link>
         </div>
       </div>
 

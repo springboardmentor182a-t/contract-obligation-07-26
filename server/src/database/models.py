@@ -6,24 +6,19 @@ class Contract(Base):
     __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True, index=True)
-
-    company = Column(String)
-    contract = Column(String)
-    category = Column(String)
-    value = Column(String)
-
-    owner = Column(String)
-    status = Column(String)
-    start_date = Column(Date)
-    end_date = Column(Date)
-    value = Column(Float)
-    department = Column(String, default="General")
-
-    # --- Extended fields merged safely ---
-    company = Column(String, nullable=True)
-    contract = Column(String, nullable=True)
+    
+    # Base fields correctly mapped to 'name' and 'party'
+    name = Column(String, nullable=True)
+    party = Column(String, nullable=True)
     category = Column(String, nullable=True)
     owner = Column(String, nullable=True)
+    status = Column(String, nullable=True)
+    start_date = Column(Date, nullable=True)
+    end_date = Column(Date, nullable=True)
+    value = Column(Float, nullable=True)
+    department = Column(String, default="General")
+
+    # --- Extended fields ---
     compliance = Column(Integer, nullable=True)
     renewal = Column(String, nullable=True)
     days_remaining = Column(Integer, nullable=True)
@@ -113,7 +108,6 @@ class Document(Base):
     time = Column(String)
     size = Column(String, nullable=True)
     
-    # --- NEW: Enables Folder Hierarchy ---
     parent_id = Column(Integer, nullable=True)
 
 class AppNotification(Base):
@@ -123,3 +117,19 @@ class AppNotification(Base):
     message = Column(String)
     time = Column(String)
     is_read = Column(Boolean, default=False)
+
+# -----------------------------
+# Support Ticket Model
+# -----------------------------
+class SupportTicket(Base):
+    __tablename__ = "support_tickets"
+    __table_args__ = {'extend_existing': True}
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    email = Column(String)
+    subject = Column(String)
+    priority = Column(String)
+    message = Column(String)
+    status = Column(String, default="Open")
+    updated_on = Column(String)

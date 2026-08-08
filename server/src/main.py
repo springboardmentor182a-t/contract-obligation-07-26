@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from src.database.core import get_db
-from src.database.models import Contract, Activity, Deadline, ComplianceItem, ReportHistory, Document, AppNotification, User
+from src.database.models import Contract, Activity, Deadline, ComplianceItem, ReportHistory, Document, AppNotification, User, SupportTicket
 
 # Routers
 from src.users.controller import router as users_router
@@ -10,6 +10,7 @@ from src.contracts.controller import router as contracts_router
 from src.calendar.controller import router as calendar_router
 from src.renewals.controller import router as renewals_router
 from src.tasks.controller import router as tasks_router
+
 from pydantic import BaseModel
 from datetime import date, datetime, timedelta 
 from typing import Optional 
@@ -33,6 +34,7 @@ app.include_router(contracts_router, prefix="/api/v1", tags=["Contracts"])
 app.include_router(calendar_router, prefix="/api/v1", tags=["Calendar"])
 app.include_router(renewals_router, prefix="/api/v1", tags=["Renewals"])
 app.include_router(tasks_router, prefix="/api/v1", tags=["Tasks"])
+
 class ContractCreate(BaseModel):
     name: str
     party: str
@@ -72,10 +74,10 @@ def get_dashboard_data(db: Session = Depends(get_db)):
         "deadlines": [{"title": d.title, "date": d.date} for d in deadlines],
         "contracts": [{
             "id": c.id, 
-            "name": c.contract,
-            "party": c.company, 
-            "company": c.company or c.company,
-            "contract": c.contract or c.contract, 
+            "name": c.name,
+            "party": c.party, 
+            "company": c.party,
+            "contract": c.name, 
             "category": c.category or "General", 
             "owner": c.owner or "System",
             "status": c.status, 
@@ -271,7 +273,7 @@ def get_documents_data(db: Session = Depends(get_db)):
             doc_date = datetime.strptime(d.date, "%b %d, %Y")
             if (datetime.now() - doc_date).days <= 7: recently_added += 1
         except: pass 
-    expiring_soon_contracts = [c.contract for c in contracts if c.status == "Expiring Soon"]
+    expiring_soon_contracts = [c.name for c in contracts if c.status == "Expiring Soon"]
     expiring_soon_docs = sum(1 for d in docs if d.contract_name in expiring_soon_contracts)
     
     table_data = [{
@@ -281,7 +283,7 @@ def get_documents_data(db: Session = Depends(get_db)):
         "date": d.date, "time": d.time, "size": d.size, "parentId": d.parent_id
     } for d in docs]
 
-    formatted_contracts = [{"contractId": f"CON-{datetime.now().year}-{c.id:03d}", "name": c.cntract} for c in contracts]
+    formatted_contracts = [{"contractId": f"CON-{datetime.now().year}-{c.id:03d}", "name": c.name} for c in contracts]
     
     db_users = [u.name for u in users if u.name]
     doc_users = [d.uploader for d in docs if d.uploader]
@@ -409,9 +411,36 @@ def get_notifications(db: Session = Depends(get_db)):
         
     return results
 
-# --- NEW: Route to mark all notifications as read ---
 @app.put("/api/v1/notifications/read")
 def mark_notifications_read(db: Session = Depends(get_db)):
     db.query(AppNotification).update({"is_read": True})
     db.commit()
     return {"message": "All marked as read"}
+
+# --- Support Tickets Pipeline ---
+class TicketCreate(BaseModel):
+    name: str
+    email: str
+    subject: str
+    priority: str
+    message: str
+
+@app.post("/api/v1/support/tickets")
+def create_support_ticket(ticket: TicketCreate, db: Session = Depends(get_db)):
+    db_ticket = SupportTicket(
+        name=ticket.name,
+        email=ticket.email,
+        subject=ticket.subject,
+        priority=ticket.priority,
+        message=ticket.message,
+        status="Open",
+        updated_on=datetime.now().strftime("%d %b %Y")
+    )
+    db.add(db_ticket)
+    db.commit()
+    db.refresh(db_ticket)
+    return db_ticket
+
+@app.get("/api/v1/support/tickets")
+def get_support_tickets(db: Session = Depends(get_db)):
+    return db.query(SupportTicket).order_by(SupportTicket.id.desc()).all()
