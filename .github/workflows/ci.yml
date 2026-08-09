@@ -13,6 +13,7 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+<<<<<<< HEAD
 
     services:
       postgres:
@@ -34,6 +35,13 @@ jobs:
       SECRET_KEY: github-actions-test-secret-key
       ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+=======
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ALGORITHM: ${{ secrets.ALGORITHM }}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
 
     steps:
       - name: Checkout repository
@@ -49,11 +57,21 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r server/requirements-dev.txt
 
+<<<<<<< HEAD
       - name: Verify PostgreSQL connection
         run: |
           python -c "import os, psycopg2; connection = psycopg2.connect(os.environ['DATABASE_URL']); print('PostgreSQL connected'); connection.close()"
+=======
+      - name: Verify environment
+        run: |
+          python -c "import os; print('DATABASE_URL configured:', bool(os.getenv('DATABASE_URL')))"
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
 
       - name: Run server tests
         run: |
           cd server
+<<<<<<< HEAD
           python -m pytest -q
+=======
+          python -m pytest -q
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987

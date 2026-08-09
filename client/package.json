@@ -4,8 +4,12 @@
   "private": true,
   "proxy": "http://127.0.0.1:8000",
   "dependencies": {
+<<<<<<< HEAD
     "axios": "^1.18.1",
     "lucide-react": "^0.453.0",
+=======
+    "lucide-react": "^1.24.0",
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^6.30.4",
@@ -35,10 +39,13 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+<<<<<<< HEAD
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1"
+=======
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
   }
 }

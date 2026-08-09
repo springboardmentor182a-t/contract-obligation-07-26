@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
@@ -56,4 +57,10 @@ export default function PageContainer({ children }) {
       )}
     </div>
   );
+=======
+import React from "react";
+
+export default function PageContainer({ children }) {
+  return <main className="page-container fade-in">{children}</main>;
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
 }

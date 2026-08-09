@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from "react";
 import { Sparkles, AlertTriangle, AlertCircle, Clock, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -70,15 +71,26 @@ export default function AIRecommendations() {
 
   const recs = liveRecs.length > 0 ? liveRecs : staticRecs;
 
+=======
+import React from "react";
+import { Sparkles, AlertTriangle, AlertCircle, Clock, ArrowRight } from "lucide-react";
+
+export default function AIRecommendations() {
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
   return (
     <div className="card details-card">
       <div className="chart-header">
         <h3 className="chart-card-title flex-title-row">
+<<<<<<< HEAD
           <Sparkles className="title-magic-icon" size={16} />
+=======
+          <Sparkles className="title-magic-icon" />
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
           AI Recommendations
         </h3>
       </div>
       <div className="recommendations-list">
+<<<<<<< HEAD
         {recs.map((rec) => (
           <button
             key={rec.id}
@@ -94,6 +106,31 @@ export default function AIRecommendations() {
             <ArrowRight className="rec-arrow" size={14} />
           </button>
         ))}
+=======
+        <div className="rec-box color-pink">
+          <div className="rec-box-left">
+            <AlertTriangle className="rec-icon-danger" />
+            <span>Initiate renewal for CTR-2024-005 — expires in 25 days</span>
+          </div>
+          <ArrowRight className="rec-arrow" />
+        </div>
+
+        <div className="rec-box color-yellow">
+          <div className="rec-box-left">
+            <AlertCircle className="rec-icon-warning" />
+            <span>3 contracts lack signed addendums — compliance risk</span>
+          </div>
+          <ArrowRight className="rec-arrow" />
+        </div>
+
+        <div className="rec-box color-light-yellow">
+          <div className="rec-box-left">
+            <Clock className="rec-icon-info" />
+            <span>Marketing dept compliance below 70% threshold</span>
+          </div>
+          <ArrowRight className="rec-arrow" />
+        </div>
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
       </div>
     </div>
   );

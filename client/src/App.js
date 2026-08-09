@@ -1,3 +1,8 @@
+import React from "react";
+import Sidebar from "./layout/Sidebar";
+import Navbar from "./layout/Navbar";
+import PageContainer from "./layout/PageContainer";
+import Home from "./pages/Home";
 import "./assets/global.css";
 
 import {
@@ -53,6 +58,7 @@ function PublicOnlyRoute({ children }) {
 
 function AppShell() {
   return (
+<<<<<<< HEAD
     <PageContainer>
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -74,6 +80,17 @@ function AppShell() {
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </PageContainer>
+=======
+    <div className="app-container">
+      <Sidebar />
+      <div className="main-content">
+        <Navbar />
+        <PageContainer>
+          <Home />
+        </PageContainer>
+      </div>
+    </div>
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
   );
 }
 

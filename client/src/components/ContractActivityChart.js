@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from "react";
 
 export default function ContractActivityChart() {
@@ -56,6 +57,38 @@ export default function ContractActivityChart() {
         index === 0 ? `M ${pt.x} ${pt.y}` : `${path} L ${pt.x} ${pt.y}`,
       ""
     );
+=======
+import React, { useState } from "react";
+
+export default function ContractActivityChart() {
+  const [activeTooltip, setActiveTooltip] = useState(null);
+
+  const activePoints = [
+    { label: "Jan", val: 40, x: 50, y: 150 },
+    { label: "Feb", val: 42, x: 150, y: 144.5 },
+    { label: "Mar", val: 47, x: 250, y: 130.75 },
+    { label: "Apr", val: 51, x: 350, y: 119.75 },
+    { label: "May", val: 54, x: 450, y: 111.5 },
+    { label: "Jun", val: 58, x: 550, y: 100.5 },
+    { label: "Jul", val: 61, x: 650, y: 92.25 }
+  ];
+
+  const newPoints = [
+    { label: "Jan", val: 8, x: 50, y: 238 },
+    { label: "Feb", val: 5, x: 150, y: 246.25 },
+    { label: "Mar", val: 9, x: 250, y: 235.25 },
+    { label: "Apr", val: 8, x: 350, y: 238 },
+    { label: "May", val: 7, x: 450, y: 240.75 },
+    { label: "Jun", val: 10, x: 550, y: 232.5 },
+    { label: "Jul", val: 8, x: 650, y: 238 }
+  ];
+
+  const getLinePath = (points) => {
+    return points.reduce((path, pt, index) => {
+      return index === 0 ? `M ${pt.x} ${pt.y}` : `${path} L ${pt.x} ${pt.y}`;
+    }, "");
+  };
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
 
   const getAreaPath = (points, bottomY = 260) => {
     if (points.length === 0) return "";
@@ -83,15 +116,25 @@ export default function ContractActivityChart() {
           </defs>
 
           {/* Gridlines */}
+<<<<<<< HEAD
           {[50, 90, 130, 170, 210, 260].map((y) => (
             <line key={y} x1="50" y1={y} x2="650" y2={y} className="chart-gridline" />
           ))}
+=======
+          <line x1="50" y1="50" x2="650" y2="50" className="chart-gridline" />
+          <line x1="50" y1="90" x2="650" y2="90" className="chart-gridline" />
+          <line x1="50" y1="130" x2="650" y2="130" className="chart-gridline" />
+          <line x1="50" y1="170" x2="650" y2="170" className="chart-gridline" />
+          <line x1="50" y1="210" x2="650" y2="210" className="chart-gridline" />
+          <line x1="50" y1="260" x2="650" y2="260" className="chart-gridline" />
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
 
           {/* Gradient Areas */}
           <path d={getAreaPath(activePoints, 260)} fill="url(#blueAreaGrad)" />
           <path d={getAreaPath(newPoints, 260)} fill="url(#greenAreaGrad)" />
 
           {/* Lines */}
+<<<<<<< HEAD
           {activePoints.length > 1 && (
             <path
               d={getLinePath(activePoints)}
@@ -119,6 +162,16 @@ export default function ContractActivityChart() {
               onMouseEnter={() => setActiveTooltip({ type: "Active", pt })}
               onMouseLeave={() => setActiveTooltip(null)}
             >
+=======
+          <path d={getLinePath(activePoints)} fill="none" stroke="#3B82F6" strokeWidth="3" strokeLinecap="round" />
+          <path d={getLinePath(newPoints)} fill="none" stroke="#10B981" strokeWidth="3.5" strokeLinecap="round" />
+
+          {/* Active dots */}
+          {activePoints.map((pt, i) => (
+            <g key={`act-${i}`} className="chart-point-group" 
+               onMouseEnter={() => setActiveTooltip({ type: "Active", pt })}
+               onMouseLeave={() => setActiveTooltip(null)}>
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
               <circle cx={pt.x} cy={pt.y} r="5" fill="#3B82F6" stroke="#FFFFFF" strokeWidth="1.5" className="chart-dot" />
               <circle cx={pt.x} cy={pt.y} r="18" fill="transparent" style={{ cursor: "pointer" }} />
             </g>
@@ -126,12 +179,18 @@ export default function ContractActivityChart() {
 
           {/* New dots */}
           {newPoints.map((pt, i) => (
+<<<<<<< HEAD
             <g
               key={`new-${i}`}
               className="chart-point-group"
               onMouseEnter={() => setActiveTooltip({ type: "New", pt })}
               onMouseLeave={() => setActiveTooltip(null)}
             >
+=======
+            <g key={`new-${i}`} className="chart-point-group" 
+               onMouseEnter={() => setActiveTooltip({ type: "New", pt })}
+               onMouseLeave={() => setActiveTooltip(null)}>
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
               <circle cx={pt.x} cy={pt.y} r="5" fill="#10B981" stroke="#FFFFFF" strokeWidth="1.5" className="chart-dot" />
               <circle cx={pt.x} cy={pt.y} r="18" fill="transparent" style={{ cursor: "pointer" }} />
             </g>
@@ -146,6 +205,7 @@ export default function ContractActivityChart() {
 
           {/* Y Axis Labels */}
           <text x="35" y="264" textAnchor="end" className="chart-axis-label">0</text>
+<<<<<<< HEAD
           <text x="35" y="214" textAnchor="end" className="chart-axis-label">
             {Math.round(maxVal * 0.2)}
           </text>
@@ -173,17 +233,44 @@ export default function ContractActivityChart() {
             <div className="tooltip-value">
               {activeTooltip.pt.val} ({activeTooltip.pt.label})
             </div>
+=======
+          <text x="35" y="214" textAnchor="end" className="chart-axis-label">20</text>
+          <text x="35" y="174" textAnchor="end" className="chart-axis-label">40</text>
+          <text x="35" y="134" textAnchor="end" className="chart-axis-label">60</text>
+          <text x="35" y="94" textAnchor="end" className="chart-axis-label">80</text>
+        </svg>
+
+        {/* Custom Tooltip */}
+        {activeTooltip && (
+          <div 
+            className="chart-tooltip" 
+            style={{ 
+              left: `${activeTooltip.pt.x * (100/700)}%`, 
+              top: `${activeTooltip.pt.y - 65}px` 
+            }}
+          >
+            <div className="tooltip-title">{activeTooltip.type} Contracts</div>
+            <div className="tooltip-value">{activeTooltip.pt.val} Units ({activeTooltip.pt.label})</div>
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
           </div>
         )}
 
         {/* Legends */}
         <div className="chart-legends">
           <div className="legend-item">
+<<<<<<< HEAD
             <span className="legend-dot bg-blue" />
             <span>Active</span>
           </div>
           <div className="legend-item">
             <span className="legend-dot bg-green" />
+=======
+            <span className="legend-dot bg-blue"></span>
+            <span>Active</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-dot bg-green"></span>
+>>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
             <span>New</span>
           </div>
         </div>
