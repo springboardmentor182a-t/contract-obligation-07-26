@@ -1,22 +1,40 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const ComplianceDashboard = () => {
-  const [data, setData] = useState({
-    healthGrade: 'A-',
-    healthScore: '94.2% Average',
-    obligationsMet: 14,
-    obligationsTotal: 18,
-    fulfillmentRate: '96.0%',
-    activeAudits: 3,
-    departments: []
-  });
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('/api/compliance/summary')
-      .then(res => res.json())
-      .then(json => setData(json))
-      .catch(console.error);
+    setIsLoading(true);
+    axios.get('/api/compliance/dashboard')
+      .then(res => {
+        setData(res.data);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setError(err.message);
+        setIsLoading(false);
+      });
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-red-500 p-4">Error loading compliance data: {error}</div>;
+  }
+
+  if (!data || Object.keys(data).length === 0) {
+    return <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">No compliance data found. Click 'Load Demo Data' in Settings to populate.</div>;
+  }
 
   return (
     <div className="space-y-6">

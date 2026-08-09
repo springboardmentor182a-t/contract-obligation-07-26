@@ -4,7 +4,7 @@ import { useTheme } from '../../../context/ThemeContext';
 import GoogleAuthButton from './GoogleAuthButton.jsx';
 import RegisterFormFields from './RegisterFormFields.jsx';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const RegisterForm = () => {
   const [name, setName] = useState('');
@@ -52,6 +52,7 @@ const RegisterForm = () => {
       localStorage.setItem('userEmail', data.user?.email || email.trim().toLowerCase());
       navigate('/dashboard');
     } catch (err) {
+      console.error("API Error in Register:", err);
       setError(err.message);
     } finally {
       setIsLoading(false);

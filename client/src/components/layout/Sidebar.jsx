@@ -95,6 +95,18 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             </div>
             Reports
           </Link>
+          <Link to="/notifications" onClick={() => setIsOpen(false)} className={`${linkClass} ${isActive('/notifications')}`}>
+            <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-400 group-hover:bg-yellow-500/20 group-hover:scale-110 transition-all mr-4">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            Notifications
+          </Link>
+          <Link to="/ai-analysis" onClick={() => setIsOpen(false)} className={`${linkClass} ${isActive('/ai-analysis')}`}>
+            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500/20 group-hover:scale-110 transition-all mr-4">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            AI Fraud
+          </Link>
         </nav>
 
         {/* System Settings */}

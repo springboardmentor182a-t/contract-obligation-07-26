@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import Modal from '../components/Modals/Modal';
 import { jsPDF } from 'jspdf';
-import { useFetchContracts } from '../hooks/useFetchContracts';
+import { useContracts } from '../hooks/useContracts';
+import axios from 'axios';
 
 const ContractRepository = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -9,7 +10,7 @@ const ContractRepository = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
-  const { data: contracts, setData: setContracts } = useFetchContracts('/api/contracts/');
+  const { data: contracts, setData: setContracts } = useContracts('/api/contracts/');
   const [viewContract, setViewContract] = useState(null);
 
   const filteredContracts = contracts.filter(contract => {
@@ -51,14 +52,11 @@ const ContractRepository = () => {
       owner: ownerName
     };
     try {
-      const res = await fetch('/api/contracts/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newContract)
-      });
-      if (res.ok) {
-        const added = await res.json();
-        setContracts(prev => [...prev, added]);
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await axios.post('/api/contracts/', newContract, { headers });
+      if (res.status === 200 || res.status === 201) {
+        setContracts(prev => [...prev, res.data]);
         setIsModalOpen(false);
       }
     } catch(err) { console.error(err); }
@@ -97,14 +95,11 @@ const ContractRepository = () => {
       let addedContracts = [];
       for (const contract of newContracts) {
         try {
-          const res = await fetch('/api/contracts/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(contract)
-          });
-          if (res.ok) {
-            const added = await res.json();
-            addedContracts.push(added);
+          const token = localStorage.getItem('token');
+          const headers = token ? { Authorization: `Bearer ${token}` } : {};
+          const res = await axios.post('/api/contracts/', contract, { headers });
+          if (res.status === 200 || res.status === 201) {
+            addedContracts.push(res.data);
           }
         } catch(err) { console.error('Error uploading contract', contract.id, err); }
       }

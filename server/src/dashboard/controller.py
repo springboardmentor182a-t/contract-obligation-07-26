@@ -145,10 +145,10 @@ def recent_activity(db: Session = Depends(get_db)):
     return [
         {
             "id": l.id,
-            "user": l.user,
+            "user": l.actor,
             "action": l.action,
             "target": l.target,
-            "time": l.time,
+            "time": l.timestamp.isoformat() if l.timestamp else None,
         }
         for l in logs
     ]

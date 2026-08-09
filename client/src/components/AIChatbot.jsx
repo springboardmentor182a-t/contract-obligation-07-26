@@ -34,7 +34,7 @@ const AIChatbot = () => {
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
-      const errorMessage = { sender: 'ai', text: 'Sorry, I am having trouble connecting to the server.' };
+      const errorMessage = { sender: 'ai', text: 'I am currently offline. Please check your network or API configuration.' };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -42,11 +42,11 @@ const AIChatbot = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 right-6 z-[100]">
       {isOpen && (
         <div className="mb-4 w-80 sm:w-96 bg-white dark:bg-[#161f2e] border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-colors">
           {/* Header */}
-          <div className="bg-blue-600 dark:bg-[#0f172a] p-4 flex justify-between items-center border-b border-blue-700 dark:border-slate-700 transition-colors">
+          <div className="bg-[#0f172a] dark:bg-[#0B1120] p-4 flex justify-between items-center border-b border-slate-700 transition-colors">
             <h3 className="text-white font-semibold text-lg flex items-center gap-2">
               <svg className="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
               ContractIQ AI Assistant
@@ -65,18 +65,21 @@ const AIChatbot = () => {
             )}
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] p-3 rounded-2xl ${msg.sender === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 rounded-bl-none transition-colors'}`}>
+                <div className={`max-w-[80%] p-3 rounded-2xl ${msg.sender === 'user' ? 'bg-blue-600 dark:bg-blue-600 text-white rounded-br-none' : 'bg-slate-200 text-slate-800 border border-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:border-slate-600 rounded-bl-none transition-colors'}`}>
                   {msg.text}
                 </div>
               </div>
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] p-3 rounded-2xl bg-slate-100 text-slate-800 border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 rounded-bl-none transition-colors">
-                  <div className="flex gap-1 mt-2 mb-2">
-                    <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
-                    <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-                    <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                <div className="max-w-[80%] p-3 rounded-2xl bg-slate-200 text-slate-800 border border-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:border-slate-600 rounded-bl-none transition-colors">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm italic">AI is thinking...</span>
+                    <div className="flex gap-1 mt-1 mb-1">
+                      <span className="w-1.5 h-1.5 bg-slate-500 dark:bg-slate-400 rounded-full animate-bounce"></span>
+                      <span className="w-1.5 h-1.5 bg-slate-500 dark:bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                      <span className="w-1.5 h-1.5 bg-slate-500 dark:bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -2,15 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0B1121" />
     <meta
       name="description"
       content="ContractIQ - Enterprise Contract & Obligation Intelligence Platform"
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <link rel="apple-touch-icon" href="/logo192.png" />
+    <link rel="manifest" href="/manifest.json" />
     <!-- Google Fonts & Font Awesome CDN -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,6 +20,20 @@
   </head>
   <body class="bg-slate-50 dark:bg-[#0B1121] text-slate-900 dark:text-white antialiased min-h-screen">
     <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="error-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: rgba(255,0,0,0.9); color: white; padding: 20px; z-index: 9999; font-family: monospace; white-space: pre-wrap;"></div>
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        var overlay = document.getElementById('error-overlay');
+        overlay.style.display = 'block';
+        overlay.innerText += 'ERROR: ' + message + '\n' + (error ? error.stack : '') + '\n\n';
+      };
+      window.onunhandledrejection = function(event) {
+        var overlay = document.getElementById('error-overlay');
+        overlay.style.display = 'block';
+        overlay.innerText += 'PROMISE REJECTION: ' + (event.reason ? (event.reason.stack || event.reason) : event) + '\n\n';
+      };
+    </script>
     <div id="root"></div>
+    <script type="module" src="/src/index.jsx"></script>
   </body>
 </html>
