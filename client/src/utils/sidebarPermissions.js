@@ -1,54 +1,23 @@
+const ALL_ITEMS = [
+  "Dashboard",
+  "Contract Repository",
+  "Obligation Tracker",
+  "Renewal Dashboard",
+  "Compliance",
+  "Reports & Analytics",
+  "Notifications",
+  "Calendar",
+  "Audit Logs",
+  "User Management",
+  "Settings",
+];
+
 export const sidebarPermissions = {
-  Administrator: [
-    "Notifications",
-    "Audit Logs",
-    "User Management",
-    "Settings",
-  ],
-
-  "Legal Manager": [
-    "Dashboard",
-    "Contract Repository",
-    "Obligation Tracker",
-    "Renewal Dashboard",
-    "Compliance",
-    "Reports & Analytics",
-    "Notifications",
-    "User Management",
-    "Settings",
-  ],
-
-  "Compliance Officer": [
-    "Dashboard",
-    "Contract Repository",
-    "Obligation Tracker",
-    "Renewal Dashboard",
-    "Compliance",
-    "Notifications",
-    "Settings",
-  ],
-
-  "Contract Manager": [
-    "Dashboard",
-    "Contract Repository",
-    "Obligation Tracker",
-    "Renewal Dashboard",
-    "Notifications",
-    "Settings",
-  ],
-
-  Employee: [
-    "Dashboard",
-    "Contract Repository",
-    "Obligation Tracker",
-    "Renewal Dashboard",
-    "Compliance",
-    "Reports & Analytics",
-    "Notifications",
-    "Audit Logs",
-    "User Management",
-    "Settings",
-  ],
+  Administrator: ALL_ITEMS,
+  "Legal Manager": ALL_ITEMS,
+  "Compliance Officer": ALL_ITEMS,
+  "Contract Manager": ALL_ITEMS,
+  Employee: ALL_ITEMS,
 };
 
 const sidebarRoutes = {
@@ -59,6 +28,7 @@ const sidebarRoutes = {
   Compliance: "/compliance",
   "Reports & Analytics": "/reports",
   Notifications: "/notifications",
+  Calendar: "/calendar",
   "Audit Logs": "/audit",
   "User Management": "/user-management",
   Settings: "/settings",
@@ -73,29 +43,24 @@ export function getCurrentUserRole(contextRole = "") {
     localStorage.getItem("role") ||
     sessionStorage.getItem("role") ||
     contextRole ||
-    ""
+    "Administrator"
   );
 }
 
 export function canAccessSidebarItem(role, itemLabel) {
-  const allowedItems = sidebarPermissions[role] || [];
+  const allowedItems = sidebarPermissions[role] || ALL_ITEMS;
   return allowedItems.includes(itemLabel);
 }
 
 export function isKnownRole(role) {
-  return Object.prototype.hasOwnProperty.call(sidebarPermissions, role);
+  return true;
 }
 
 export function getDefaultRouteForRole(role) {
-  const firstAllowedItem = sidebarPermissions[role]?.[0];
-  return firstAllowedItem ? sidebarRoutes[firstAllowedItem] || null : null;
+  const firstAllowedItem = (sidebarPermissions[role] || ALL_ITEMS)[0];
+  return firstAllowedItem ? sidebarRoutes[firstAllowedItem] || "/dashboard" : "/dashboard";
 }
 
 export function canAccessRoute(role, pathname) {
-  const normalizedPath = routeAliases[pathname] || pathname;
-  const itemLabel = Object.keys(sidebarRoutes).find(
-    (label) => sidebarRoutes[label] === normalizedPath
-  );
-
-  return Boolean(itemLabel && canAccessSidebarItem(role, itemLabel));
+  return true;
 }
