@@ -134,9 +134,12 @@ def upload_contract_file(db: Session, contract_id: int, file: UploadFile):
     upload_dir = "uploads/contracts"
     os.makedirs(upload_dir, exist_ok=True)
     
-    file_path = os.path.join(upload_dir, f"{contract_id}_{file.filename}")
+    file_path = os.path.join(upload_dir, f"{contract_id}_{file.filename}").replace("\\", "/")
+    
+    import shutil
+    file.file.seek(0)
     with open(file_path, "wb") as buffer:
-        buffer.write(file.file.read())
+        shutil.copyfileobj(file.file, buffer)
         
     contract.file_path = file_path
     db.commit()

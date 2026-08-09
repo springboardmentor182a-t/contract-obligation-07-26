@@ -153,11 +153,26 @@ const ContractRepository = () => {
     };
 
     try {
+      let response;
       if (isEditing) {
-        await axios.put(`${API_BASE_URL}/${currentContractId}`, payload);
+        response = await axios.put(`${API_BASE_URL}/${currentContractId}`, payload);
       } else {
-        await axios.post(API_BASE_URL, payload);
+        response = await axios.post(API_BASE_URL, payload);
       }
+      
+      const contractId = response.data.id || response.data.contract_id || currentContractId;
+      
+      if (formData.contract_file) {
+        const fileData = new FormData();
+        fileData.append('file', formData.contract_file);
+        
+        await axios.post(`${API_BASE_URL}/${contractId}/upload`, fileData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
+
       closeModal();
       fetchContracts(); 
     } catch (error) {
