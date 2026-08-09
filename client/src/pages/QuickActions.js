@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./QuickActions.css";
-
+import { API_BASE } from "../config/api";
 import {
   ShieldIcon, DownloadIcon, BellIcon, RepeatIcon, BriefcaseIcon, PlugIcon,
   CheckIcon, PlayIcon, InfoIcon
@@ -26,8 +26,8 @@ export default function QuickActions() {
     async function loadData() {
       try {
         const [resActions, resLogs] = await Promise.all([
-          fetch("/api/quick-actions"),
-          fetch("/api/quick-actions/logs")
+          fetch(`${API_BASE}/quick-actions`),
+          fetch(`${API_BASE}/quick-actions/logs`)
         ]);
         if (resActions.ok) {
           const actionData = await resActions.json();
@@ -50,7 +50,7 @@ export default function QuickActions() {
     setExecutingId(action.id);
 
     try {
-      const response = await fetch("/api/quick-actions/execute", {
+      const response = await fetch(`${API_BASE}/quick-actions/execute`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action_id: action.id }),

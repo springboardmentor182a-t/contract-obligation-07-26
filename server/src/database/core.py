@@ -5,12 +5,10 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-
 SERVER_DIR = Path(__file__).resolve().parents[2]
 ENV_FILE = SERVER_DIR / ".env"
 
-# Local development lo server/.env unte load chestundi.
-# GitHub Actions lo workflow environment variables use avutayi.
+# Load .env for local development only
 if ENV_FILE.exists():
     load_dotenv(ENV_FILE, override=False)
 
@@ -21,41 +19,64 @@ SessionLocal = None
 
 
 def initialize_database():
-    """Create the database engine and session factory when required."""
+    """Initialize the database engine and session factory."""
+
     global engine, SessionLocal
 
-    if engine is not None:
+    # Already initialized
+    if SessionLocal is not None:
         return
 
     database_url = os.getenv("DATABASE_URL")
+
     print("=" * 60)
     print("DATABASE_URL =", database_url)
     print("=" * 60)
 
-    # If DATABASE_URL isn't provided in dev, fall back to a local SQLite file
-    # so the app can run without external DB configuration.
+    # Local SQLite fallback
     if not database_url or not database_url.strip():
         fallback = SERVER_DIR / "dev.db"
         database_url = f"sqlite:///{fallback}"
-        print("WARNING: DATABASE_URL not set — falling back to local SQLite:", database_url)
-    elif database_url.startswith("postgresql+asyncpg://"):
-        database_url = database_url.replace("postgresql+asyncpg://", "postgresql://")
+        print(
+            "WARNING: DATABASE_URL not found. Falling back to SQLite:",
+            database_url,
+        )
+
+    # Normalize PostgreSQL URLs
     elif database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql://")
+        database_url = database_url.replace(
+            "postgres://",
+            "postgresql://",
+            1,
+        )
+
+    elif database_url.startswith("postgresql+asyncpg://"):
+        database_url = database_url.replace(
+            "postgresql+asyncpg://",
+            "postgresql://",
+            1,
+        )
 
     connect_args = {}
+
     if database_url.startswith("sqlite"):
         connect_args = {"check_same_thread": False}
 
+    # Create engine
     engine = create_engine(
         database_url,
         pool_pre_ping=True,
         connect_args=connect_args,
     )
-   
 
+    # Create session factory
+    SessionLocal = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+    )
 
-    # Ensure all models are registered in Base.metadata
+    # Ensure all models are registered
     try:
         import src.database.models
         import src.contract_repository.models
@@ -63,26 +84,23 @@ def initialize_database():
     except Exception as e:
         print("Warning importing models:", e)
 
-    # Strip schema='public' for SQLite compatibility
+    # SQLite doesn't support schemas
     if database_url.startswith("sqlite"):
         for table in list(Base.metadata.tables.values()):
             table.schema = None
 
-    # Create missing tables automatically (convenience for local development).
+    # Create tables
     try:
         Base.metadata.create_all(bind=engine)
+        print("Database initialized successfully.")
     except Exception as exc:
-        print("ERROR creating database tables:", exc)
-
-    SessionLocal = sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=engine,
-    )
+        print("Error creating database tables:", exc)
+        raise
 
 
 def get_db():
-    """Provide a database session for FastAPI dependencies."""
+    """FastAPI dependency for database session."""
+
     initialize_database()
 
     db = SessionLocal()

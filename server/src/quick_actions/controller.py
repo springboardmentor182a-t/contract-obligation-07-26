@@ -79,7 +79,6 @@ def execute_action(payload: ExecutePayload, db: Session = Depends(get_db)):
     db.add(log)
     db.commit()
     db.refresh(log)
-
     create_audit_log(
         db=db,
         user_id=None,

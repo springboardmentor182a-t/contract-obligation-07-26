@@ -72,8 +72,28 @@ class ObligationService:
             "status" in update_data
             and previous_status != obligation.status
         )
+        normalized_status = (
+            obligation.status or ""
+        ).strip().lower()
 
-        if status_changed:
+        if status_changed and normalized_status == "approved":
+            event_type = "APPROVE"
+            action = "Obligation Approved"
+            description = (
+                f"Approved obligation: {obligation.title} "
+                f"(ID: {obligation.id}, "
+                f"previous status: {previous_status})"
+            )
+        elif status_changed and normalized_status == "rejected":
+            event_type = "REJECT"
+            action = "Obligation Rejected"
+            description = (
+                f"Rejected obligation: {obligation.title} "
+                f"(ID: {obligation.id}, "
+                f"previous status: {previous_status})"
+            )
+        elif status_changed:
+            event_type = "UPDATE"
             action = "Obligation Status Changed"
             description = (
                 f"Changed obligation status: {obligation.title} "
@@ -81,6 +101,7 @@ class ObligationService:
                 f"{previous_status} to {obligation.status}"
             )
         else:
+            event_type = "UPDATE"
             action = "Obligation Updated"
             description = (
                 f"Updated obligation: {obligation.title} "
@@ -90,7 +111,7 @@ class ObligationService:
         create_audit_log(
             db=db,
             user_id=None,
-            event_type="UPDATE",
+            event_type=event_type,
             action=action,
             module="Obligation Tracker",
             description=description,

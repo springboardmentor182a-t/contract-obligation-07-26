@@ -11,8 +11,10 @@ import {
 } from "lucide-react";
 
 import AuthLeftPanel from "../components/AuthLeftPanel";
+import { getDefaultRouteForRole } from "../utils/sidebarPermissions";
 import "../styles/Auth.css";
-
+import { API_BASE } from "../config/api";
+const API_BASE_URL = API_BASE;
 const ROLES = [
   "Administrator",
   "Legal Manager",
@@ -50,7 +52,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -83,6 +85,15 @@ function Login() {
         return;
       }
 
+      const authenticatedRole = data.role || role;
+      const defaultRoute = getDefaultRouteForRole(authenticatedRole);
+
+      if (!defaultRoute) {
+        setMessage("This account role is not configured for application access.");
+        setMessageType("error");
+        return;
+      }
+
       localStorage.removeItem("token");
       localStorage.removeItem("role");
       localStorage.removeItem("name");
@@ -96,14 +107,14 @@ function Login() {
       const storage = remember ? localStorage : sessionStorage;
 
       storage.setItem("token", data.access_token);
-      storage.setItem("role", data.role || role);
+      storage.setItem("role", authenticatedRole);
       storage.setItem("name", data.name || "ContractIQ User");
       storage.setItem("email", email.trim());
 
       setMessage("Login successful. Redirecting...");
       setMessageType("success");
 
-      navigate("/dashboard");
+      navigate(defaultRoute);
     } catch (error) {
       console.error("Login error:", error);
 

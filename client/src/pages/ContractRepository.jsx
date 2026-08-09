@@ -44,7 +44,12 @@ export default function ContractRepository() {
 
     try {
       const data = await getContracts();
-      setContracts(data);
+      console.log("API Response:", data);
+      console.log("Is Array:", Array.isArray(data));
+      console.log("Type:", typeof data);
+
+      setContracts(Array.isArray(data) ? data : []);
+      
 
       if (data && data.length > 0) {
         const latest = data.reduce((prev, current) =>

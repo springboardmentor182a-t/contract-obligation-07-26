@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useEffect, useRef, useState } from "react";
 import {
   Eye,
   Pencil,
@@ -15,6 +16,23 @@ function ContractTable({
   onEdit,
   onDelete,
 }) {
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const menuRef = useRef(null);
+  useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (menuRef.current && !menuRef.current.contains(event.target)) {
+      setOpenMenuId(null);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () =>
+    document.removeEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+}, []);
   const filteredContracts = contracts.filter((contract) => {
     const matchesSearch =
       contract.contract_name
@@ -77,9 +95,48 @@ function ContractTable({
                 </span>
               </div>
 
-              <div className="card-menu">
-                <MoreHorizontal size={18} />
-              </div>
+              <div
+  className="card-menu"
+  ref={openMenuId === contract.id ? menuRef : null}
+>
+  <button
+    className="menu-btn"
+    onClick={() =>
+      setOpenMenuId(
+        openMenuId === contract.id
+          ? null
+          : contract.id
+      )
+    }
+  >
+    <MoreHorizontal size={18} />
+  </button>
+
+  {openMenuId === contract.id && (
+    <div className="card-dropdown">
+      <button
+        onClick={() => {
+          setOpenMenuId(null);
+          onEdit(contract);
+        }}
+      >
+        <Pencil size={16} />
+        Edit
+      </button>
+
+      <button
+        className="delete-option"
+        onClick={() => {
+          setOpenMenuId(null);
+          onDelete(contract.id);
+        }}
+      >
+        <Trash2 size={16} />
+        Delete
+      </button>
+    </div>
+  )}
+</div>
             </div>
 
             <h3>{contract.contract_name}</h3>
@@ -277,28 +334,13 @@ function ContractTable({
           )}
         </tbody>
       </table>
-
-      <div className="pagination">
-        <div className="pagination-info">
-          Showing{" "}
-          {filteredContracts.length} contracts
-        </div>
-
-        <div className="pagination-controls">
-          <button className="page-btn">
-            1
-          </button>
-
-          <button className="page-btn active">
-            2
-          </button>
-
-          <button className="page-btn">
-            3
-          </button>
+          <div className="pagination">
+          <div className="pagination-info">
+            Showing {filteredContracts.length} of {contracts.length} contracts
+          </div>
         </div>
       </div>
-    </div>
+    
   );
 }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-
+import { API_BASE } from "../config/api";
 export default function useFetch(url, options) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(!!url);

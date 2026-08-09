@@ -12,8 +12,14 @@ import {
   Routes,
 } from "react-router-dom";
 
-import { UIProvider } from "./context/UIContext";
+import { UIProvider, useUI } from "./context/UIContext";
 import PageContainer from "./layout/PageContainer";
+import {
+  canAccessRoute,
+  getCurrentUserRole,
+  getDefaultRouteForRole,
+  isKnownRole,
+} from "./utils/sidebarPermissions";
 
 // Authentication pages
 import Login from "./pages/Login";
@@ -43,17 +49,50 @@ function isAuthenticated() {
 }
 
 function ProtectedRoute({ children }) {
-  if (!isAuthenticated()) {
+  const { user } = useUI();
+  const role = getCurrentUserRole(user?.role);
+
+  if (!isAuthenticated() || !isKnownRole(role)) {
     return <Navigate to="/login" replace />;
   }
   return children;
 }
 
 function PublicOnlyRoute({ children }) {
+  const { user } = useUI();
+  const role = getCurrentUserRole(user?.role);
+  const defaultRoute = getDefaultRouteForRole(role);
+
   if (isAuthenticated()) {
-    return <Navigate to="/dashboard" replace />;
+    return defaultRoute
+      ? <Navigate to={defaultRoute} replace />
+      : children;
   }
   return children;
+}
+
+function AuthorizedRoute({ path, children }) {
+  const { user } = useUI();
+  const role = getCurrentUserRole(user?.role);
+  const defaultRoute = getDefaultRouteForRole(role);
+
+  if (!defaultRoute) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!canAccessRoute(role, path)) {
+    return <Navigate to={defaultRoute} replace />;
+  }
+
+  return children;
+}
+
+function DefaultRoleRoute() {
+  const { user } = useUI();
+  const role = getCurrentUserRole(user?.role);
+  const defaultRoute = getDefaultRouteForRole(role);
+
+  return <Navigate to={defaultRoute || "/login"} replace />;
 }
 
 function AppShell() {
@@ -61,23 +100,23 @@ function AppShell() {
 <<<<<<< HEAD
     <PageContainer>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<Home />} />
-        <Route path="/renewal-dashboard" element={<RenewalDashboard />} />
-        <Route path="/repository" element={<ContractRepository />} />
-        <Route path="/contract-repository" element={<Navigate to="/repository" replace />} />
-        <Route path="/obligations" element={<Obligations />} />
-        <Route path="/compliance" element={<Compliance />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/quick-actions" element={<QuickActions />} />
-        <Route path="/calendar" element={<Calendar />} />
-        <Route path="/audit" element={<Audit />} />
-        <Route path="/user-management" element={<UserManagement />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/help" element={<Help />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<DefaultRoleRoute />} />
+        <Route path="/dashboard" element={<AuthorizedRoute path="/dashboard"><Home /></AuthorizedRoute>} />
+        <Route path="/renewal-dashboard" element={<AuthorizedRoute path="/renewal-dashboard"><RenewalDashboard /></AuthorizedRoute>} />
+        <Route path="/repository" element={<AuthorizedRoute path="/repository"><ContractRepository /></AuthorizedRoute>} />
+        <Route path="/contract-repository" element={<AuthorizedRoute path="/contract-repository"><Navigate to="/repository" replace /></AuthorizedRoute>} />
+        <Route path="/obligations" element={<AuthorizedRoute path="/obligations"><Obligations /></AuthorizedRoute>} />
+        <Route path="/compliance" element={<AuthorizedRoute path="/compliance"><Compliance /></AuthorizedRoute>} />
+        <Route path="/reports" element={<AuthorizedRoute path="/reports"><Reports /></AuthorizedRoute>} />
+        <Route path="/notifications" element={<AuthorizedRoute path="/notifications"><Notifications /></AuthorizedRoute>} />
+        <Route path="/quick-actions" element={<AuthorizedRoute path="/quick-actions"><QuickActions /></AuthorizedRoute>} />
+        <Route path="/calendar" element={<AuthorizedRoute path="/calendar"><Calendar /></AuthorizedRoute>} />
+        <Route path="/audit" element={<AuthorizedRoute path="/audit"><Audit /></AuthorizedRoute>} />
+        <Route path="/user-management" element={<AuthorizedRoute path="/user-management"><UserManagement /></AuthorizedRoute>} />
+        <Route path="/profile" element={<AuthorizedRoute path="/profile"><Profile /></AuthorizedRoute>} />
+        <Route path="/settings" element={<AuthorizedRoute path="/settings"><Settings /></AuthorizedRoute>} />
+        <Route path="/help" element={<AuthorizedRoute path="/help"><Help /></AuthorizedRoute>} />
+        <Route path="*" element={<DefaultRoleRoute />} />
       </Routes>
     </PageContainer>
 =======

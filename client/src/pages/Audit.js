@@ -14,13 +14,14 @@ import {
   X,
 } from "lucide-react";
 import "./Audit.css";
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || "";
+import { API_BASE } from "../config/api";
+const API_BASE_URL = API_BASE;
 
 const FILTER_OPTIONS = [
   { key: "all", label: "All" },
   { key: "security", label: "Security" },
-  { key: "approval", label: "Approval" },
+  { key: "approve", label: "Approval" },
+  { key: "reject", label: "Rejected" },
   { key: "create", label: "Create" },
   { key: "update", label: "Update" },
   { key: "delete", label: "Delete" },
@@ -44,7 +45,11 @@ const getLogIcon = (type) => {
       return LockKeyhole;
 
     case "approval":
+    case "approve":
       return CheckCircle2;
+
+    case "reject":
+      return X;
 
     case "create":
       return FilePlus2;
@@ -248,9 +253,10 @@ export default function Audit() {
       (log) => getEventType(log) === "security"
     ).length;
 
-    const approvals = logs.filter(
-      (log) => getEventType(log) === "approval"
-    ).length;
+    const approvals = logs.filter((log) => {
+      const type = getEventType(log);
+      return type === "approval" || type === "approve";
+    }).length;
 
     const aiActions = logs.filter((log) => {
       const type = getEventType(log);

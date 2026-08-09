@@ -6,6 +6,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
+from src.audit.service import create_audit_log
 from src.database.core import get_db
 from src.database.models import AuditLogModel, UserModel
 
@@ -200,6 +201,33 @@ def export_audit_logs(
 
     csv_content = output.getvalue()
     output.close()
+
+    applied_filters = []
+    if event_type:
+        applied_filters.append(f"event type: {event_type}")
+    if module:
+        applied_filters.append(f"module: {module}")
+    if start_date:
+        applied_filters.append(f"start date: {start_date}")
+    if end_date:
+        applied_filters.append(f"end date: {end_date}")
+
+    filter_description = (
+        ", ".join(applied_filters)
+        if applied_filters
+        else "none"
+    )
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="EXPORT",
+        action="Audit Logs Exported",
+        module="Audit Logs",
+        description=(
+            f"Exported {len(logs)} audit log records as CSV "
+            f"(filters: {filter_description})"
+        ),
+    )
 
     return Response(
         content=csv_content,

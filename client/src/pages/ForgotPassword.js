@@ -9,7 +9,8 @@ import {
 
 import AuthLeftPanel from "../components/AuthLeftPanel";
 import "../styles/Auth.css";
-
+import { API_BASE } from "../config/api";
+const API_BASE_URL = API_BASE;
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,7 +33,7 @@ function ForgotPassword() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/forgot-password", {
+      const response = await fetch(`${API_BASE}/auth/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

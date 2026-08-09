@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, {createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import { API_BASE } from "../config/api";
 
 const UIContext = createContext(null);
 
@@ -39,44 +45,50 @@ export function UIProvider({ children }) {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // After mounting, refresh user from the API (passing the JWT so the backend
-  // returns the correct user, not always user #1).
-  const loadUserProfile = useCallback(async () => {
-    const token = getStoredToken();
-    if (!token) return; // not logged in yet
+// After mounting, refresh user from the API (passing the JWT so the backend
+// returns the correct user, not always user #1).
+const loadUserProfile = useCallback(async () => {
+  const token = getStoredToken();
+  if (!token) return;
 
-    // Immediately apply whatever is already in storage so the navbar
-    // shows the correct name without waiting for the API round-trip.
-    const stored = getStoredUser();
-    if (stored.name) setUser(stored);
+  // Show stored user immediately
+  const stored = getStoredUser();
+  if (stored.name) setUser(stored);
 
-    try {
-      const res = await fetch('/api/profile', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const refreshed = {
-          name: data.full_name || data.name || stored.name || data.email,
-          role: data.role || stored.role || 'User',
-          email: data.email || stored.email || '',
-        };
-        setUser(refreshed);
-        // Keep storage in sync so getStoredUser() returns up-to-date values
-        const storage = localStorage.getItem('token') ? localStorage : sessionStorage;
-        storage.setItem('name', refreshed.name);
-        storage.setItem('role', refreshed.role);
-        storage.setItem('email', refreshed.email);
-      }
-    } catch (err) {
-      // API not reachable — use whatever was in storage
-      console.warn('Profile API unavailable, using stored data:', err);
+  try {
+    const res = await fetch(`${API_BASE}/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+
+      const refreshed = {
+        name: data.full_name || data.name || stored.name || data.email,
+        role: data.role || stored.role || "User",
+        email: data.email || stored.email || "",
+      };
+
+      setUser(refreshed);
+
+      const storage = localStorage.getItem("token")
+        ? localStorage
+        : sessionStorage;
+
+      storage.setItem("name", refreshed.name);
+      storage.setItem("role", refreshed.role);
+      storage.setItem("email", refreshed.email);
     }
-  }, []);
+  } catch (err) {
+    console.warn("Profile API unavailable, using stored data:", err);
+  }
+}, []);
 
-  useEffect(() => {
-    loadUserProfile();
-  }, [loadUserProfile]);
+useEffect(() => {
+  loadUserProfile();
+}, [loadUserProfile]);
 
   // Fetch notification count from backend
   useEffect(() => {
