@@ -1,10 +1,4 @@
 import React from "react";
-import Sidebar from "./layout/Sidebar";
-import Navbar from "./layout/Navbar";
-import PageContainer from "./layout/PageContainer";
-import Home from "./pages/Home";
-import "./assets/global.css";
-
 import {
   BrowserRouter,
   Navigate,
@@ -43,6 +37,7 @@ import UserManagement from "./pages/UserManagement";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
+import "./assets/global.css";
 
 function isAuthenticated() {
   return Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"));
@@ -97,7 +92,6 @@ function DefaultRoleRoute() {
 
 function AppShell() {
   return (
-<<<<<<< HEAD
     <PageContainer>
       <Routes>
         <Route path="/" element={<DefaultRoleRoute />} />
@@ -119,17 +113,6 @@ function AppShell() {
         <Route path="*" element={<DefaultRoleRoute />} />
       </Routes>
     </PageContainer>
-=======
-    <div className="app-container">
-      <Sidebar />
-      <div className="main-content">
-        <Navbar />
-        <PageContainer>
-          <Home />
-        </PageContainer>
-      </div>
-    </div>
->>>>>>> d6b4c61da0bb69a7680fb1d1ae420d136d713987
   );
 }
 
