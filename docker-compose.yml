@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./Server
+    container_name: contract_backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./Server/.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build: ./Client
+    container_name: contract_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
