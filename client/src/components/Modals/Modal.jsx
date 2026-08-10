@@ -3,18 +3,16 @@ import React from 'react';
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-      backgroundColor: 'rgba(10, 37, 64, 0.5)', backdropFilter: 'blur(4px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-    }}>
-      <div style={{
-        background: 'var(--background-white)', borderRadius: '12px', width: '100%', maxWidth: '500px',
-        boxShadow: '0 24px 48px rgba(0,0,0,0.2)', padding: '24px', animation: 'slideUp 0.3s ease-out'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--primary-color)' }}>{title}</h2>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer', color: 'var(--text-secondary)' }}>&times;</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white dark:bg-[#161F2E] border border-slate-200 dark:border-[#2A364F] rounded-2xl p-6 sm:p-8 w-full max-w-lg shadow-2xl overflow-hidden animate-scale-up">
+        <div className="flex justify-between items-center pb-4 mb-4 border-b border-slate-100 dark:border-[#2A364F]">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white m-0">{title}</h2>
+          <button 
+            onClick={onClose} 
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-lg cursor-pointer"
+          >
+            &times;
+          </button>
         </div>
         <div>
           {children}
@@ -23,4 +21,5 @@ const Modal = ({ isOpen, onClose, title, children }) => {
     </div>
   );
 };
+
 export default Modal;

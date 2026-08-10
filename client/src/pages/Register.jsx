@@ -1,115 +1,12 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import '../assets/theme.css';
+import React from 'react';
+import AuthLayout from '../features/authentication/components/AuthLayout.jsx';
+import RegisterForm from '../features/authentication/components/RegisterForm.jsx';
 
 const Register = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setIsLoading(false);
-      return;
-    }
-    
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, confirm_password: confirmPassword })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to create account.');
-      }
-
-      // On successful registration, redirect to dashboard
-      localStorage.setItem('token', data.access_token || 'fake-jwt-token');
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h1 className="auth-title">Create an account</h1>
-        <p className="auth-subtitle">Get started with ContractIQ</p>
-        
-        {error && <div className="error-message">{error}</div>}
-
-        <form onSubmit={handleRegister}>
-          <div className="form-group">
-            <label className="form-label">Full Name</label>
-            <input 
-              type="text" 
-              className="premium-input" 
-              placeholder="John Doe" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required 
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Email address</label>
-            <input 
-              type="email" 
-              className="premium-input" 
-              placeholder="name@company.com" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required 
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input 
-              type="password" 
-              className="premium-input" 
-              placeholder="Create a strong password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required 
-              minLength="8"
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Confirm Password</label>
-            <input 
-              type="password" 
-              className="premium-input" 
-              placeholder="Confirm your password" 
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required 
-              minLength="8"
-            />
-          </div>
-          <button type="submit" className="premium-button" disabled={isLoading}>
-            {isLoading ? 'Creating account...' : 'Create Account'}
-          </button>
-        </form>
-
-        <div className="auth-link">
-          Already have an account? <Link to="/login">Sign in</Link>
-        </div>
-      </div>
-    </div>
+    <AuthLayout mode="split">
+      <RegisterForm />
+    </AuthLayout>
   );
 };
 

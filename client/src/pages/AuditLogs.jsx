@@ -115,8 +115,9 @@ const AuditLogs = () => {
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 style={{ margin: 0, fontSize: '28px', color: 'var(--primary-color)' }}>Audit Logs</h1>
           <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)' }}>

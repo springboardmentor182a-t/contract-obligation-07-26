@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import Modal from '../components/Modals/Modal';
 
 const ObligationTracker = () => {
   const [obligations, setObligations] = useState([]);
-
-  useEffect(() => {
-    fetch('/api/obligations')
-      .then(res => res.json())
-      .then(data => setObligations(data))
-      .catch(console.error);
-  }, []);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({
     contract: '',
@@ -17,6 +10,13 @@ const ObligationTracker = () => {
     dueDate: '',
     priority: 'Medium'
   });
+
+  useEffect(() => {
+    fetch('/api/obligations')
+      .then(res => res.json())
+      .then(data => setObligations(data))
+      .catch(console.error);
+  }, []);
 
   const handleMarkDone = (id) => {
     setObligations(obligations.map(obl => 
@@ -40,100 +40,167 @@ const ObligationTracker = () => {
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 style={{ margin: 0, fontSize: '28px', color: 'var(--primary-color)' }}>Obligation Tracker</h1>
-          <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)' }}>Track and manage deliverables and deadlines across all contracts.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white m-0">
+            Obligation Tracker
+          </h1>
+          <p className="text-sm text-[#64748B] dark:text-[#8E9BAE] mt-1 m-0">
+            Track and manage deliverables and deadlines across all contracts.
+          </p>
         </div>
-        <button onClick={() => setIsModalOpen(true)} className="premium-button" style={{ width: 'auto', padding: '12px 24px' }}>
-          <i className="fa-solid fa-plus" style={{ marginRight: '8px' }}></i> New Task
+        <button 
+          onClick={() => setIsModalOpen(true)} 
+          className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-sm hover:shadow transition-all flex items-center gap-2 cursor-pointer w-fit"
+        >
+          <i className="fa-solid fa-plus"></i>
+          <span>New Task</span>
         </button>
       </div>
 
-      <div className="premium-table-container">
-        <table className="premium-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Contract</th>
-              <th>Task Description</th>
-              <th>Due Date</th>
-              <th>Priority</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {obligations.map((obl, idx) => (
-              <tr key={idx}>
-                <td style={{ fontWeight: 600 }}>{obl.id}</td>
-                <td>{obl.contract}</td>
-                <td>{obl.description}</td>
-                <td style={{ color: obl.status === 'Overdue' ? 'var(--danger-color)' : 'inherit', fontWeight: obl.status === 'Overdue' ? 600 : 'normal' }}>
-                  {obl.dueDate}
-                </td>
-                <td>
-                  <span style={{ 
-                    padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600,
-                    backgroundColor: obl.priority === 'Critical' ? 'rgba(239,68,68,0.1)' : obl.priority === 'High' ? 'rgba(245,158,11,0.1)' : 'rgba(30,58,138,0.1)',
-                    color: obl.priority === 'Critical' ? 'var(--danger-color)' : obl.priority === 'High' ? 'var(--warning-color)' : 'var(--primary-color)'
-                  }}>
-                    {obl.priority}
-                  </span>
-                </td>
-                <td><span className={`badge ${obl.status === 'Completed' ? 'active' : obl.status === 'Overdue' ? 'expired' : 'pending'}`}>{obl.status}</span></td>
-                <td>
-                  {obl.status !== 'Completed' ? (
-                    <button onClick={() => handleMarkDone(obl.id)} className="premium-button" style={{ padding: '6px 12px', fontSize: '12px', width: 'auto', margin: 0 }}>Mark Done</button>
-                  ) : (
-                    <span style={{ fontSize: '12px', color: 'var(--success-color)', fontWeight: 600 }}><i className="fa-solid fa-check"></i> Done</span>
-                  )}
-                </td>
+      {/* Table */}
+      <div className="bg-white dark:bg-[#161F2E] border border-slate-200 dark:border-[#2A364F] rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+            <thead className="bg-slate-50 dark:bg-[#0B1121]/80 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#8E9BAE] border-b border-slate-200 dark:border-[#2A364F]">
+              <tr>
+                <th className="px-6 py-4">ID</th>
+                <th className="px-6 py-4">Contract</th>
+                <th className="px-6 py-4">Task Description</th>
+                <th className="px-6 py-4">Due Date</th>
+                <th className="px-6 py-4">Priority</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-center">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-[#2A364F]/60">
+              {obligations.map((obl, idx) => {
+                const priorityClass = obl.priority === 'Critical'
+                  ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/30'
+                  : obl.priority === 'High'
+                  ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30'
+                  : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30';
+
+                const statusClass = obl.status === 'Completed'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30'
+                  : obl.status === 'Overdue'
+                  ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/30'
+                  : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30';
+
+                return (
+                  <tr key={idx} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-blue-600 dark:text-blue-400">{obl.id}</td>
+                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{obl.contract}</td>
+                    <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{obl.description}</td>
+                    <td className={`px-6 py-4 font-medium ${obl.status === 'Overdue' ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-700 dark:text-slate-300'}`}>
+                      {obl.dueDate}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${priorityClass}`}>
+                        {obl.priority}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${statusClass}`}>
+                        {obl.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {obl.status !== 'Completed' ? (
+                        <button 
+                          onClick={() => handleMarkDone(obl.id)} 
+                          className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all"
+                        >
+                          Mark Done
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center text-xs font-semibold text-emerald-600 dark:text-emerald-400 gap-1">
+                          <i className="fa-solid fa-check"></i>
+                          Done
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {obligations.length === 0 && (
+                <tr>
+                  <td colSpan="7" className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">
+                    No obligations tracked yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {isModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ backgroundColor: 'var(--background-white)', borderRadius: '12px', width: '500px', padding: '32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', animation: 'slideUp 0.3s ease-out', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ margin: 0, color: 'var(--primary-color)', fontSize: '22px' }}>Add New Obligation</h2>
-              <i className="fa-solid fa-xmark" style={{ cursor: 'pointer', fontSize: '20px', color: '#9ca3af' }} onClick={() => setIsModalOpen(false)}></i>
-            </div>
-            
-            <form onSubmit={handleAddTask}>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Contract Name</label>
-                <input required className="premium-input" value={newTask.contract} onChange={(e) => setNewTask({...newTask, contract: e.target.value})} placeholder="e.g. Acme Corp NDA" />
-              </div>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Task Description</label>
-                <input required className="premium-input" value={newTask.description} onChange={(e) => setNewTask({...newTask, description: e.target.value})} placeholder="e.g. Submit Q3 Financials" />
-              </div>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Due Date</label>
-                <input type="text" required className="premium-input" value={newTask.dueDate} onChange={(e) => setNewTask({...newTask, dueDate: e.target.value})} placeholder="e.g. Oct 15, 2026" />
-              </div>
-              <div style={{ marginBottom: '32px' }}>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Priority</label>
-                <select className="premium-input" value={newTask.priority} onChange={(e) => setNewTask({...newTask, priority: e.target.value})}>
-                  <option>Medium</option>
-                  <option>High</option>
-                  <option>Critical</option>
-                </select>
-              </div>
-              
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                <button type="button" onClick={() => setIsModalOpen(false)} className="premium-button" style={{ width: 'auto', backgroundColor: 'var(--background-light)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', boxShadow: 'none', padding: '10px 20px' }}>Cancel</button>
-                <button type="submit" className="premium-button" style={{ width: 'auto', padding: '10px 24px' }}>Save Task</button>
-              </div>
-            </form>
+      {/* Modal */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Obligation">
+        <form onSubmit={handleAddTask} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">Contract Name</label>
+            <input 
+              required 
+              className="w-full px-4 py-2.5 rounded-lg text-sm bg-white dark:bg-[#0B1121] border border-slate-300 dark:border-[#2A364F] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+              value={newTask.contract} 
+              onChange={(e) => setNewTask({...newTask, contract: e.target.value})} 
+              placeholder="e.g. Acme Corp NDA" 
+            />
           </div>
-        </div>
-      )}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">Task Description</label>
+            <input 
+              required 
+              className="w-full px-4 py-2.5 rounded-lg text-sm bg-white dark:bg-[#0B1121] border border-slate-300 dark:border-[#2A364F] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+              value={newTask.description} 
+              onChange={(e) => setNewTask({...newTask, description: e.target.value})} 
+              placeholder="e.g. Submit Q3 Financials" 
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">Due Date</label>
+            <input 
+              type="text" 
+              required 
+              className="w-full px-4 py-2.5 rounded-lg text-sm bg-white dark:bg-[#0B1121] border border-slate-300 dark:border-[#2A364F] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+              value={newTask.dueDate} 
+              onChange={(e) => setNewTask({...newTask, dueDate: e.target.value})} 
+              placeholder="e.g. Oct 15, 2026" 
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">Priority</label>
+            <select 
+              className="w-full px-4 py-2.5 rounded-lg text-sm bg-white dark:bg-[#0B1121] border border-slate-300 dark:border-[#2A364F] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" 
+              value={newTask.priority} 
+              onChange={(e) => setNewTask({...newTask, priority: e.target.value})}
+            >
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+          
+          <div className="flex justify-end gap-3 pt-3">
+            <button 
+              type="button" 
+              onClick={() => setIsModalOpen(false)} 
+              className="px-4 py-2 text-sm font-semibold rounded-lg bg-white dark:bg-[#161F2E] border border-slate-300 dark:border-[#2A364F] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              className="px-4 py-2 text-sm font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors"
+            >
+              Save Task
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
