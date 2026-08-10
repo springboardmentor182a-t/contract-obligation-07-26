@@ -43,14 +43,16 @@ export default function Help() {
   useEffect(() => {
     async function loadFaqs() {
       try {
-        const res = await fetch(`${API_BASE}/faqs`);
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const res = await fetch(`${API_BASE}/faqs`, { headers });
         if (res.ok) {
           const data = await res.json();
           setFaqs(data);
         }
-        // On failure, FAQ list stays empty — no dummy fallback
       } catch (err) {
-        console.warn('FAQs API unavailable — waiting for DB connection.', err);
+        console.warn('FAQs API unavailable:', err);
       }
     }
     loadFaqs();
@@ -61,6 +63,7 @@ export default function Help() {
     if (subject.trim() === "" || details.trim() === "") return;
     setSubmitting(true);
 
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     const payload = {
       subject,
       severity,
@@ -70,11 +73,14 @@ export default function Help() {
     try {
       await fetch(`${API_BASE}/support/tickets`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
     } catch (e) {
-      console.warn("Could not submit ticket to backend API, completing offline");
+      console.warn("Could not submit ticket to backend API");
     }
 
     setTimeout(() => {
@@ -82,8 +88,9 @@ export default function Help() {
       setSubmitted(true);
       setSubject("");
       setDetails("");
-    }, 1500);
+    }, 1200);
   }
+
 
   // Filter FAQS by search query
   const filteredFaqs = faqs.filter(

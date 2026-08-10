@@ -59,17 +59,18 @@ def invite_user(
         role=payload.role,
         department=payload.department,
         message=payload.message,
-        status="Active",
+        status="Sent",
     )
 
     db.add(new_invitation)
 
     # Create user so it appears immediately in the User Table
     temp_password = secrets.token_hex(16)
+    full_name = payload.full_name or payload.email.split("@")[0].capitalize()
 
     new_user = User(
-        name=payload.full_name,
-        full_name=payload.full_name,
+        name=full_name,
+        full_name=full_name,
         email=payload.email,
         password=temp_password,
         role=payload.role,
@@ -98,6 +99,53 @@ def invite_user(
         ),
     )
 
+    # Dispatch Invitation Email
+    import os, smtplib
+    from email.mime.text import MIMEText
+
+    smtp_host = os.getenv("SMTP_HOST")
+    smtp_port = int(os.getenv("SMTP_PORT", "587"))
+    smtp_user = os.getenv("SMTP_USER")
+    smtp_pass = os.getenv("SMTP_PASSWORD")
+
+    email_subject = "You have been invited to ContractIQ"
+    email_body = f"""Hello {full_name},
+
+You have been invited to join the ContractIQ workspace as a {payload.role} ({payload.department or 'General'}).
+
+Personal message: "{payload.message or 'Welcome to the team!'}"
+
+Your temporary login details:
+Email: {payload.email}
+Temporary Password: {temp_password}
+
+Access workspace: http://localhost:3000/login
+
+Best regards,
+ContractIQ Legal Operations Team
+"""
+
+    if smtp_host and smtp_user:
+        try:
+            msg = MIMEText(email_body)
+            msg["Subject"] = email_subject
+            msg["From"] = smtp_user
+            msg["To"] = payload.email
+
+            with smtplib.SMTP(smtp_host, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_pass)
+                server.sendmail(smtp_user, [payload.email], msg.as_string())
+            print(f"[EMAIL DISPATCH SUCCESS] Invitation sent to {payload.email}")
+        except Exception as exc:
+            print(f"[EMAIL DISPATCH WARNING] Could not send via SMTP ({exc}), logged email to console.")
+    else:
+        print("=" * 60)
+        print(f"[INVITATION EMAIL SENT TO: {payload.email}]")
+        print(f"Subject: {email_subject}")
+        print(email_body)
+        print("=" * 60)
+
     return UserInviteResponse(
         id=new_invitation.id,
         email=new_invitation.email,
@@ -106,6 +154,7 @@ def invite_user(
         status=new_invitation.status,
         invitedAt=new_invitation.created_at.isoformat(),
     )
+
 
 
 @router.get("/invitations", response_model=List[UserInviteResponse])

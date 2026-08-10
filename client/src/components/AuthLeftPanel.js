@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   BarChart2,
   Lock,
@@ -8,6 +9,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import { API_BASE } from "../config/api";
 
 const FEATURES = [
   {
@@ -49,6 +51,47 @@ const FEATURES = [
 ];
 
 function AuthLeftPanel() {
+  const [assuranceScore, setAssuranceScore] = useState(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let isMounted = true;
+
+    const loadAssurance = async () => {
+      try {
+        const baseUrl = API_BASE || "/api";
+        const response = await axios.get(`${baseUrl}/assurance`, {
+          signal: controller.signal,
+          timeout: 10000,
+        });
+
+        const result = response.data;
+        const score = Number(result.score);
+
+        if (
+          isMounted
+          && result.monitored === true
+          && Number.isFinite(score)
+          && score >= 0
+          && score <= 100
+        ) {
+          setAssuranceScore(Math.round(score));
+        }
+      } catch (error) {
+        if (isMounted && !axios.isCancel(error)) {
+          setAssuranceScore(null);
+        }
+      }
+    };
+
+    loadAssurance();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, []);
+
   return (
     <section className="premium-login-left">
       <div className="login-background-pattern" />
@@ -98,7 +141,9 @@ function AuthLeftPanel() {
           </div>
 
           <div className="compliance-value-row">
-            <strong>XX%</strong>
+            <strong>
+              {assuranceScore === null ? "—%" : `${assuranceScore}%`}
+            </strong>
 
             <span className="compliance-trend">
               <TrendingUp size={15} />
@@ -107,7 +152,17 @@ function AuthLeftPanel() {
           </div>
 
           <div className="compliance-progress">
-            <div className="compliance-progress-value" />
+            <div
+              className="compliance-progress-value"
+              role="progressbar"
+              aria-label="Live contract assurance score"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow={assuranceScore ?? undefined}
+              style={{
+                width: assuranceScore === null ? "0%" : `${assuranceScore}%`,
+              }}
+            />
           </div>
 
           <div className="compliance-details">

@@ -29,23 +29,25 @@ export default function Notifications() {
   useEffect(() => {
     async function loadNotifications() {
       try {
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
         const [resNotifs, resRenewals] = await Promise.all([
-          fetch(`${API_BASE}/notifications`),
-          fetch(`${API_BASE}/renewals/upcoming`)
+          fetch(`${API_BASE}/notifications`, { headers }),
+          fetch(`${API_BASE}/renewals/upcoming`, { headers })
         ]);
         if (resNotifs.ok) {
           const data = await resNotifs.json();
           setNotifs(data);
-          const unreadCount = data.filter(n => !n.is_read).length;
+          const unreadCount = data.filter(n => !n.is_read && !n.isRead).length;
           setNotificationCount(unreadCount);
         }
         if (resRenewals.ok) {
           const renewalData = await resRenewals.json();
           setUpcomingRenewals(renewalData);
         }
-        // If endpoints fail, lists stay empty — no dummy fallback
       } catch (err) {
-        console.warn('Notifications API unavailable — waiting for DB connection.', err);
+        console.warn('Notifications API unavailable:', err);
       }
     }
     loadNotifications();
@@ -58,24 +60,28 @@ export default function Notifications() {
   }, [notifs, setNotificationCount]);
 
   async function handleMarkRead(id) {
-    // Optimistic UI update
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, isRead: true, is_read: true } : n));
     try {
-      await fetch(`/api/notifications/${id}/read`, { method: "PATCH" });
+      await fetch(`/api/notifications/${id}/read`, { method: "PATCH", headers });
     } catch (e) {
       console.warn("Could not sync read status with backend");
     }
   }
 
   async function handleDismiss(id) {
-    // Stage for slide out animation
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
     setDismissingIds(prev => [...prev, id]);
     
     setTimeout(async () => {
       setNotifs(prev => prev.filter(n => n.id !== id));
       setDismissingIds(prev => prev.filter(dId => dId !== id));
       try {
-        await fetch(`/api/notifications/${id}`, { method: "DELETE" });
+        await fetch(`/api/notifications/${id}`, { method: "DELETE", headers });
       } catch (e) {
         console.warn("Could not delete from backend");
       }
@@ -83,13 +89,17 @@ export default function Notifications() {
   }
 
   async function handleMarkAllRead() {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
     setNotifs(prev => prev.map(n => ({ ...n, isRead: true, is_read: true })));
     try {
-      await fetch(`${API_BASE}/notifications/mark-all-read`, { method: "POST" });
+      await fetch(`${API_BASE}/notifications/mark-all-read`, { method: "POST", headers });
     } catch (e) {
       console.warn("Could not sync bulk read state");
     }
   }
+
 
   const filtered = filter === "All" ? notifs : notifs.filter((n) => n.cat === filter);
   
@@ -182,7 +192,7 @@ export default function Notifications() {
 
         {/* Sidebar Summary */}
         <div>
-          <div className="card summary-card" style={{ padding: 22, marginBottom: 20 }}>
+          <div className="card notif-summary-card" style={{ padding: 22, marginBottom: 20 }}>
             <div className="section-title">Today's Summary</div>
             <p className="muted" style={{ fontSize: 12.5, lineHeight: 1.5, marginBottom: 18 }}>
               Check system operations flags and high-risk alerts before generating your quarterly review deck.
@@ -203,12 +213,12 @@ export default function Notifications() {
             </div>
           </div>
 
-          <div className="card renewals-preview-card" style={{ padding: 22 }}>
+          <div className="card notif-renewals-card" style={{ padding: 22 }}>
             <div className="section-title">Urgent Renewals</div>
             <p className="muted" style={{ fontSize: 12, marginBottom: 15 }}>Required review for upcoming contracts</p>
             <div className="renewals-list">
               {upcomingRenewals.map((r) => (
-                <div className="renewal-preview-row" key={r.code}>
+                <div className="renewal-preview-row" key={r.code || r.name}>
                   <div className="renewal-desc">
                     <span className="code">{r.code}</span>
                     <span className="name">{r.name}</span>

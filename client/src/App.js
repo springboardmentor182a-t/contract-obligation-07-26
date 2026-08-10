@@ -107,9 +107,9 @@ function AppShell() {
         <Route path="/calendar" element={<AuthorizedRoute path="/calendar"><Calendar /></AuthorizedRoute>} />
         <Route path="/audit" element={<AuthorizedRoute path="/audit"><Audit /></AuthorizedRoute>} />
         <Route path="/user-management" element={<AuthorizedRoute path="/user-management"><UserManagement /></AuthorizedRoute>} />
-        <Route path="/profile" element={<AuthorizedRoute path="/profile"><Profile /></AuthorizedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/settings" element={<AuthorizedRoute path="/settings"><Settings /></AuthorizedRoute>} />
-        <Route path="/help" element={<AuthorizedRoute path="/help"><Help /></AuthorizedRoute>} />
+        <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
         <Route path="*" element={<DefaultRoleRoute />} />
       </Routes>
     </PageContainer>

@@ -78,11 +78,14 @@ export default function Settings() {
   useEffect(() => {
     async function loadData() {
       try {
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
         const [resSettings, resInvites, resApiKeys, resInvoices] = await Promise.all([
-          fetch(`${API_BASE}/settings`),
-          fetch(`${API_BASE}/users/invitations`),
-          fetch(`${API_BASE}/settings/security/apikeys`),
-          fetch(`${API_BASE}/billing/invoices`)
+          fetch(`${API_BASE}/settings`, { headers }),
+          fetch(`${API_BASE}/users/invitations`, { headers }),
+          fetch(`${API_BASE}/settings/security/apikeys`, { headers }),
+          fetch(`${API_BASE}/billing/invoices`, { headers })
         ]);
         if (resSettings.ok) {
           const data = await resSettings.json();
@@ -102,19 +105,16 @@ export default function Settings() {
           const invites = await resInvites.json();
           setInvitedUsers(invites);
         }
-        // On failure, invitedUsers stays [] — no dummy fallback
         if (resApiKeys.ok) {
           const keys = await resApiKeys.json();
           setApiKeys(keys);
         }
-        // On failure, apiKeys stays [] — no dummy fallback
         if (resInvoices.ok) {
           const inv = await resInvoices.json();
           setInvoices(inv);
         }
-        // On failure, invoices stays [] — no dummy fallback
       } catch (err) {
-        console.warn('Settings API unavailable — waiting for DB connection.', err);
+        console.warn('Settings API unavailable:', err);
       }
     }
     loadData();
@@ -123,6 +123,7 @@ export default function Settings() {
   /* ── Save Settings ── */
   async function handleSaveSettings() {
     setSaved(true);
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     const payload = {
       org_name: orgName,
       currency,
@@ -135,17 +136,13 @@ export default function Settings() {
       sso: toggles.sso,
     };
 
-    /* 
-      TODO: Connect API Endpoint here
-      Method: PATCH
-      Route: /api/settings
-      Payload: { org_name: str, currency: str, date_format: str, email_notif: bool, sms_notif: bool, slack_notif: bool, renewal_alerts: bool, two_factor: bool, sso: bool }
-      Database mapping: Updates "user_settings" table row matching user_id = 1
-    */
     try {
       await fetch(`${API_BASE}/settings`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
       showToast("General Settings updated!");
@@ -154,6 +151,7 @@ export default function Settings() {
     }
     setTimeout(() => setSaved(false), 2000);
   }
+
 
   function handleToggle(key) {
     setToggles((t) => ({ ...t, [key]: !t[key] }));

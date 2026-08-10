@@ -19,6 +19,7 @@ import {
   GearIcon,
   ChevDownIcon,
   CalendarIcon,
+  PlusIcon,
 } from "../components/Icons";
 
 const MENU = [
@@ -29,6 +30,7 @@ const MENU = [
   { to: "/compliance",         label: "Compliance",          Icon: ShieldIcon,    implemented: true },
   { to: "/reports",            label: "Reports & Analytics", Icon: BarIcon,       implemented: true },
   { to: "/notifications",      label: "Notifications",       Icon: BellIcon,      badgeKey: "notifications", implemented: true },
+  { to: "/quick-actions",      label: "Quick Actions",       Icon: PlusIcon,      implemented: true },
   { to: "/calendar",           label: "Calendar",            Icon: CalendarIcon,  implemented: true },
   { to: "/audit",              label: "Audit Logs",          Icon: BookIcon,      implemented: true },
   { to: "/user-management",    label: "User Management",     Icon: UsersIcon,     implemented: true },

@@ -1,10 +1,13 @@
 import axios from "axios";
 
-// const API = axios.create({
-//   baseURL: "/api",
-// });
+// Supports both Vite and Create React App
+const API_BASE =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
+  process.env.REACT_APP_API_BASE_URL ||
+  "https://contract-obligation-demo-group-c.onrender.com/api";
+
 const API = axios.create({
-  baseURL: "https://contract-obligation-demo-group-c.onrender.com/api",
+  baseURL: API_BASE,
 });
 // ======================
 // Contract APIs
@@ -17,6 +20,11 @@ export const getContracts = async () => {
 
 export const getContract = async (id) => {
   const response = await API.get(`/contracts/${id}`);
+  return response.data;
+};
+
+export const getContractInsights = async (id) => {
+  const response = await API.get(`/insights/${id}`);
   return response.data;
 };
 

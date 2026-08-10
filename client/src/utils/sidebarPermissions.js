@@ -6,6 +6,7 @@ const ALL_ITEMS = [
   "Compliance",
   "Reports & Analytics",
   "Notifications",
+  "Quick Actions",
   "Calendar",
   "Audit Logs",
   "User Management",
@@ -28,11 +29,14 @@ const sidebarRoutes = {
   Compliance: "/compliance",
   "Reports & Analytics": "/reports",
   Notifications: "/notifications",
+  "Quick Actions": "/quick-actions",
   Calendar: "/calendar",
   "Audit Logs": "/audit",
   "User Management": "/user-management",
   Settings: "/settings",
 };
+
+const alwaysAllowedRoutes = new Set(["/profile", "/help"]);
 
 const routeAliases = {
   "/contract-repository": "/repository",
@@ -62,5 +66,9 @@ export function getDefaultRouteForRole(role) {
 }
 
 export function canAccessRoute(role, pathname) {
+  return true;
+}
+
+export function hasQuickActions(role) {
   return true;
 }

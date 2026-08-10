@@ -7,11 +7,12 @@ from pydantic import BaseModel
 class ObligationBase(BaseModel):
     title: str
     description: Optional[str] = None
-    contract_id: int
-    owner_id: int
+    contract_id: Optional[int] = None
+    owner_id: Optional[int] = None
     priority: str
     status: str
     due_date: date
+
 
 
 class ObligationCreate(ObligationBase):

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUI } from "../context/UIContext";
 import { API_BASE } from "../config/api";
+import { hasQuickActions, getCurrentUserRole } from "../utils/sidebarPermissions";
 import {
   ChevRightSmIcon, SearchIcon, MoonIcon, SunIcon, HelpIcon, BellIcon, PlusIcon,
   FileIcon, BarIcon, ChevDownIcon, UserIcon, CalendarIcon,
@@ -81,11 +82,15 @@ export default function Navbar({ onToggleSidebar }) {
   const { notificationCount, user, toggleTheme, theme } = useUI();
   const navigate = useNavigate();
   const location = useLocation();
+  const currentRole = getCurrentUserRole(user?.role);
+  const showQuickActions = hasQuickActions(currentRole);
 
   useEffect(() => {
     async function loadNotifs() {
       try {
-        const response = await fetch(`${API_BASE}/notifications`);
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await fetch(`${API_BASE}/notifications`, { headers });
 
         if (response.ok) {
           const data = await response.json();
@@ -98,7 +103,11 @@ export default function Navbar({ onToggleSidebar }) {
     loadNotifs();
   }, [notificationCount]);
 
-  const initials = (user?.name || "AM")
+  const userName = user?.name || localStorage.getItem("name") || sessionStorage.getItem("name") || "User";
+  const userRole = user?.role || localStorage.getItem("role") || sessionStorage.getItem("role") || "Administrator";
+  const userEmail = user?.email || localStorage.getItem("email") || sessionStorage.getItem("email") || "";
+
+  const initials = userName
     .split(" ")
     .map((p) => p[0])
     .slice(0, 2)
@@ -129,6 +138,8 @@ export default function Navbar({ onToggleSidebar }) {
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
     localStorage.removeItem("role");
+    localStorage.removeItem("name");
+    localStorage.removeItem("email");
     sessionStorage.clear();
     setOpen(false);
     setBellOpen(false);
@@ -143,7 +154,6 @@ export default function Navbar({ onToggleSidebar }) {
         className="icon-btn"
         onClick={onToggleSidebar}
         aria-label="Toggle menu"
-        title="Toggle menu"
       >
         <MenuIcon />
       </button>
@@ -182,15 +192,15 @@ export default function Navbar({ onToggleSidebar }) {
       </div>
 
       <div className="top-actions">
-        <Link to="/calendar" className="icon-btn" title="Calendar">
+        <Link to="/calendar" className="icon-btn" aria-label="Calendar">
           <CalendarIcon size={16} />
         </Link>
 
-        <button type="button" className="icon-btn" onClick={toggleTheme} title="Toggle theme">
+        <button type="button" className="icon-btn" onClick={toggleTheme} aria-label="Toggle theme">
           {theme === "light" ? <MoonIcon /> : <SunIcon />}
         </button>
 
-        <Link to="/help" className="icon-btn" title="Help & Support">
+        <Link to="/help" className="icon-btn" aria-label="Help & Support">
           <HelpIcon />
         </Link>
 
@@ -198,7 +208,7 @@ export default function Navbar({ onToggleSidebar }) {
           <button
             type="button"
             className="icon-btn"
-            title="Notifications"
+            aria-label="Notifications"
             onClick={() => setBellOpen((o) => !o)}
           >
             <BellIcon />
@@ -235,6 +245,7 @@ export default function Navbar({ onToggleSidebar }) {
           )}
         </div>
 
+        {showQuickActions && (
         <div className="dropdown-wrap" ref={qaRef}>
           <button
             className="quick-action"
@@ -260,6 +271,7 @@ export default function Navbar({ onToggleSidebar }) {
             </div>
           )}
         </div>
+        )}
 
         <div className="dropdown-wrap" ref={ref}>
           <button
@@ -271,8 +283,8 @@ export default function Navbar({ onToggleSidebar }) {
           >
             <div className="avatar-purple">{initials}</div>
             <div className="user-meta">
-              <strong>{user?.name || "Guest"}</strong>
-              <span>{user?.role || "User"}</span>
+              <strong>{userName}</strong>
+              <span>{userRole}</span>
             </div>
             <span
               className="chev"
@@ -289,10 +301,11 @@ export default function Navbar({ onToggleSidebar }) {
               <div className="dd-header">
                 <div className="avatar-purple">{initials}</div>
                 <div>
-                  <strong>{user?.name || "Guest"}</strong>
-                  <span>{user?.email || ""}</span>
+                  <strong>{userName}</strong>
+                  <span>{userEmail}</span>
                 </div>
               </div>
+
               <button type="button" className="dd-item" onClick={() => goTo("/profile")}>
                 <UserIcon /> My Profile
               </button>

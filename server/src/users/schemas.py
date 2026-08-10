@@ -17,11 +17,12 @@ class UserResponse(BaseModel):
 
 
 class UserInviteRequest(BaseModel):
-    full_name: str
+    full_name: Optional[str] = ""
     email: EmailStr
     role: str
     department: Optional[str] = ""
     message: Optional[str] = ""
+
 
 
 class UserInviteResponse(BaseModel):
