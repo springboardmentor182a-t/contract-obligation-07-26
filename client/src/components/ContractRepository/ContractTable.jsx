@@ -5,6 +5,7 @@ import {
   Pencil,
   Trash2,
   MoreHorizontal,
+  Sparkles,
 } from "lucide-react";
 
 function ContractTable({
@@ -15,6 +16,7 @@ function ContractTable({
   onView,
   onEdit,
   onDelete,
+  onInsights,
 }) {
   const [openMenuId, setOpenMenuId] = useState(null);
   const menuRef = useRef(null);
@@ -200,9 +202,19 @@ function ContractTable({
 
             <div className="card-footer">
               <button
+                type="button"
                 onClick={() => onView(contract)}
               >
                 View Details
+              </button>
+
+              <button
+                type="button"
+                className="card-insights-btn"
+                onClick={() => onInsights(contract)}
+              >
+                <Sparkles size={15} />
+                AI Insights
               </button>
             </div>
           </div>
@@ -277,13 +289,25 @@ function ContractTable({
                 <td>
                   <div className="table-actions">
                     <button
-                      className="action-btn"
-                      title="View"
+                      type="button"
+                      className="action-btn action-btn--label"
+                      title="View Details"
                       onClick={() =>
                         onView(contract)
                       }
                     >
                       <Eye size={16} />
+                      <span>View Details</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="action-btn action-btn--label action-btn--insights"
+                      title="AI Insights"
+                      onClick={() => onInsights(contract)}
+                    >
+                      <Sparkles size={16} />
+                      <span>AI Insights</span>
                     </button>
 
                     <button
