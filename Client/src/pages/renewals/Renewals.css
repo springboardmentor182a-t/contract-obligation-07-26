@@ -409,13 +409,6 @@
   text-align: right;
 }
 
-.rnw-action-buttons {
-  display: flex;
-  gap: 0.4rem;
-  justify-content: flex-end;
-  align-items: center;
-}
-
 .rnw-action-btn {
   display: inline-flex;
   align-items: center;
@@ -428,7 +421,6 @@
   transition: all 0.2s ease;
   border: none;
   font-family: inherit;
-  white-space: nowrap;
 }
 
 .rnw-view-btn {
@@ -453,29 +445,6 @@
 }
 
 .rnw-start-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.rnw-remind-btn {
-  background: rgba(245, 158, 11, 0.12);
-  color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.25);
-}
-
-.rnw-remind-btn:hover {
-  background: rgba(245, 158, 11, 0.2);
-  transform: translateY(-1px);
-}
-
-.rnw-remind-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.rnw-action-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;

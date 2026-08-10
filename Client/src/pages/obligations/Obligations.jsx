@@ -13,6 +13,7 @@ import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modals/Modal';
 import SortableCard from "./SortableCard";
 import './Obligations.css';
+import '../dashboards/Dashboard.css';
 import { createNotification } from '../../features/notifications/services/notificationAPI';
 
 import {
@@ -237,14 +238,52 @@ const Obligations = () => {
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
+  const obligationCards = [
+    {
+      label: 'Overdue',
+      value: overdueCount,
+      icon: <AlertTriangle size={18} />,
+      color: 'var(--color-danger)',
+      desc: 'Past due obligations'
+    },
+    {
+      label: 'Due Soon',
+      value: 2,
+      icon: <Clock size={18} />,
+      color: 'var(--color-warning)',
+      desc: 'Due within 7 days'
+    },
+    {
+      label: 'In Progress',
+      value: 1,
+      icon: <Clock size={18} />,
+      color: 'var(--color-primary)',
+      desc: 'Currently being worked on'
+    },
+    {
+      label: 'Pending',
+      value: pendingCount,
+      icon: <Clock size={18} />,
+      color: 'var(--color-text-light)',
+      desc: 'Waiting to start'
+    },
+    {
+      label: 'Completed Tasks',
+      value: completedCount,
+      icon: <CheckCircle size={18} />,
+      color: 'var(--color-success)',
+      desc: 'Successfully met this month'
+    }
+  ];
+
   return (
     <div className="obl-dashboard fade-in">
       <div className="obl-header-section">
         <div className="obl-header-content">
           <h1 className="obl-title">Obligation Tracking</h1>
-          <p className="obl-subtitle"><p>
+          <p className="obl-subtitle">
             {obligations.length} Obligations • {overdueCount} Overdue
-          </p></p>
+          </p>
         </div>
         <div className="obl-header-actions">
 
@@ -276,71 +315,23 @@ const Obligations = () => {
         </div>
       </div>
 
-      <div className="obl-analytics-grid">
-        <div className="obl-card glass-red">
-          <div className="obl-card-top">
-            <div className="obl-card-icon">
-              <AlertTriangle size={24} />
+      <div className="stats-grid stagger-1">
+        {obligationCards.map((card) => (
+          <div key={card.label} className="stat-card">
+            <div className="stat-card-header">
+              <p className="stat-label">{card.label}</p>
+              <div className="stat-icon" style={{ color: card.color, backgroundColor: `${card.color}15` }}>
+                {card.icon}
+              </div>
+            </div>
+            <div className="stat-content">
+              <h3>{card.value}</h3>
+              <div className="stat-footer">
+                <span className="stat-subtext">{card.desc}</span>
+              </div>
             </div>
           </div>
-
-          <div className="obl-card-data">
-            <div className="obl-val">{overdueCount}</div>
-            <h3>Overdue</h3>
-            <p>Past due obligations</p>
-          </div>
-        </div>
-
-        <div className="obl-card glass-orange">
-          <div className="obl-card-top">
-            <div className="obl-card-icon">
-              <Clock size={24} />
-            </div>
-          </div>
-
-          <div className="obl-card-data">
-            <div className="obl-val">2</div>
-            <h3>Due Soon</h3>
-            <p>Due within 7 days</p>
-          </div>
-        </div>
-        <div className="obl-card glass-blue">
-          <div className="obl-card-top">
-            <div className="obl-card-icon">
-              <Clock size={24} />
-            </div>
-          </div>
-
-          <div className="obl-card-data">
-            <div className="obl-val">1</div>
-            <h3>In Progress</h3>
-            <p>Currently being worked on</p>
-          </div>
-        </div>
-        <div className="obl-card glass-gray">
-          <div className="obl-card-top">
-            <div className="obl-card-icon">
-              <Clock size={24} />
-            </div>
-          </div>
-
-          <div className="obl-card-data">
-            <div className="obl-val">{pendingCount}</div>
-            <h3>Pending</h3>
-            <p>Waiting to start</p>
-          </div>
-        </div>
-
-        <div className="obl-card glass-green">
-          <div className="obl-card-top">
-            <div className="obl-card-icon"><CheckCircle size={24} /></div>
-          </div>
-          <div className="obl-card-data">
-            <h3>Completed Tasks</h3>
-            <div className="obl-val">{completedCount}</div>
-            <p>Successfully met this month</p>
-          </div>
-        </div>
+        ))}
       </div>
 
       <div className="obl-main-area animate-slide-up" style={{ animationDelay: '0.1s' }}>

@@ -2,14 +2,14 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, extract, case
 from datetime import datetime, timedelta, timezone
 
-from entities.user import User
-from entities.contract import Contract
-from entities.obligation import Obligation
-from entities.renewal import Renewal
-from entities.compliance import Compliance, ComplianceStatus, RiskLevel
-from entities.audit_logs import AuditLog
-from entities.notification import Notification
-from entities.report import Report
+from src.entities.user import User
+from src.entities.contract import Contract
+from src.entities.obligation import Obligation
+from src.entities.renewal import Renewal
+from src.entities.compliance import Compliance, ComplianceStatus, RiskLevel
+from src.entities.audit_logs import AuditLog
+from src.entities.notification import Notification
+from src.entities.report import Report
 
 
 class DashboardService:

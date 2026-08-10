@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends  # type: ignore[import-not-found]
 from sqlalchemy.orm import Session  # type: ignore[import-not-found]
 
-from database.core import get_db
-from dashboards.service import DashboardService
-from users.service import get_current_user
-from entities.user import User
+from src.database.core import get_db
+from src.dashboards.service import DashboardService
+from src.users.service import get_current_user
+from src.entities.user import User
 
 router = APIRouter(prefix="/dashboards", tags=["Dashboards"])
 
