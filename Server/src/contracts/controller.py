@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import Optional
 
+from src.contracts.contractssummary import summarize_contract
 from src.database.core import get_db
 from src.contracts import service
 from src.contracts.models import (
@@ -181,3 +182,69 @@ def restore(
         )
 
     return contract
+
+
+@router.post(
+    "/{contract_id}/upload",
+    response_model=ContractResponse
+)
+def upload_file(
+    contract_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Upload a PDF file for a contract."""
+    contract = service.upload_contract_file(db, contract_id, file)
+
+    if not contract:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Contract with ID {contract_id} not found"
+        )
+
+    return contract
+
+
+@router.get("/{contract_id}/summary")
+def contract_summary(
+    contract_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Generate AI summary using both
+    database contract data and uploaded PDF.
+    """
+
+    contract = service.get_contract_by_id(
+        db,
+        contract_id
+    )
+
+    if not contract:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Contract with ID {contract_id} not found"
+        )
+
+    if not contract.file_path:
+        raise HTTPException(
+            status_code=400,
+            detail="No PDF file uploaded for this contract"
+        )
+
+    try:
+
+        summary = summarize_contract(contract)
+
+        return {
+            "contract_id": contract.contract_id,
+            "title": contract.title,
+            "summary": summary
+        }
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate contract summary: {str(e)}"
+        )
