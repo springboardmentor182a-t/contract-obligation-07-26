@@ -20,7 +20,7 @@ router = APIRouter(
 @router.post("/create_organization", response_model=OrganizationResponse)
 def create_organization(
     organization_data: OrganizationCreate,
-    current_user: User = Depends(admin_required),
+    #current_user: User = Depends(admin_required),
     db: Session = Depends(get_db),
 ):
     try:
