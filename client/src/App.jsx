@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -30,6 +31,35 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { NotificationProvider } from "./context/NotificationContext";
 
 import "./assets/theme.css";
+=======
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import PageContainer from './components/layout/PageContainer';
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import GoogleCallback from './features/authentication/GoogleCallback';
+import Dashboard from './pages/Dashboard';
+import ContractRepository from './pages/ContractRepository';
+import ContractDetails from './pages/ContractDetails';
+import ObligationTracker from './pages/ObligationTracker';
+import ComplianceDashboard from './pages/ComplianceDashboard';
+import Reports from './pages/Reports';
+import Notifications from './pages/Notifications';
+import AuditLogs from './pages/AuditLogs';
+import Settings from './features/settings/Settings';
+import Transactions from './pages/Transactions';
+import TaxEstimators from './pages/TaxEstimators';
+import UserManagement from './pages/UserManagement';
+import Renewals from './pages/Renewals';
+import ProtectedRoute from './components/ProtectedRoute';
+import { ThemeProvider } from './context/ThemeContext';
+import { NotificationProvider } from './context/NotificationContext';
+import AIChatbot from './components/AIChatbot';
+import './assets/theme.css';
+>>>>>>> origin/main-group-B
 
 function App() {
   return (
@@ -186,6 +216,7 @@ function App() {
             </Route>
 
           </Routes>
+          <AIChatbot />
         </Router>
       </NotificationProvider>
     </ThemeProvider>

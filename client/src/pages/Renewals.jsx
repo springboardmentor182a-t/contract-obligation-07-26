@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const Renewals = () => {
   const [renewals, setRenewals] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/renewals')
-      .then(res => res.json())
-      .then(data => {
-        setRenewals(data);
+    axios.get('/api/renewals')
+      .then(res => {
+        setRenewals(res.data);
         setLoading(false);
       })
       .catch(err => {
@@ -39,6 +39,7 @@ const Renewals = () => {
               <tr>
                 <th className="px-6 py-4">Contract</th>
                 <th className="px-6 py-4">Type</th>
+                <th className="px-6 py-4">ACV</th>
                 <th className="px-6 py-4">Renewal Date</th>
                 <th className="px-6 py-4">Owner</th>
                 <th className="px-6 py-4">Status</th>
@@ -47,16 +48,18 @@ const Renewals = () => {
             <tbody className="divide-y divide-slate-100 dark:divide-[#2A364F]/60">
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">Loading renewals...</td>
+                  <td colSpan="6" className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">
+                    <div className="flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div></div>
+                  </td>
                 </tr>
               ) : renewals.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">No upcoming renewals found.</td>
+                  <td colSpan="6" className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">No renewals found. Click 'Load Demo Data' in Settings to populate.</td>
                 </tr>
               ) : (
                 renewals.map((r, idx) => {
                   const isCompliant = ['active', 'renewed', 'approved'].includes(String(r.status || '').toLowerCase());
-                  const isPending = ['pending', 'in review', 'upcoming'].includes(String(r.status || '').toLowerCase());
+                  const isPending = ['pending', 'in review', 'upcoming', 'draft'].includes(String(r.status || '').toLowerCase());
 
                   const badgeClass = isCompliant
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30'
@@ -68,6 +71,7 @@ const Renewals = () => {
                     <tr key={idx} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-6 py-4 font-semibold text-blue-600 dark:text-blue-400">{r.contract}</td>
                       <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{r.type}</td>
+                      <td className="px-6 py-4 font-medium text-slate-800 dark:text-slate-200">{r.acv}</td>
                       <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{r.renewalDate}</td>
                       <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{r.owner}</td>
                       <td className="px-6 py-4">

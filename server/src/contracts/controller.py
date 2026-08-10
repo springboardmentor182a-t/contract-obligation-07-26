@@ -39,13 +39,24 @@ def get_metrics(db: Session = Depends(get_db)):
 
 @router.post("/", status_code=201)
 def add_contract(data: ContractCreate, db: Session = Depends(get_db)):
+    try:
+        val_str = str(data.value).replace('$', '').replace(',', '').strip()
+        val = float(val_str) if val_str else 0.0
+    except ValueError:
+        val = 0.0
+
     new_contract = Contract(
         contract_id=data.id,
         vendor=data.vendor,
         type=data.type,
         status=data.status,
+<<<<<<< HEAD
         value=float(data.value) if data.value else 0.0,
         owner=data.owner,
+=======
+        value=val,
+        owner=data.owner
+>>>>>>> origin/main-group-B
     )
     db.add(new_contract)
     db.commit()

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '../components/Modals/Modal';
+import { useObligations } from '../hooks/useObligations';
 
 const ObligationTracker = () => {
-  const [obligations, setObligations] = useState([]);
+  const { data: obligations, setData: setObligations } = useObligations('/api/obligations');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTask, setNewTask] = useState({
     contract: '',
@@ -10,13 +11,6 @@ const ObligationTracker = () => {
     dueDate: '',
     priority: 'Medium'
   });
-
-  useEffect(() => {
-    fetch('/api/obligations')
-      .then(res => res.json())
-      .then(data => setObligations(data))
-      .catch(console.error);
-  }, []);
 
   const handleMarkDone = (id) => {
     setObligations(obligations.map(obl => 

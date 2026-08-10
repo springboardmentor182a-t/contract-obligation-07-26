@@ -70,37 +70,39 @@ def seed_data():
     print("Seeding Obligations & Renewals...")
     obligations = []
     renewals = []
-    for c in contracts:
+    for i, c in enumerate(contracts):
         for j in range(random.randint(1, 3)):
             o = Obligation(
                 obligation_id=f"OBL-{c.id:03d}-{j}",
                 contract_id=c.id,
                 description=f"Obligation {j} for {c.vendor}",
-                dueDate=c.date + datetime.timedelta(days=random.randint(10, 90)),
-                status=random.choice(["Pending", "In Progress", "Completed", "Overdue"]),
+                dueDate=c.date + datetime.timedelta(days=random.randint(-10, 90)),
+                status=random.choice(["pending", "fulfilled", "overdue"]),
                 priority=random.choice(["Low", "Medium", "High", "Critical"])
             )
             obligations.append(o)
 
-        r = Renewal(
-            contract_id=c.id,
-            renewal_date=c.date + datetime.timedelta(days=365),
-            status=random.choice(["Upcoming", "Processed", "Pending"])
-        )
-        renewals.append(r)
+        if i < 8:
+            r = Renewal(
+                contract_id=c.id,
+                renewal_date=datetime.date.today() + datetime.timedelta(days=random.choice([30, 60, 90])),
+                status=random.choice(["Draft", "In Review", "Approved"])
+            )
+            renewals.append(r)
 
     db.add_all(obligations)
     db.add_all(renewals)
 
     print("Seeding Additional Data...")
-    transactions = [
-        Transaction(transaction_id="TRX-101", date="Oct 12, 2026", description="Payment for Contract A", amount="$4,200.00", status="Completed"),
-        Transaction(transaction_id="TRX-102", date="Oct 15, 2026", description="Vendor Retainer", amount="$1,500.00", status="Completed"),
-        Transaction(transaction_id="TRX-103", date="Oct 18, 2026", description="Consulting Fees", amount="$3,800.00", status="Pending"),
-        Transaction(transaction_id="TRX-104", date="Oct 20, 2026", description="Software License", amount="$5,100.00", status="Completed"),
-        Transaction(transaction_id="TRX-105", date="Oct 25, 2026", description="Office Supplies", amount="$900.00", status="Failed"),
-        Transaction(transaction_id="TRX-106", date="Oct 25, 2026", description="Marketing Ad Spend", amount="$2,300.00", status="Completed"),
-    ]
+    transactions = []
+    for i in range(1, 16):
+        transactions.append(Transaction(
+            transaction_id=f"TRX-{100 + i}",
+            date=(datetime.date.today() - datetime.timedelta(days=random.randint(1, 30))).strftime("%b %d, %Y"),
+            description=f"Payment for {random.choice(['Contract A', 'Vendor Retainer', 'Consulting Fees', 'Software License', 'Office Supplies'])}",
+            amount=f"${random.randint(5, 100) * 100}.00",
+            status=random.choice(['Completed', 'Processing', 'Failed'])
+        ))
     db.add_all(transactions)
 
     print("Seeding Audit Logs...")

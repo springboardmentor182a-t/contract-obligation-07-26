@@ -1,7 +1,13 @@
+<<<<<<< HEAD
 import React, { useEffect, useState } from "react";
+=======
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+>>>>>>> origin/main-group-B
 
 const API_URL = `${process.env.REACT_APP_API_BASE_URL}/api/contracts/compliance`;
 const ComplianceDashboard = () => {
+<<<<<<< HEAD
   const [data, setData] = useState({
   stats: [],
   departments: [],
@@ -32,6 +38,42 @@ const departments = data.departments;
 const riskContracts = data.riskContracts;
 const activities = data.activities;
 const reviews = data.reviews;
+=======
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setIsLoading(true);
+    axios.get('/api/compliance/dashboard')
+      .then(res => {
+        setData(res.data);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setError(err.message);
+        setIsLoading(false);
+      });
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-red-500 p-4">Error loading compliance data: {error}</div>;
+  }
+
+  if (!data || Object.keys(data).length === 0) {
+    return <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">No compliance data found. Click 'Load Demo Data' in Settings to populate.</div>;
+  }
+
+>>>>>>> origin/main-group-B
   return (
     <div style={{ padding: "20px" }}>
       <div
