@@ -11,6 +11,7 @@ import ViewToggle from "../components/ContractRepository/ViewToggle";
 import ContractTable from "../components/ContractRepository/ContractTable";
 import ViewContractModal from "../components/ContractRepository/ViewContractModal";
 import NewContractModal from "../components/ContractRepository/NewContractModal";
+import InsightsModal from "../components/ContractRepository/InsightsModal";
 
 import {
   getContracts,
@@ -29,6 +30,7 @@ export default function ContractRepository() {
 
   const [selectedContract, setSelectedContract] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [insightsContract, setInsightsContract] = useState(null);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingContract, setEditingContract] = useState(null);
@@ -273,6 +275,10 @@ export default function ContractRepository() {
           }}
 
           onDelete={handleDelete}
+
+          onInsights={(contract) => {
+            setInsightsContract(contract);
+          }}
         />
       )}
 
@@ -285,6 +291,13 @@ export default function ContractRepository() {
             setShowViewModal(false);
             setSelectedContract(null);
           }}
+        />
+      )}
+
+      {insightsContract && (
+        <InsightsModal
+          contract={insightsContract}
+          onClose={() => setInsightsContract(null)}
         />
       )}
 
