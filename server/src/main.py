@@ -6,6 +6,7 @@ from src.contract_repository.controller import router as contract_repository_rou
 from src.ai_compliance_guardian.controller import (
     router as compliance_guardian_router,
 )
+from src.assurance import router as assurance_router
 from src.insights.controller import router as insights_router
 from src.database.core import initialize_database
 from src.logging import configure_logging
@@ -63,6 +64,10 @@ app.include_router(
 )
 app.include_router(
     insights_router,
+    prefix="/api",
+)
+app.include_router(
+    assurance_router,
     prefix="/api",
 )
 
