@@ -5,20 +5,18 @@ from sqlalchemy import (
     Column,
     Integer,
     String,
+    Float,
+    Date,
     DateTime,
-    Enum as SQLEnum,
+    Boolean,
 )
 
 
 from src.database.core import Base
-from src.entities.compliance import Compliance
-from src.entities.user import User
-from src.entities.obligation import Obligation
-from src.entities.renewal import Renewal
 
 
 class ContractStatus(str, Enum):
-    
+
     DRAFT = "Draft"
     PENDING = "Pending"
     UNDER_REVIEW = "Under Review"
@@ -28,45 +26,35 @@ class ContractStatus(str, Enum):
     TERMINATED = "Terminated"
 
 
-class ContractCategories(str, Enum):
-    
-    EMPLOYMENT_CONTRACTS = "Employment Contracts"
-    VENDOR_CONTRACTS = "Vendor Contracts"
-    SERVICE_AGREEMENTS = "Service Agreements"
-    LEASE_AGREEMENTS = "Lease Agreements"
-    PURCHASE_AGREEMENTS = "Purchase Agreements"
-    PARTNERSHIP_AGREEMENTS = "Partnership Agreements"
-    CONFIDENTIALITY_AGREEMENTS = "Confidentiality Agreements"
-
-
 class Contract(Base):
-    
+
     __tablename__ = "contracts"
 
     contract_id = Column(Integer, primary_key=True, index=True)
-    
-    titile = Column(SQLEnum(ContractCategories), nullable=False)
-    category = Column(SQLEnum(ContractCategories), nullable=False)
-    department = Column(String(200), nullable=False)
-    company_name = Column(String(200), nullable=False)
-    vendor_name = Column(String(200), nullable=False)
-    responsible_person = Column(String(250), nullable=False)
-    contract_value = Column(Integer, nullable=False)
-    description = Column(String(500), nullable=False)
-    status = Column(String(100), default=ContractStatus.PENDING, nullable=False)
 
-    approval_date = Column(DateTime, nullable=True)
-    sent_review_date = Column(DateTime, nullable=True)
-    expiry_date = Column(DateTime, nullable=False)
-    effective_date = Column(DateTime, nullable=False)
-    create_at = Column(DateTime(timezone=True), server_default=func.now())
+    title = Column(String(250), nullable=False)
+    vendor = Column(String(200), nullable=False)
+    type = Column(String(100), nullable=False)
+    value = Column(Float, nullable=False)
+    owner = Column(String(200), nullable=False)
+    status = Column(String(100), default=ContractStatus.ACTIVE.value, nullable=False)
+    compliance = Column(String(100), default="Compliant", nullable=False)
+    archived = Column(Boolean, default=False, nullable=False)
+
+    # --- Date Tracking ---
+    effective_date = Column(Date, nullable=True)       # When the contract becomes effective
+    end_date = Column(Date, nullable=False)             # Contract end / expiry date
+    expiry_date = Column(Date, nullable=True)           # Explicit expiry date (if different from end_date)
+    approved_date = Column(DateTime(timezone=True), nullable=True)   # When the contract was approved
+    review_date = Column(DateTime(timezone=True), nullable=True)     # Next scheduled review date
+    file_path = Column(String(500), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     obligations = relationship(
         "Obligation", back_populates="contract", cascade="all, delete-orphan"
     )
-    
+
     compliances = relationship(
         "Compliance", back_populates="contract", cascade="all, delete-orphan"
     )
-
-

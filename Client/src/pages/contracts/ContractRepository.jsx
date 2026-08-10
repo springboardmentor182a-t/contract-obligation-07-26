@@ -34,19 +34,23 @@ const ContractRepository = () => {
     Vendor: contract.vendor,
     Type: contract.type,
     Value: contract.value,
+    "Effective Date": contract.effective_date || '',
     "End Date": contract.end_date,
+    "Expiry Date": contract.expiry_date || '',
     Owner: contract.owner,
     Status: contract.status,
     Compliance: contract.compliance
   }));
   const handleExport = () => {
-  const exportData = contracts.map((contract) => ({
+  const exportData2 = contracts.map((contract) => ({
     ID: contract.id,
     Title: contract.title,
     Vendor: contract.vendor,
     Type: contract.type,
     Value: contract.value,
+    "Effective Date": contract.effective_date || '',
     "End Date": contract.end_date,
+    "Expiry Date": contract.expiry_date || '',
     Owner: contract.owner,
     Status: contract.status,
     Compliance: contract.compliance
@@ -76,13 +80,16 @@ const ContractRepository = () => {
     vendor: '',
     type: 'SaaS License',
     value: '',
+    effective_date: '',
     end_date: '',
+    expiry_date: '',
     owner: '',
     status: 'Active',
-    compliance: 90
+    compliance: 90,
+    contract_file: null
   });
 
-  const API_BASE_URL = import.meta.env.API_BASE_URL || 'http://127.0.0.1:8000/api/contracts';
+  const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api') + '/contracts';
 
   // --- READ: Fetch records from backend ---
   const fetchContracts = async () => {
@@ -116,6 +123,10 @@ const ContractRepository = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e) => {
+    setFormData((prev) => ({ ...prev, contract_file: e.target.files[0] }));
+  };
+
   // --- CREATE & UPDATE: Combined submit handler ---
   const handleSubmitContract = async (e) => {
     e.preventDefault();
@@ -133,18 +144,35 @@ const ContractRepository = () => {
       vendor: formData.vendor,
       type: formData.type,
       value: numericValue,
+      effective_date: formData.effective_date || null,
       end_date: formData.end_date, 
+      expiry_date: formData.expiry_date || null,
       owner: formData.owner,
       status: formData.status,
       compliance: complianceString
     };
 
     try {
+      let response;
       if (isEditing) {
-        await axios.put(`${API_BASE_URL}/${currentContractId}`, payload);
+        response = await axios.put(`${API_BASE_URL}/${currentContractId}`, payload);
       } else {
-        await axios.post(API_BASE_URL, payload);
+        response = await axios.post(API_BASE_URL, payload);
       }
+      
+      const contractId = response.data.id || response.data.contract_id || currentContractId;
+      
+      if (formData.contract_file) {
+        const fileData = new FormData();
+        fileData.append('file', formData.contract_file);
+        
+        await axios.post(`${API_BASE_URL}/${contractId}/upload`, fileData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
+
       closeModal();
       fetchContracts(); 
     } catch (error) {
@@ -184,10 +212,13 @@ const ContractRepository = () => {
       vendor: contract.vendor,
       type: contract.type,
       value: contract.value,
+      effective_date: contract.effective_date || '',
       end_date: contract.end_date || '',
+      expiry_date: contract.expiry_date || '',
       owner: contract.owner || '',
       status: contract.status,
-      compliance: isNaN(cleanCompliance) ? 90 : cleanCompliance
+      compliance: isNaN(cleanCompliance) ? 90 : cleanCompliance,
+      contract_file: null
     });
     setIsModalOpen(true);
   };
@@ -198,7 +229,7 @@ const ContractRepository = () => {
     setIsEditing(false);
     setCurrentContractId(null);
     setFormData({
-      title: '', vendor: '', type: 'SaaS License', value: '', end_date: '', owner: '', status: 'Active', compliance: 90
+      title: '', vendor: '', type: 'SaaS License', value: '', effective_date: '', end_date: '', expiry_date: '', owner: '', status: 'Active', compliance: 90, contract_file: null
     });
   };
 
@@ -243,10 +274,13 @@ const ContractRepository = () => {
                 vendor: '',
                 type: 'SaaS License',
                 value: '',
+                effective_date: '',
                 end_date: '',
+                expiry_date: '',
                 owner: '',
                 status: 'Active',
-                compliance: 90
+                compliance: 90,
+                contract_file: null
               });
               setIsModalOpen(true);
             }}
@@ -313,7 +347,7 @@ const ContractRepository = () => {
                     onClick={() => setSelectedContract(item)} 
                     style={{ cursor: 'pointer' }}
                   >
-                    <div className="contract-title" style={{ color: '#1e3a8a', fontWeight: '600' }}>
+                    <div className="contract-title">
                       {item.title}
                     </div>
                     <div className="contract-vendor">{item.vendor}</div>
@@ -411,9 +445,20 @@ const ContractRepository = () => {
 
                 <div className="form-row-half">
                   <div className="form-group">
+                    <label className="form-label">Effective Date</label>
+                    <input type="date" name="effective_date" className="form-input" value={formData.effective_date} onChange={handleInputChange} />
+                  </div>
+                  <div className="form-group">
                     <label className="form-label">End Date</label>
                     
                     <input type="date" name="end_date" required className="form-input" value={formData.end_date} onChange={handleInputChange} />
+                  </div>
+                </div>
+
+                <div className="form-row-half">
+                  <div className="form-group">
+                    <label className="form-label">Expiry Date</label>
+                    <input type="date" name="expiry_date" className="form-input" value={formData.expiry_date} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Contract Owner</label>
@@ -435,6 +480,11 @@ const ContractRepository = () => {
                     <label className="form-label">Compliance Score (%)</label>
                     <input type="number" name="compliance" min="0" max="100" className="form-input" value={formData.compliance} onChange={handleInputChange} />
                   </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Upload Contract (PDF)</label>
+                  <input type="file" name="contract_file" accept=".pdf" className="form-input" onChange={handleFileChange} />
                 </div>
 
               </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import './Contracts.css'; 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -7,6 +8,22 @@ import autoTable from "jspdf-autotable";
 
 const ContractDetails = ({ contract, onBack, onEditClick }) => {
   const [activeTab, setActiveTab] = useState('Overview');
+  const [aiSummary, setAiSummary] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerateSummary = async () => {
+    setIsGenerating(true);
+    try {
+      const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api') + '/contracts';
+      const response = await axios.get(`${API_BASE_URL}/${contract.id}/summary`);
+      setAiSummary(response.data.summary);
+    } catch (error) {
+      console.error("Failed to generate summary:", error);
+      alert(error.response?.data?.detail || "Failed to generate summary");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleDownload = () => {
     const doc = new jsPDF();
@@ -21,7 +38,11 @@ const ContractDetails = ({ contract, onBack, onEditClick }) => {
             ["Vendor", contract.vendor],
             ["Type", contract.type],
             ["Value", contract.value],
-            ["End Date", contract.end_date || contract.end_date],
+            ["Effective Date", contract.effective_date || 'N/A'],
+            ["End Date", contract.end_date || 'N/A'],
+            ["Expiry Date", contract.expiry_date || contract.end_date || 'N/A'],
+            ["Approved Date", contract.approved_date || 'N/A'],
+            ["Review Date", contract.review_date || 'N/A'],
             ["Owner", contract.owner],
             ["Status", contract.status],
             ["Compliance", contract.compliance]
@@ -72,12 +93,24 @@ const ContractDetails = ({ contract, onBack, onEditClick }) => {
       {/* Quick Dates & Owner Metadata Stripe */}
       <div className="metadata-grid-stripe">
         <div className="meta-block">
-          <span className="meta-label">Start Date</span>
-          <span className="meta-value">{contract.startDate || '2024-01-15'}</span>
+          <span className="meta-label">Effective Date</span>
+          <span className="meta-value">{contract.effective_date || 'N/A'}</span>
         </div>
         <div className="meta-block">
           <span className="meta-label">End Date</span>
-          <span className="meta-value">{contract.end_date || contract.end_date}</span>
+          <span className="meta-value">{contract.end_date || 'N/A'}</span>
+        </div>
+        <div className="meta-block">
+          <span className="meta-label">Expiry Date</span>
+          <span className="meta-value">{contract.expiry_date || contract.end_date || 'N/A'}</span>
+        </div>
+        <div className="meta-block">
+          <span className="meta-label">Approved Date</span>
+          <span className="meta-value">{contract.approved_date ? new Date(contract.approved_date).toLocaleDateString() : 'N/A'}</span>
+        </div>
+        <div className="meta-block">
+          <span className="meta-label">Review Date</span>
+          <span className="meta-value">{contract.review_date ? new Date(contract.review_date).toLocaleDateString() : 'N/A'}</span>
         </div>
         <div className="meta-block">
           <span className="meta-label">Owner</span>
@@ -108,9 +141,28 @@ const ContractDetails = ({ contract, onBack, onEditClick }) => {
             <>
               <div className="info-content-card">
                 <h3 className="card-box-title">Contract Summary</h3>
-                <p className="card-box-paragraph">
-                  {contract.summary || contract.description || contract.details || contract.notes || 'No summary available.'}
-                </p>
+                {aiSummary ? (
+                  <p className="card-box-paragraph" style={{ whiteSpace: 'pre-wrap' }}>{aiSummary}</p>
+                ) : (
+                  <>
+                    <p className="card-box-paragraph">
+                      {contract.summary || contract.description || contract.details || contract.notes || 'No summary available.'}
+                    </p>
+                    <button 
+                      className="btn-create" 
+                      onClick={handleGenerateSummary} 
+                      disabled={isGenerating || !contract.file_path}
+                      style={{ marginTop: '10px' }}
+                    >
+                      {isGenerating ? 'Generating...' : '✨ Generate AI Summary'}
+                    </button>
+                    {!contract.file_path && (
+                      <p style={{fontSize: '12px', color: '#888', marginTop: '5px'}}>
+                        Upload a PDF to enable AI summary generation.
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
 
               <div className="info-content-card">
@@ -151,9 +203,23 @@ const ContractDetails = ({ contract, onBack, onEditClick }) => {
           {activeTab === 'Documents' && (
             <div className="info-content-card">
               <h3 className="card-box-title">Associated Attachments</h3>
-              <p className="card-box-paragraph">
-                {contract.documentsNote || contract.documents || 'No associated attachments available.'}
-              </p>
+              {contract.file_path ? (
+                <div className="document-attachment" style={{ marginTop: '10px' }}>
+                  <a 
+                    href={`${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api').replace('/api', '')}/${contract.file_path.replace(/\\/g, '/')}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn-download"
+                    style={{ textDecoration: 'none', display: 'inline-block' }}
+                  >
+                    📄 View Uploaded PDF
+                  </a>
+                </div>
+              ) : (
+                <p className="card-box-paragraph">
+                  {contract.documentsNote || contract.documents || 'No associated attachments available.'}
+                </p>
+              )}
             </div>
           )}
 

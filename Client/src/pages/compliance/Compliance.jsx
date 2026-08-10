@@ -29,6 +29,7 @@ const Compliance = () => {
   const [trend, setTrend] = useState([]);
   const [riskDistribution, setRiskDistribution] = useState(null);
   const [complianceItems, setComplianceItems] = useState([]);
+  const [anomalies, setAnomalies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -57,16 +58,20 @@ const Compliance = () => {
   const refreshDashboardData = async () => {
     if (!isAuthorized) return;
     try {
-      const [summaryRes, trendRes, riskRes] = await Promise.all([
+      const [summaryRes, trendRes, riskRes, anomaliesRes] = await Promise.all([
         fetch(`${API_URL}/compliance/summary`, { headers: { 'X-User-Role': currentRole } }),
         fetch(`${API_URL}/compliance/trend`, { headers: { 'X-User-Role': currentRole } }),
-        fetch(`${API_URL}/compliance/risk-distribution`, { headers: { 'X-User-Role': currentRole } })
+        fetch(`${API_URL}/compliance/risk-distribution`, { headers: { 'X-User-Role': currentRole } }),
+        fetch(`${API_URL}/compliance/anomalies`, { headers: { 'X-User-Role': currentRole } })
       ]);
 
       if (summaryRes.ok && trendRes.ok && riskRes.ok) {
         setSummary(await summaryRes.json());
         setTrend(await trendRes.json());
         setRiskDistribution(await riskRes.json());
+      }
+      if (anomaliesRes.ok) {
+        setAnomalies(await anomaliesRes.json());
       }
 
       let url = `${API_URL}/compliance/contracts?limit=100`;
@@ -97,13 +102,14 @@ const Compliance = () => {
     const fetchAnalytics = async () => {
       setLoading(true);
       try {
-        const [summaryRes, trendRes, riskRes] = await Promise.all([
+        const [summaryRes, trendRes, riskRes, anomaliesRes] = await Promise.all([
           fetch(`${API_URL}/compliance/summary`, { headers: { 'X-User-Role': currentRole } }),
           fetch(`${API_URL}/compliance/trend`, { headers: { 'X-User-Role': currentRole } }),
-          fetch(`${API_URL}/compliance/risk-distribution`, { headers: { 'X-User-Role': currentRole } })
+          fetch(`${API_URL}/compliance/risk-distribution`, { headers: { 'X-User-Role': currentRole } }),
+          fetch(`${API_URL}/compliance/anomalies`, { headers: { 'X-User-Role': currentRole } })
         ]);
 
-        if (!summaryRes.ok || !trendRes.ok || !riskRes.ok) {
+        if (!summaryRes.ok || !trendRes.ok || !riskRes.ok || !anomaliesRes.ok) {
           if (summaryRes.status === 403) {
             throw new Error("Access Denied: You do not have permission to view compliance analytics.");
           }
@@ -113,10 +119,12 @@ const Compliance = () => {
         const summaryData = await summaryRes.json();
         const trendData = await trendRes.json();
         const riskData = await riskRes.json();
+        const anomaliesData = await anomaliesRes.json();
 
         setSummary(summaryData);
         setTrend(trendData);
         setRiskDistribution(riskData);
+        setAnomalies(anomaliesData || []);
       } catch (err) {
         console.error("Failed to load compliance analytics:", err);
         setError(err.message);
@@ -425,7 +433,7 @@ const Compliance = () => {
       {/* Main Content Area */}
       <div className="comp-main-area">
         <div className="comp-tabs">
-          {['Overview', 'High Risk', 'Pending Review', 'Audit Log'].map(tab => (
+          {['Overview', 'High Risk', 'Pending Review', 'AI Anomalies', 'Audit Log'].map(tab => (
             <button 
               key={tab} 
               className={`comp-tab-btn ${activeTab === tab ? 'active' : ''}`}
@@ -436,71 +444,109 @@ const Compliance = () => {
           ))}
         </div>
 
-        <div className="comp-table-card">
-          <div className="comp-table-toolbar">
-            <div className="comp-search-wrapper">
-              <Search size={18} className="search-icon" />
-              <input 
-                type="text" 
-                placeholder="Search compliance requirements or entities..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-              />
+        {activeTab === 'AI Anomalies' ? (
+          <div className="comp-anomalies-section animate-slide-up">
+            <div className="anomalies-header">
+              <div className="anomalies-title-block">
+                <h3>Detected System Anomalies</h3>
+                <p className="text-muted">Real-time background scanning for data inconsistencies, outlier values, and audit risks.</p>
+              </div>
+              <span className="anomalies-count-badge">{anomalies.length} Alerts</span>
             </div>
-            <Button variant="outline" icon={Filter}>Filters</Button>
-          </div>
 
-          <div className="comp-table-container">
-            <table className="comp-data-table">
-              <thead>
-                <tr>
-                  <th>Requirement & Category</th>
-                  <th>Entity & Contract</th>
-                  <th>Risk Profile</th>
-                  <th>Health Score</th>
-                  <th>Status</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {complianceItems.map((item, index) => (
-                  <tr key={item.id} className="comp-table-row" style={{ animationDelay: `${index * 0.05}s` }}>
-                    <td>
-                      <div className="req-title">{item.requirement}</div>
-                      <div className="req-category">{item.category} • {item.id}</div>
-                    </td>
-                    <td>
-                      <div className="entity-name">{item.entity}</div>
-                      <div className="req-category">ID: {item.contractId}</div>
-                    </td>
-                    <td>
-                      {getRiskLevel(item.risk)}
-                    </td>
-                    <td>
-                      <div className="health-score-cell">
-                        <span className={`score-text ${item.score < 50 ? 'text-danger' : item.score < 80 ? 'text-warning' : 'text-success'}`}>{item.score}/100</span>
-                        <div className="mini-progress-bg">
-                          <div className={`mini-progress-fill ${item.score < 50 ? 'bg-danger' : item.score < 80 ? 'bg-warning' : 'bg-success'}`} style={{ width: `${item.score}%` }}></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>{getStatusBadge(item.status)}</td>
-                    <td className="action-cell">
-                      <button className="comp-action-btn" onClick={() => { setSelectedItem(item); setIsDetailsModalOpen(true); }}><ChevronRight size={20} /></button>
-                    </td>
-                  </tr>
-                ))}
-                {complianceItems.length === 0 && (
-                  <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-                      No matching compliance requirements found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <div className="anomalies-list-grid">
+              {anomalies.map((anm) => (
+                <div key={anm.id} className={`anomaly-card severity-${anm.severity.toLowerCase()}`}>
+                  <div className="anomaly-card-header">
+                    <span className={`severity-tag tag-${anm.severity.toLowerCase()}`}>{anm.severity} Severity</span>
+                    <span className="anomaly-category">{anm.category}</span>
+                  </div>
+                  <div className="anomaly-card-body">
+                    <h4 className="anomaly-contract-title">{anm.contractTitle}</h4>
+                    <p className="anomaly-description">{anm.description}</p>
+                  </div>
+                  <div className="anomaly-card-footer">
+                    <span className="anomaly-contract-id">Contract ID: {anm.contractId}</span>
+                  </div>
+                </div>
+              ))}
+
+              {anomalies.length === 0 && (
+                <div className="anomalies-empty-state">
+                  <ShieldCheck size={48} className="empty-shield" />
+                  <h4>No anomalies detected!</h4>
+                  <p>Your contract repository is fully compliant and consistent. Background scanning is running.</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="comp-table-card">
+            <div className="comp-table-toolbar">
+              <div className="comp-search-wrapper">
+                <Search size={18} className="search-icon" />
+                <input 
+                  type="text" 
+                  placeholder="Search compliance requirements or entities..." 
+                  value={searchTerm} 
+                  onChange={(e) => setSearchTerm(e.target.value)} 
+                />
+              </div>
+              <Button variant="outline" icon={Filter}>Filters</Button>
+            </div>
+
+            <div className="comp-table-container">
+              <table className="comp-data-table">
+                <thead>
+                  <tr>
+                    <th>Requirement & Category</th>
+                    <th>Entity & Contract</th>
+                    <th>Risk Profile</th>
+                    <th>Health Score</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {complianceItems.map((item, index) => (
+                    <tr key={item.id} className="comp-table-row" style={{ animationDelay: `${index * 0.05}s` }}>
+                      <td>
+                        <div className="req-title">{item.requirement}</div>
+                        <div className="req-category">{item.category} • {item.id}</div>
+                      </td>
+                      <td>
+                        <div className="entity-name">{item.entity}</div>
+                        <div className="req-category">ID: {item.contractId}</div>
+                      </td>
+                      <td>
+                        {getRiskLevel(item.risk)}
+                      </td>
+                      <td>
+                        <div className="health-score-cell">
+                          <span className={`score-text ${item.score < 50 ? 'text-danger' : item.score < 80 ? 'text-warning' : 'text-success'}`}>{item.score}/100</span>
+                          <div className="mini-progress-bg">
+                            <div className={`mini-progress-fill ${item.score < 50 ? 'bg-danger' : item.score < 80 ? 'bg-warning' : 'bg-success'}`} style={{ width: `${item.score}%` }}></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{getStatusBadge(item.status)}</td>
+                      <td className="action-cell">
+                        <button className="comp-action-btn" onClick={() => { setSelectedItem(item); setIsDetailsModalOpen(true); }}><ChevronRight size={20} /></button>
+                      </td>
+                    </tr>
+                  ))}
+                  {complianceItems.length === 0 && (
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                        No matching compliance requirements found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Initiate Audit Modal Overlay */}
