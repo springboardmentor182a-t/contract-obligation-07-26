@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import "./Reports.css";
 import { DownloadIcon, BarIcon, ShieldIcon, InfoIcon } from "../components/Icons";
 import { API_BASE } from "../config/api";
-// Static report template config (UI-only, no DB table)
+import AIForecast from "../components/AIForecast";
+
 const REPORT_TEMPLATES = [
-  { title: "Compliance Summary", sub: "Score trend + open flags, last 90 days" },
-  { title: "Obligation Status", sub: "All obligations grouped by owner and status" },
-  { title: "Contract Portfolio", sub: "Full repository export with value & expiry" },
-  { title: "Audit Trail", sub: "Every logged action for a chosen date range" },
+  { id: "compliance", title: "Compliance Summary", sub: "Score trend + open flags, last 90 days" },
+  { id: "obligations", title: "Obligation Status", sub: "All obligations grouped by owner and status" },
+  { id: "contracts", title: "Contract Portfolio", sub: "Full repository export with value & expiry" },
+  { id: "audit", title: "Audit Trail", sub: "Every logged action for a chosen date range" },
 ];
 
 export default function Reports() {
@@ -15,13 +16,15 @@ export default function Reports() {
   const [monthlyVolume, setMonthlyVolume] = useState([]);
   const [filterRange, setFilterRange] = useState("QTD");
 
-  // Fetch live metrics if backend is wired up
   useEffect(() => {
     async function fetchMetrics() {
       try {
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
         const [resMetrics, resVolume] = await Promise.all([
-          fetch(`${API_BASE}/analytics/metrics`),
-          fetch(`${API_BASE}/analytics/monthly-volume`)
+          fetch(`${API_BASE}/analytics/metrics`, { headers }),
+          fetch(`${API_BASE}/analytics/monthly-volume`, { headers })
         ]);
         if (resMetrics.ok && resVolume.ok) {
           const metricsData = await resMetrics.json();
@@ -29,13 +32,55 @@ export default function Reports() {
           setKpis(metricsData);
           setMonthlyVolume(volumeData);
         }
-        // On failure, KPIs and chart stay empty — no dummy fallback
       } catch (err) {
-        console.warn('Analytics API unavailable — waiting for DB connection.', err);
+        console.warn('Analytics API unavailable:', err);
       }
     }
     fetchMetrics();
   }, []);
+
+  const handleExportCSV = async (templateId, templateTitle) => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      let csvContent = "";
+      let filename = `${templateId}_report_${new Date().toISOString().slice(0, 10)}.csv`;
+
+      if (templateId === "obligations") {
+        const res = await fetch("/api/obligations/", { headers });
+        const data = await res.json();
+        csvContent = "ID,Title,Priority,Status,Due Date\n" + 
+          (Array.isArray(data) ? data.map(o => `"${o.id}","${o.title}","${o.priority}","${o.status}","${o.due_date}"`).join("\n") : "");
+      } else if (templateId === "contracts") {
+        const res = await fetch("/api/contracts/", { headers });
+        const data = await res.json();
+        csvContent = "ID,Contract Name,Vendor,Value,Status,End Date\n" + 
+          (Array.isArray(data) ? data.map(c => `"${c.id}","${c.contract_name || c.name}","${c.vendor || ''}","${c.contract_value || c.value || ''}","${c.status}","${c.end_date || ''}"`).join("\n") : "");
+      } else if (templateId === "audit") {
+        const res = await fetch("/api/audit/logs", { headers });
+        const data = await res.json();
+        csvContent = "ID,Action,Module,Event Type,Description,Timestamp\n" + 
+          (Array.isArray(data) ? data.map(a => `"${a.id}","${a.action}","${a.module}","${a.event_type || ''}","${a.description || ''}","${a.created_at || a.timestamp || ''}"`).join("\n") : "");
+      } else {
+        const res = await fetch("/api/compliance/controls", { headers });
+        const data = await res.json();
+        csvContent = "ID,Control Title,Status,Weight,Last Verified\n" + 
+          (Array.isArray(data) ? data.map(c => `"${c.id}","${c.title}","${c.status}","${c.weight}","${c.lastVerified || ''}"`).join("\n") : "");
+      }
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      alert(`Could not generate report: ${err.message}`);
+    }
+  };
 
   const maxVolumeVal = Math.max(...monthlyVolume.map((m) => m.value), 1);
 
@@ -43,8 +88,8 @@ export default function Reports() {
     <div className="page-surface reports-page fade-in-el">
       <div className="reports-header-row">
         <div>
-          <h2>Reports & Analytics</h2>
-          <p className="muted">Monitor contract compliance, renewal tracking, and obligation throughput.</p>
+          <h2>Reports & Analytics Dashboard</h2>
+          <p className="muted">Monitor contract compliance, renewal tracking, and predictive risk analytics.</p>
         </div>
         <div className="date-tabs">
           {["QTD", "YTD", "Last 12M", "All Time"].map((tab) => (
@@ -115,13 +160,17 @@ export default function Reports() {
           
           <div className="templates-list">
             {REPORT_TEMPLATES.map((t) => (
-              <div className="template-card-row" key={t.title}>
+              <div className="template-card-row" key={t.id}>
                 <div className="template-card-info">
                   <strong>{t.title}</strong>
                   <span className="subText">{t.sub}</span>
                 </div>
-                <button className="export-action-btn" title="Download Report CSV/PDF">
-                  <DownloadIcon size={14} /> <span>PDF</span>
+                <button 
+                  className="export-action-btn" 
+                  aria-label="Download CSV"
+                  onClick={() => handleExportCSV(t.id, t.title)}
+                >
+                  <DownloadIcon size={14} /> <span>CSV</span>
                 </button>
               </div>
             ))}
@@ -129,8 +178,11 @@ export default function Reports() {
         </div>
       </div>
 
+      {/* AI Forecast Engine Section */}
+      <AIForecast />
+
       {/* Performance Summary Banner */}
-      <div className="compliance-banner-enhanced">
+      <div className="compliance-banner-enhanced" style={{ marginTop: 20 }}>
         <InfoIcon size={18} color="var(--info)" />
         <div className="banner-text">
           <strong>Pro-Tip:</strong> Automated monthly volume calculations are synced directly with the contract repository database. 
@@ -140,3 +192,4 @@ export default function Reports() {
     </div>
   );
 }
+

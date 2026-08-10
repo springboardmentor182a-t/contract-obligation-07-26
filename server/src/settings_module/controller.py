@@ -1,14 +1,32 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.future import select
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
+from jose import JWTError, jwt as jose_jwt
+from fastapi.security import OAuth2PasswordBearer
+
+from src.auth.jwt import SECRET_KEY, ALGORITHM
 from src.audit.service import create_audit_log
 from src.database.core import get_db
 from src.database.models import UserSetting, ApiKey
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+
+
+def _get_user_id(token: Optional[str]) -> int:
+    if token:
+        try:
+            payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            uid = int(payload.get("sub", 0))
+            if uid:
+                return uid
+        except (JWTError, ValueError):
+            pass
+    return 1
+
 
 class SettingsUpdate(BaseModel):
     org_name: Optional[str] = None
@@ -20,6 +38,7 @@ class SettingsUpdate(BaseModel):
     two_factor: Optional[bool] = None
     sso: Optional[bool] = None
     sms_notif: Optional[bool] = None
+
 
 class SettingsResponse(BaseModel):
     user_id: int
@@ -35,8 +54,10 @@ class SettingsResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class ApiKeyCreate(BaseModel):
     name: str
+
 
 class ApiKeyResponse(BaseModel):
     id: int
@@ -44,28 +65,54 @@ class ApiKeyResponse(BaseModel):
     key: str
     created: str
 
+
 class GatewayUpdate(BaseModel):
     emailNotif: bool
     smsNotif: bool
     renewalAlerts: bool
 
+
+class InvoiceResponse(BaseModel):
+    id: int
+    invoice_no: str
+    date: str
+    amount: str
+    status: str
+
+
 @router.get("", response_model=SettingsResponse)
-def get_settings(db: Session = Depends(get_db)):
-    result = db.execute(select(UserSetting).where(UserSetting.user_id == 1))
-    settings = result.scalars().first()
+def get_settings(
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    user_id = _get_user_id(token)
+    settings = db.execute(
+        select(UserSetting).where(UserSetting.user_id == user_id)
+    ).scalars().first()
+
     if not settings:
-        settings = UserSetting(user_id=1)
+        settings = UserSetting(user_id=user_id)
         db.add(settings)
         db.commit()
         db.refresh(settings)
+
     return settings
 
+
 @router.patch("", response_model=SettingsResponse)
-def update_settings(payload: SettingsUpdate, db: Session = Depends(get_db)):
-    result = db.execute(select(UserSetting).where(UserSetting.user_id == 1))
-    settings = result.scalars().first()
+def update_settings(
+    payload: SettingsUpdate,
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    user_id = _get_user_id(token)
+    settings = db.execute(
+        select(UserSetting).where(UserSetting.user_id == user_id)
+    ).scalars().first()
+
     if not settings:
-        raise HTTPException(status_code=404, detail="Settings record not found")
+        settings = UserSetting(user_id=user_id)
+        db.add(settings)
 
     if payload.org_name is not None:
         settings.org_name = payload.org_name
@@ -87,6 +134,7 @@ def update_settings(payload: SettingsUpdate, db: Session = Depends(get_db)):
     db.add(settings)
     db.commit()
     db.refresh(settings)
+
     changed_fields = sorted(
         field
         for field, value in payload.model_dump().items()
@@ -95,7 +143,7 @@ def update_settings(payload: SettingsUpdate, db: Session = Depends(get_db)):
 
     create_audit_log(
         db=db,
-        user_id=None,
+        user_id=user_id,
         event_type="UPDATE",
         action="Settings Updated",
         module="Settings",
@@ -107,24 +155,30 @@ def update_settings(payload: SettingsUpdate, db: Session = Depends(get_db)):
 
     return settings
 
-# ── POST /api/settings/notifications/gateways ──
+
 @router.post("/notifications/gateways")
-def update_gateways(payload: GatewayUpdate, db: Session = Depends(get_db)):
-    # TODO: Connect API Endpoint here
-    # Integrates with SendGrid API for emailNotif, and Twilio REST APIs for smsNotif
-    result = db.execute(select(UserSetting).where(UserSetting.user_id == 1))
-    settings = result.scalars().first()
+def update_gateways(
+    payload: GatewayUpdate,
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    user_id = _get_user_id(token)
+    settings = db.execute(
+        select(UserSetting).where(UserSetting.user_id == user_id)
+    ).scalars().first()
+
     if not settings:
-        raise HTTPException(status_code=404, detail="Settings record not found")
-        
+        settings = UserSetting(user_id=user_id)
+        db.add(settings)
+
     settings.email_notif = payload.emailNotif
     settings.renewal_alerts = payload.renewalAlerts
-    # Update Database setting for gateways
+
     db.add(settings)
     db.commit()
     create_audit_log(
         db=db,
-        user_id=None,
+        user_id=user_id,
         event_type="UPDATE",
         action="Notification Gateways Updated",
         module="Settings",
@@ -140,25 +194,50 @@ def update_gateways(payload: GatewayUpdate, db: Session = Depends(get_db)):
         "message": "Gateways configured successfully",
     }
 
-# ── POST /api/settings/security/apikeys ──
+
+@router.get("/security/apikeys", response_model=List[ApiKeyResponse])
+def list_api_keys(
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    user_id = _get_user_id(token)
+    keys = db.execute(
+        select(ApiKey).where(ApiKey.user_id == user_id)
+    ).scalars().all()
+
+    return [
+        ApiKeyResponse(
+            id=k.id,
+            name=k.name,
+            key=k.key,
+            created=k.created_at.strftime("%Y-%m-%d") if k.created_at else datetime.now().strftime("%Y-%m-%d"),
+        )
+        for k in keys
+    ]
+
+
 @router.post("/security/apikeys", response_model=ApiKeyResponse)
-def create_api_key(payload: ApiKeyCreate, db: Session = Depends(get_db)):
-    # TODO: Connect API Endpoint here
-    # Generates a hashed token and writes metadata to "api_keys" table
+def create_api_key(
+    payload: ApiKeyCreate,
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    user_id = _get_user_id(token)
     import secrets
     raw_key = "ct_live_" + secrets.token_hex(16)
-    
+
     new_key = ApiKey(
-        user_id=1,
+        user_id=user_id,
         name=payload.name,
-        key="ct_live_..." + raw_key[-4:] # Return masked key to view, but write to DB
+        key="ct_live_..." + raw_key[-4:],
     )
     db.add(new_key)
     db.commit()
     db.refresh(new_key)
+
     create_audit_log(
         db=db,
-        user_id=None,
+        user_id=user_id,
         event_type="CREATE",
         action="API Key Created",
         module="Settings",
@@ -172,5 +251,5 @@ def create_api_key(payload: ApiKeyCreate, db: Session = Depends(get_db)):
         id=new_key.id,
         name=new_key.name,
         key=new_key.key,
-        created=datetime.now().strftime("%Y-%m-%d")
+        created=datetime.now().strftime("%Y-%m-%d"),
     )

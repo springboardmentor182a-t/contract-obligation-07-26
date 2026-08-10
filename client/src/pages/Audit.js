@@ -193,13 +193,17 @@ export default function Audit() {
 
       const queryString = query.toString();
 
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const headers = {
+        Accept: "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      };
+
       const response = await fetch(
-        `${API_BASE_URL}/api/audit-logs${queryString ? `?${queryString}` : ""}`,
+        `${API_BASE_URL}/audit-logs${queryString ? `?${queryString}` : ""}`,
         {
           method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
+          headers,
           credentials: "include",
           signal: controller.signal,
         }
@@ -331,11 +335,14 @@ export default function Audit() {
       }
 
       query.set("format", "csv");
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       const response = await fetch(
-        `${API_BASE_URL}/api/audit-logs/export?${query.toString()}`,
+        `${API_BASE_URL}/audit-logs/export?${query.toString()}`,
         {
           method: "GET",
+          headers,
           credentials: "include",
         }
       );

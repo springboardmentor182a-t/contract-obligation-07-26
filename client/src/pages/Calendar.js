@@ -202,7 +202,7 @@ export default function Calendar() {
                   <strong>{t.title}</strong>
                   <span>
                     <span className="dot" style={{ background: STATUS_COLORS[t.type] }} />
-                    {MONTH_NAMES[new Date(t.dateKey + "T00:00:00").getMonth()].slice(0, 3)} {new Date(t.dateKey + "T00:00:00").getDate()} \u00b7 {STATUS_LABELS[t.type]}
+                    {MONTH_NAMES[new Date(t.dateKey + "T00:00:00").getMonth()].slice(0, 3)} {new Date(t.dateKey + "T00:00:00").getDate()} · {STATUS_LABELS[t.type]}
                   </span>
                 </div>
               </div>

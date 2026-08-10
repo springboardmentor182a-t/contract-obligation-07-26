@@ -941,3 +941,53 @@
 .priority-low {
     background: #22c55e;
 }
+
+/* =======================================================
+   AI COMPLIANCE GUARDIAN — DARK MODE OVERRIDES
+   ======================================================= */
+[data-theme="dark"] .ai-guardian-wrapper,
+[data-theme="dark"] .ai-filter-card,
+[data-theme="dark"] .priority-task-card,
+[data-theme="dark"] .compliance-details-modal {
+  background: #0F172A !important;
+  border-color: #1E293B !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .ai-guardian-header h2,
+[data-theme="dark"] .priority-contract,
+[data-theme="dark"] .compliance-details-grid p {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .ai-guardian-header p,
+[data-theme="dark"] .ai-alert-content p,
+[data-theme="dark"] .priority-vendor,
+[data-theme="dark"] .priority-reason,
+[data-theme="dark"] .priority-deadline {
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .ai-search-box,
+[data-theme="dark"] .ai-filter-select,
+[data-theme="dark"] .ai-alert-item,
+[data-theme="dark"] .priority-item {
+  background: #162032 !important;
+  border-color: #26354A !important;
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .ai-search-box input {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .recommendation-box {
+  background: rgba(37, 99, 235, 0.12) !important;
+  border-left-color: #3B82F6 !important;
+  color: #93C5FD !important;
+}
+
+[data-theme="dark"] .recommendation-box p {
+  color: #CBD5E1 !important;
+}

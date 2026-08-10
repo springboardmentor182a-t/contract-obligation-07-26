@@ -45,50 +45,52 @@ export function UIProvider({ children }) {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-// After mounting, refresh user from the API (passing the JWT so the backend
-// returns the correct user, not always user #1).
-const loadUserProfile = useCallback(async () => {
-  const token = getStoredToken();
-  if (!token) return;
+  // After mounting, refresh user from the API (passing the JWT so the backend
+  // returns the correct user, not always user #1).
+  const loadUserProfile = useCallback(async () => {
+    const token = getStoredToken();
+    const stored = getStoredUser();
 
-  // Show stored user immediately
-  const stored = getStoredUser();
-  if (stored.name) setUser(stored);
-
-  try {
-    const res = await fetch(`${API_BASE}/profile`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-
-      const refreshed = {
-        name: data.full_name || data.name || stored.name || data.email,
-        role: data.role || stored.role || "User",
-        email: data.email || stored.email || "",
-      };
-
-      setUser(refreshed);
-
-      const storage = localStorage.getItem("token")
-        ? localStorage
-        : sessionStorage;
-
-      storage.setItem("name", refreshed.name);
-      storage.setItem("role", refreshed.role);
-      storage.setItem("email", refreshed.email);
+    if (stored.name) {
+      setUser(stored);
     }
-  } catch (err) {
-    console.warn("Profile API unavailable, using stored data:", err);
-  }
-}, []);
 
-useEffect(() => {
-  loadUserProfile();
-}, [loadUserProfile]);
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+
+        const refreshed = {
+          name: data.full_name || data.name || stored.name || data.email,
+          role: data.role || stored.role || "User",
+          email: data.email || stored.email || "",
+        };
+
+        setUser(refreshed);
+
+        const storage = localStorage.getItem("token")
+          ? localStorage
+          : sessionStorage;
+
+        storage.setItem("name", refreshed.name);
+        storage.setItem("role", refreshed.role);
+        storage.setItem("email", refreshed.email);
+      }
+    } catch (err) {
+      console.warn("Profile API unavailable, using stored data:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadUserProfile();
+  }, [loadUserProfile]);
 
   // Fetch notification count from backend
   useEffect(() => {

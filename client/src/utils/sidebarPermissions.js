@@ -1,6 +1,7 @@
 export const sidebarPermissions = {
   Administrator: [
     "Notifications",
+    "Calendar",
     "Audit Logs",
     "User Management",
     "Settings",
@@ -14,6 +15,8 @@ export const sidebarPermissions = {
     "Compliance",
     "Reports & Analytics",
     "Notifications",
+    "Quick Actions",
+    "Calendar",
     "User Management",
     "Settings",
   ],
@@ -25,6 +28,8 @@ export const sidebarPermissions = {
     "Renewal Dashboard",
     "Compliance",
     "Notifications",
+    "Quick Actions",
+    "Calendar",
     "Settings",
   ],
 
@@ -34,6 +39,8 @@ export const sidebarPermissions = {
     "Obligation Tracker",
     "Renewal Dashboard",
     "Notifications",
+    "Quick Actions",
+    "Calendar",
     "Settings",
   ],
 
@@ -42,15 +49,12 @@ export const sidebarPermissions = {
     "Contract Repository",
     "Obligation Tracker",
     "Renewal Dashboard",
-    "Compliance",
-    "Reports & Analytics",
     "Notifications",
-    "Audit Logs",
-    "User Management",
     "Settings",
   ],
 };
 
+// Routes that are controlled by sidebar permissions
 const sidebarRoutes = {
   Dashboard: "/dashboard",
   "Contract Repository": "/repository",
@@ -59,10 +63,15 @@ const sidebarRoutes = {
   Compliance: "/compliance",
   "Reports & Analytics": "/reports",
   Notifications: "/notifications",
+  "Quick Actions": "/quick-actions",
+  Calendar: "/calendar",
   "Audit Logs": "/audit",
   "User Management": "/user-management",
   Settings: "/settings",
 };
+
+// Routes that are always accessible to any authenticated user (not sidebar-gated)
+const alwaysAllowedRoutes = new Set(["/profile", "/help"]);
 
 const routeAliases = {
   "/contract-repository": "/repository",
@@ -92,10 +101,18 @@ export function getDefaultRouteForRole(role) {
 }
 
 export function canAccessRoute(role, pathname) {
+  // Profile and Help are always accessible to any logged-in user
+  if (alwaysAllowedRoutes.has(pathname)) return true;
+
   const normalizedPath = routeAliases[pathname] || pathname;
   const itemLabel = Object.keys(sidebarRoutes).find(
     (label) => sidebarRoutes[label] === normalizedPath
   );
 
   return Boolean(itemLabel && canAccessSidebarItem(role, itemLabel));
+}
+
+// Returns true if this role should see the Quick Actions button in the navbar
+export function hasQuickActions(role) {
+  return (sidebarPermissions[role] || []).includes("Quick Actions");
 }

@@ -1024,18 +1024,20 @@ html.dark body,
 [data-theme="dark"] .app-layout,
 [data-theme="dark"] .page-container,
 [data-theme="dark"] .dashboard-container {
-  background-color: #0b1320 !important;
+  background-color: #090D16 !important;
   color: #f1f5f9 !important;
 }
 
 [data-theme="dark"] .topbar {
-  background-color: #1e293b !important;
-  border-bottom-color: #2a3a50 !important;
+  background-color: #0F172A !important;
+  border-bottom-color: #1E293B !important;
   color: #f1f5f9 !important;
 }
 
 [data-theme="dark"] .card,
 [data-theme="dark"] .summary-card,
+[data-theme="dark"] .notif-summary-card,
+[data-theme="dark"] .notif-renewals-card,
 [data-theme="dark"] .metrics-card,
 [data-theme="dark"] .metric-card,
 [data-theme="dark"] .contract-table-container,
@@ -1061,10 +1063,10 @@ html.dark body,
 [data-theme="dark"] .panel-card,
 [data-theme="dark"] .bg-white,
 [data-theme="dark"] .bg-slate-50 {
-  background-color: #1e293b !important;
-  border-color: #2a3a50 !important;
+  background-color: #0F172A !important;
+  border-color: #1E293B !important;
   color: #f1f5f9 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
 }
 
 [data-theme="dark"] h1,
@@ -1176,4 +1178,117 @@ html.dark body,
   border-color: #2a3a50 !important;
   background-color: #2a3a50 !important;
 }
+
+/* Global Dark Theme Overrides for All Pages */
+/* Global Dark Theme Overrides for All Pages */
+[data-theme="dark"] .user-management-page,
+[data-theme="dark"] .contract-repository-container,
+[data-theme="dark"] .renewal-dashboard-container,
+[data-theme="dark"] .help-page-wrapper,
+[data-theme="dark"] .reports-page,
+[data-theme="dark"] .settings-page,
+[data-theme="dark"] .profile-page,
+[data-theme="dark"] .audit-page,
+[data-theme="dark"] .obligations-page {
+  background-color: #090D16 !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .user-management-hero,
+[data-theme="dark"] .user-summary-card,
+[data-theme="dark"] .user-table-wrapper,
+[data-theme="dark"] .contract-card,
+[data-theme="dark"] .renewal-card,
+[data-theme="dark"] .help-category-card,
+[data-theme="dark"] .faq-card,
+[data-theme="dark"] .ticket-card-enhanced,
+[data-theme="dark"] .settings-panel-redesigned,
+[data-theme="dark"] .kpi-card-redesigned,
+[data-theme="dark"] .chart-wrapper,
+[data-theme="dark"] .templates-wrapper,
+[data-theme="dark"] .template-card-row,
+[data-theme="dark"] .ai-forecast-card,
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .modal-box,
+[data-theme="dark"] .card {
+  background-color: #0F172A !important;
+  border-color: #1E293B !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] strong,
+[data-theme="dark"] .user-management-header h1,
+[data-theme="dark"] .faq-header-btn span {
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .hero-description,
+[data-theme="dark"] .hero-label,
+[data-theme="dark"] .muted,
+[data-theme="dark"] p {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] option {
+  background-color: #0F172A !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] select {
+  background-color: #162032 !important;
+  color: #f1f5f9 !important;
+  border-color: #26354A !important;
+}
+
+[data-theme="dark"] .settings-tab-btn {
+  background-color: transparent !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .settings-tab-btn.active {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* =======================================================
+   MOBILE RESPONSIVENESS OVERRIDES
+   ======================================================= */
+@media (max-width: 768px) {
+  .dashboard-grid,
+  .renewal-grid,
+  .kpi-grid,
+  .cal-stats,
+  .grid-2,
+  .compliance-details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .main-area {
+    padding: 16px !important;
+  }
+
+  .topbar {
+    padding: 12px 16px !important;
+  }
+
+  .action-links-row,
+  .filter-chips-scroll {
+    flex-wrap: wrap !important;
+  }
+
+  .contract-row__actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .contract-row__actions button {
+    width: 100% !important;
+  }
+}
+
 

@@ -61,6 +61,8 @@ def initialize_database():
 
     if database_url.startswith("sqlite"):
         connect_args = {"check_same_thread": False}
+    elif database_url.startswith("postgresql"):
+        connect_args = {"connect_timeout": 3}
 
     # Create engine
     engine = create_engine(
@@ -89,13 +91,25 @@ def initialize_database():
         for table in list(Base.metadata.tables.values()):
             table.schema = None
 
-    # Create tables
+    # Create tables (with fallback to SQLite if PostgreSQL fails to connect)
     try:
         Base.metadata.create_all(bind=engine)
         print("Database initialized successfully.")
     except Exception as exc:
-        print("Error creating database tables:", exc)
-        raise
+        print("Error connecting to primary database:", exc)
+        if not database_url.startswith("sqlite"):
+            print("Falling back to local SQLite database...")
+            fallback = SERVER_DIR / "dev.db"
+            database_url = f"sqlite:///{fallback}"
+            connect_args = {"check_same_thread": False}
+            engine = create_engine(database_url, connect_args=connect_args)
+            SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+            for table in list(Base.metadata.tables.values()):
+                table.schema = None
+            Base.metadata.create_all(bind=engine)
+            print("Fallback SQLite database initialized successfully.")
+        else:
+            raise
 
 
 def get_db():
