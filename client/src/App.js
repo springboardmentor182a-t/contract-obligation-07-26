@@ -13,6 +13,7 @@ import Documents from './pages/Documents';
 import Notifications from './pages/Notifications';
 import Obligations from "./pages/Obligations";
 import Tasks from "./pages/Tasks";
+import Support from './pages/Support';
 
 import ContractRepository from './pages/ContractRepository/ContractRepository';
 import ContractDetails from './pages/ContractDetails/ContractDetails';
@@ -60,6 +61,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/settings" element={<Settings />} />
+
+          <Route path="/support" element={<Support />} />
         </Routes>
       </div>
     </Router>
