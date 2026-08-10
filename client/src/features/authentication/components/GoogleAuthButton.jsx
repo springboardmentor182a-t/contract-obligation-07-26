@@ -1,6 +1,6 @@
 import React from 'react';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 const GoogleAuthButton = ({ 
   text = 'Continue with Google',
@@ -10,7 +10,7 @@ const GoogleAuthButton = ({
   const handleGoogleLogin = () => {
     if (disabled) return;
     // Direct browser redirect to backend Google OAuth initiation URL (avoid CORS errors)
-    window.location.href = `${API_BASE}/api/auth/google/login`;
+    window.location.href = 'http://localhost:8000/api/auth/google/login';
   };
 
   return (

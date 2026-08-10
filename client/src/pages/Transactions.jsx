@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { isDarkMode } = useTheme();
 
   useEffect(() => {
-    fetch('/api/transactions')
-      .then(res => res.json())
-      .then(data => setTransactions(data))
-      .catch(console.error);
+    axios.get('/api/transactions')
+      .then(res => {
+        setTransactions(res.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
   }, []);
 
   const handleExport = () => {
@@ -112,9 +119,15 @@ const Transactions = () => {
                   </tr>
                 );
               })}
-              {transactions.length === 0 && (
+              {loading ? (
                 <tr>
-                  <td colSpan="5" className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">Loading transactions...</td>
+                  <td colSpan="5" className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">
+                    <div className="flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div></div>
+                  </td>
+                </tr>
+              ) : transactions.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">No transactions found. Click 'Load Demo Data' in Settings to populate.</td>
                 </tr>
               )}
             </tbody>

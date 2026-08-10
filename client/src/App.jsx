@@ -23,6 +23,7 @@ import Renewals from './pages/Renewals';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ThemeProvider } from './context/ThemeContext';
 import { NotificationProvider } from './context/NotificationContext';
+import AIChatbot from './components/AIChatbot';
 import './assets/theme.css';
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
               <Route path="/renewals" element={<PageContainer><Renewals /></PageContainer>} />
             </Route>
           </Routes>
+          <AIChatbot />
         </Router>
       </NotificationProvider>
     </ThemeProvider>

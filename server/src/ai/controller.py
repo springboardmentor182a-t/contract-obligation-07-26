@@ -52,32 +52,25 @@ async def detect_fraud_endpoint(request: DetectFraudRequest):
 
 @router.post("/chat")
 async def chat_endpoint(request: ChatRequest):
-    system_prompt = "You are a Legal & Contract Management Assistant for ContractIQ. You help users manage contracts, obligations, and legal queries."
+    system_prompt = "You are the ContractIQ Expert AI Assistant. Your job is to clear all user doubts. You must provide highly accurate, professional, and concise answers regarding contract management, legal clause analysis, risk compliance, and how to use the ContractIQ platform. Do not hallucinate features. If a user asks a complex question, break the answer down into easy-to-understand bullet points."
     
     try:
         import openai
         api_key = os.getenv("OPENAI_API_KEY")
-        if api_key:
-            client = openai.OpenAI(api_key=api_key)
-            messages = [{"role": "system", "content": system_prompt}]
-            for msg in request.history:
-                role = "user" if msg.get("sender") == "user" else "assistant"
-                messages.append({"role": role, "content": msg.get("text", "")})
-            messages.append({"role": "user", "content": request.message})
-            
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=messages
-            )
-            return {"reply": response.choices[0].message.content}
-    except Exception:
-        pass # Fallback to mock
+        if not api_key:
+            raise Exception("OpenAI API key is missing")
 
-    user_msg = request.message.lower()
-    reply = "Hello! I am the ContractIQ AI Assistant. How can I help you with your contracts today?"
-    if "contract" in user_msg:
-        reply = "I can assist you with contract review and tracking. Could you provide a contract ID or specify what you need?"
-    elif "obligation" in user_msg:
-        reply = "You can view and manage all pending obligations in the Obligation Tracker. Should I highlight the high-priority ones?"
+        client = openai.OpenAI(api_key=api_key)
+        messages = [{"role": "system", "content": system_prompt}]
+        for msg in request.history:
+            role = "user" if msg.get("sender") == "user" else "assistant"
+            messages.append({"role": role, "content": msg.get("text", "")})
+        messages.append({"role": "user", "content": request.message})
         
-    return {"reply": reply}
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages
+        )
+        return {"reply": response.choices[0].message.content}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

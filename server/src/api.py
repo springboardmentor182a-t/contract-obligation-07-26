@@ -31,38 +31,12 @@ api_router.include_router(ai_router, tags=["ai"])
 
 @api_router.post("/demo/load")
 def load_demo_data(db: Session = Depends(get_db)):
-    from datetime import date, timedelta
-    import uuid
-    # Delete existing demo rows
-    db.query(Renewal).delete()
-    db.query(Obligation).delete()
-    db.query(Contract).delete()
-    
-    # 6 Realistic mock contracts
-    base_date = date.today()
-    contracts = [
-        Contract(contract_id=f"CTR-{uuid.uuid4().hex[:6].upper()}", vendor="Acme Corp", type="MSA", status="Active", value=150000.00, owner="Alice Smith", date=base_date - timedelta(days=30)),
-        Contract(contract_id=f"CTR-{uuid.uuid4().hex[:6].upper()}", vendor="Globex Inc", type="NDA", status="Active", value=0.00, owner="Bob Jones", date=base_date - timedelta(days=15)),
-        Contract(contract_id=f"CTR-{uuid.uuid4().hex[:6].upper()}", vendor="Initech", type="SOW", status="Draft", value=75000.00, owner="Charlie Brown", date=base_date - timedelta(days=5)),
-        Contract(contract_id=f"CTR-{uuid.uuid4().hex[:6].upper()}", vendor="Soylent Corp", type="Vendor Agreement", status="Pending Signature", value=45000.00, owner="Diana Prince", date=base_date - timedelta(days=2)),
-        Contract(contract_id=f"CTR-{uuid.uuid4().hex[:6].upper()}", vendor="Umbrella Corp", type="MSA", status="Expired", value=200000.00, owner="Evan Wright", date=base_date - timedelta(days=400)),
-        Contract(contract_id=f"CTR-{uuid.uuid4().hex[:6].upper()}", vendor="Wayne Enterprises", type="Partnership", status="Active", value=500000.00, owner="Fiona Clark", date=base_date - timedelta(days=100)),
-    ]
-    db.add_all(contracts)
-    db.commit()
-    
-    # Add obligations
-    obligations = [
-        Obligation(obligation_id=f"OBL-{uuid.uuid4().hex[:6].upper()}", contract_id=contracts[0].id, description="Quarterly True-up Report", dueDate=base_date + timedelta(days=15), status="Pending", priority="High"),
-        Obligation(obligation_id=f"OBL-{uuid.uuid4().hex[:6].upper()}", contract_id=contracts[0].id, description="Annual Security Audit", dueDate=base_date + timedelta(days=90), status="Pending", priority="Medium"),
-        Obligation(obligation_id=f"OBL-{uuid.uuid4().hex[:6].upper()}", contract_id=contracts[2].id, description="Deliverable 1 Approval", dueDate=base_date + timedelta(days=5), status="Pending", priority="High"),
-        Obligation(obligation_id=f"OBL-{uuid.uuid4().hex[:6].upper()}", contract_id=contracts[3].id, description="First Payment Milestone", dueDate=base_date + timedelta(days=30), status="Pending", priority="High"),
-        Obligation(obligation_id=f"OBL-{uuid.uuid4().hex[:6].upper()}", contract_id=contracts[5].id, description="Joint Marketing Plan", dueDate=base_date + timedelta(days=45), status="Pending", priority="Low"),
-    ]
-    db.add_all(obligations)
-    db.commit()
-    
-    return {"message": "Demo data loaded successfully"}
+    from src.database.seed import seed_data
+    try:
+        seed_data()
+        return {"message": "Demo data loaded successfully"}
+    except Exception as e:
+        return {"error": str(e)}
 
 @api_router.get("/reports/mockData")
 def get_reports(db: Session = Depends(get_db)):
@@ -177,7 +151,8 @@ def get_renewals(db: Session = Depends(get_db)):
             "type": c.type,
             "renewalDate": r.renewal_date.strftime("%b %d, %Y") if r.renewal_date else "",
             "status": r.status,
-            "owner": c.owner
+            "owner": c.owner,
+            "acv": f"${c.value:,.2f}" if c.value else "$0.00"
         } for r, c in renewals
     ]
 
@@ -254,6 +229,7 @@ def delete_user(user_id: str, db: Session = Depends(get_db)):
     return {"error": "User not found"}
 
 @api_router.get("/compliance/summary")
+@api_router.get("/compliance/dashboard")
 def get_compliance_summary(db: Session = Depends(get_db)):
     total_obl = db.query(Obligation).count()
     completed_obl = db.query(Obligation).filter(Obligation.status == "Completed").count()

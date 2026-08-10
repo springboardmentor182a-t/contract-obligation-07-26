@@ -137,8 +137,20 @@ async def detect_fraud_and_anomalies(contract_text: str) -> Dict[str, Any]:
         )
         
         content = response.choices[0].message.content
-        data = json.loads(content)
-        return data
+        
+        try:
+            data = json.loads(content)
+            return data
+        except json.JSONDecodeError as e:
+            print(f"[JSON Decode Error: {e}] -> Returning fallback JSON")
+            return {
+                "fraud_detected": False,
+                "anomaly_score": 0,
+                "tampering_markers": [],
+                "anomalies": [],
+                "summary": "Error analyzing contract integrity due to AI parsing failure."
+            }
+            
     except Exception as e:
         print(f"[OpenAI Anomaly Error: {e}] -> Falling back to heuristic forensics")
         return heuristic_fraud_detection(contract_text)
