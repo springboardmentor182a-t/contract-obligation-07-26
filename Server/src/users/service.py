@@ -1,10 +1,10 @@
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from entities.user import UserRole
-from database.core import get_db
-from entities.user import User
-from auth.service import verify_token
+from src.entities.user import UserRole
+from src.database.core import get_db
+from src.entities.user import User
+from src.auth.service import verify_token
 
 
 def admin_required(
@@ -12,6 +12,7 @@ def admin_required(
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.email == payload["sub"]).first()
+
     if not user:
         raise HTTPException(404, "User not exist!!")
 
@@ -20,4 +21,14 @@ def admin_required(
         UserRole.LEGAL_MANAGER,
     ]:
         raise HTTPException(403, "Access denied!!")
+
+    return user
+
+def get_current_user(
+    payload: dict = Depends(verify_token),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.email == payload["sub"]).first()
+    if not user:
+        raise HTTPException(404, "User not found!!")
     return user

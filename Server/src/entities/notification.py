@@ -2,7 +2,9 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
-from database.core import Base
+
+from src.database.core import Base
+
 
 
 class Notification(Base):
@@ -14,3 +16,6 @@ class Notification(Base):
     date = Column(DateTime(timezone=True), server_default=func.now())
     title = Column(String(250), nullable=False)
     message = Column(String(1000), nullable=False)
+    priority = Column(String(50), nullable=True)
+    priority_score = Column(Integer, nullable=True)
+    priority_reason = Column(String(1000), nullable=True)

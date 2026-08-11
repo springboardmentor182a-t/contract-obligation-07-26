@@ -4,11 +4,11 @@ from datetime import datetime, timedelta
 from sqlalchemy import extract
 
 
-from entities.contract import Contract
-from entities.obligation import Obligation
-from entities.renewal import Renewal
-from entities.compliance import Compliance, ComplianceStatus, RiskLevel
-from entities.audit_logs import AuditLog
+from src.entities.contract import Contract
+from src.entities.obligation import Obligation
+from src.entities.renewal import Renewal
+from src.entities.compliance import Compliance, ComplianceStatus, RiskLevel
+from src.entities.audit_logs import AuditLog
 
 
 class ReportService:
@@ -16,29 +16,29 @@ class ReportService:
     @staticmethod
     def contract_report(db: Session, days: int):
         start_date = datetime.utcnow() - timedelta(days=days)
-        contracts = db.query(Contract).filter(Contract.create_at >= start_date).all()
+        contracts = db.query(Contract).filter(Contract.created_at >= start_date).all()
 
         total_contract_value = (
-            db.query(func.sum(Contract.contract_value))
-            .filter(Contract.create_at >= start_date)
+            db.query(func.sum(Contract.value))
+            .filter(Contract.created_at >= start_date)
             .scalar()
         ) or 0
 
         active_contracts = (
             db.query(Contract)
-            .filter(Contract.create_at >= start_date, Contract.status == "Active")
+            .filter(Contract.created_at >= start_date, Contract.status == "Active")
             .count()
         )
 
         expired_contracts = (
             db.query(Contract)
-            .filter(Contract.create_at >= start_date, Contract.status == "Expired")
+            .filter(Contract.created_at >= start_date, Contract.status == "Expired")
             .count()
         )
 
         upcoming_renewals = (
             db.query(Contract)
-            .filter(Contract.create_at >= start_date, Contract.status == "Renewal Due")
+            .filter(Contract.created_at >= start_date, Contract.status == "Renewal Due")
             .count()
         )
 
@@ -57,11 +57,11 @@ class ReportService:
             compliance = round((completed / total) * 100, 2)
 
         average_execution_days = 0
-        approved_contracts = [c for c in contracts if c.approval_date]
+        approved_contracts = [c for c in contracts if c.approved_date]
 
         if approved_contracts:
             total_days = sum(
-                (c.approval_date - c.create_at).days for c in approved_contracts
+                (c.approved_date - c.created_at).days for c in approved_contracts
             )
 
             average_execution_days = round(total_days / len(approved_contracts), 2)

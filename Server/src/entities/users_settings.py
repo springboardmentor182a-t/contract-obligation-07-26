@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, Boolean, String, ForeignKey
 from sqlalchemy.orm import relationship
-from database.core import Base
+
+from src.database.core import Base
 
 
 class UserSettings(Base):

@@ -1,9 +1,12 @@
 import React from 'react';
+
+
 import { useAuth } from '../../context/AuthContext';
 import AdminDashboard from './AdminDashboard';
 import LegalManagerDashboard from './LegalManagerDashboard';
 import ComplianceOfficerDashboard from './ComplianceOfficerDashboard';
 import ContractManagerDashboard from './ContractManagerDashboard';
+
 
 const DashboardRouter = () => {
   const { role, loading } = useAuth();
@@ -28,3 +31,4 @@ const DashboardRouter = () => {
 };
 
 export default DashboardRouter;
+// trigger commit to show on git

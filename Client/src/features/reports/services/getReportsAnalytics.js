@@ -2,11 +2,13 @@ const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
 export const getReportsAnalytics = async (reportType = 'contract', days = 30) => {
   try {
+
     const token = localStorage.getItem("access_token");
     // Ensure the endpoint matches the backend routes exactly
     const endpoint = `${reportType}-reports`;
 
     const response = await fetch(`${BASE_URL}/reports/${endpoint}/${days}`, {
+
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -29,6 +31,7 @@ export const getReportsAnalytics = async (reportType = 'contract', days = 30) =>
 
 export const getChartData = async (reportType = 'contract') => {
   try {
+
     const token = localStorage.getItem("access_token");
     let endpoint = "";
     switch (reportType) {
@@ -41,6 +44,7 @@ export const getChartData = async (reportType = 'contract') => {
     }
 
     const response = await fetch(`${BASE_URL}/reports/${endpoint}`, {
+
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -64,6 +68,7 @@ export const getChartData = async (reportType = 'contract') => {
 
 export const getSavedReports = async () => {
   try {
+
     const token = localStorage.getItem("access_token");
     const response = await fetch(`${BASE_URL}/reports/saved-reports`, {
       method: "GET",
@@ -88,7 +93,9 @@ export const getSavedReports = async () => {
 
 export const generateReport = async (payload) => {
   try {
+
     const token = localStorage.getItem("access_token");
+
     const response = await fetch(`${BASE_URL}/reports/generate-report`, {
       method: "POST",
       headers: {
@@ -109,4 +116,5 @@ export const generateReport = async (payload) => {
     console.error("Generate Report Error:", error.message);
     throw error;
   }
+  
 };

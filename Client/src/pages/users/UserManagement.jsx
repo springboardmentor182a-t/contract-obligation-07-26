@@ -23,14 +23,7 @@ import { updateUser as updateUserService } from '../../features/authentication/s
 import { toggleUserStatus as toggleUserStatusService } from '../../features/authentication/services/toggleUserStatus';
 import { getOrganizations } from '../../features/organizations/services/organizationAPI';
 
-const mockUsers = [
-  { id: 1, name: 'Alice Smith', email: 'alice.smith@contractiq.com', role: 'Admin', department: 'IT', status: 'Active' },
-  { id: 2, name: 'Bob Jones', email: 'bob.jones@contractiq.com', role: 'Legal Manager', department: 'Legal', status: 'Active' },
-  { id: 3, name: 'Charlie Davis', email: 'charlie.davis@contractiq.com', role: 'Compliance Officer', department: 'Compliance', status: 'Inactive' },
-  { id: 4, name: 'Diana Prince', email: 'diana.prince@contractiq.com', role: 'Contract Manager', department: 'Operations', status: 'Active' },
-  { id: 5, name: 'Evan Wright', email: 'evan.wright@contractiq.com', role: 'Admin', department: 'Sales', status: 'Active' },
-  { id: 6, name: 'Fiona Gallagher', email: 'fiona.g@contractiq.com', role: 'Contract Manager', department: 'Marketing', status: 'Active' },
-];
+
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -86,6 +79,11 @@ const UserManagement = () => {
     setCreateError('');
     try {
       await signupService(formData);
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'User Created', message: `User ${formData.name || 'New User'} was registered.` });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
       alert(`User ${formData.name || 'New User'} registered successfully!`);
       fetchUsers();
       setIsAddUserModalOpen(false);
@@ -100,6 +98,11 @@ const UserManagement = () => {
     e.preventDefault();
     try {
       await updateUserService(editingUser);
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'User Updated', message: `User ${editingUser.full_name || 'User'} was updated.` });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
       alert('User updated successfully!');
       fetchUsers();
       setEditingUser(null);
@@ -111,6 +114,11 @@ const UserManagement = () => {
   const handleToggleUserStatus = async (user) => {
     try {
       await toggleUserStatusService(user.user_id);
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'User Status Toggled', message: `User ${user.full_name || 'User'}'s status was toggled.` });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
       fetchUsers();
     } catch (err) {
       alert(err.message || 'Failed to change user status');
@@ -121,6 +129,11 @@ const UserManagement = () => {
     if (window.confirm("Are you sure you want to remove this user?")) {
       try {
         await deleteUserService(user_id);
+        try {
+          const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+          await createNotification({ title: 'User Deleted', message: `User ${user_id} was deleted.` });
+          window.dispatchEvent(new Event('notification-created'));
+        } catch (err) { console.error(err); }
         fetchUsers();
       } catch (err) {
         alert(err.message || 'Failed to delete user');
@@ -138,8 +151,8 @@ const UserManagement = () => {
           </h1>
           <p className="text-muted mt-1">Manage user roles, permissions, and account status.</p>
         </div>
-        <div className="dashboard-header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <div className="header-search" style={{ display: 'flex', alignItems: 'center', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '0.5rem 1rem', width: '250px' }}>
+        <div className="dashboard-header-actions user-header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div className="header-search" style={{ display: 'flex', alignItems: 'center', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '0.5rem 1rem', width: '100%', maxWidth: '250px' }}>
             <Search size={16} className="text-muted" style={{ marginRight: '0.5rem' }} />
             <input 
               type="text" 
@@ -204,9 +217,9 @@ const UserManagement = () => {
       </div>
 
       {/* User Table */}
-      <div className="dashboard-card stagger-2" style={{ overflow: 'visible' }}>
-        <div className="activity-table-wrapper" style={{ overflow: 'visible' }}>
-          <table className="activity-table">
+      <div className="dashboard-card stagger-2 user-table-card">
+        <div className="activity-table-wrapper user-table-wrapper">
+          <table className="activity-table user-table">
             <thead>
               <tr>
                 <th>User Details</th>

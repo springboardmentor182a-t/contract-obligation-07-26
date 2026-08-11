@@ -58,3 +58,9 @@ export const exportAuditReport = async (filters, format = 'csv') => {
   if (!response.ok) throw new Error('Failed to export audit report');
   return response.blob();
 };
+export const getActivities = async (limit = 10) => {
+  const response = await fetch(`${BASE_URL}/audit_logs/activities?limit=${limit}`, { headers: headers() });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || 'Failed to fetch activities');
+  return data;
+};

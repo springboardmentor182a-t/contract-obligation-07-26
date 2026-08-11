@@ -5,19 +5,20 @@ from sqlalchemy.sql import func
 import os
 from fastapi.responses import FileResponse
 
-from database.core import get_db
-from reports_analytics.service import ReportService
-from users.service import admin_required
-from entities.user import User
-from entities.report import Report
-from entities.contract import Contract
-from entities.renewal import Renewal
-from entities.audit_logs import AuditLog
-from entities.obligation import Obligation
-from entities.compliance import Compliance
-from reports_analytics.generate_pdf import create_pdf
-from reports_analytics.generate_csv import create_csv
-from reports_analytics.models import ReportRequest, ReportResponse
+from src.database.core import get_db
+from src.reports_analytics.service import ReportService
+from src.users.service import admin_required
+from src.entities.user import User
+from src.entities.report import Report
+from src.entities.contract import Contract
+from src.entities.renewal import Renewal
+from src.entities.audit_logs import AuditLog
+from src.entities.obligation import Obligation
+from src.entities.compliance import Compliance
+from src.reports_analytics.generate_pdf import create_pdf
+from src.reports_analytics.generate_csv import create_csv
+from src.reports_analytics.models import ReportRequest, ReportResponse
+from src.audit_logs.service import create_audit_log
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
 
@@ -73,15 +74,15 @@ def contract_graph(
 ):
     data = (
         db.query(
-            extract("year", Contract.create_at).label("year"),
-            extract("quarter", Contract.create_at).label("quarter"),
-            func.sum(Contract.contract_value).label("total"),
+            extract("year", Contract.created_at).label("year"),
+            extract("quarter", Contract.created_at).label("quarter"),
+            func.sum(Contract.value).label("total"),
         )
         .group_by(
-            extract("year", Contract.create_at), extract("quarter", Contract.create_at)
+            extract("year", Contract.created_at), extract("quarter", Contract.created_at)
         )
         .order_by(
-            extract("year", Contract.create_at), extract("quarter", Contract.create_at)
+            extract("year", Contract.created_at), extract("quarter", Contract.created_at)
         )
         .all()
     )
@@ -230,8 +231,21 @@ async def generate_report(
 
 
 @router.get("/download-report/{filename}")
-def download_report(filename: str, current_user: User = Depends(admin_required)):
+def download_report(
+    filename: str, 
+    current_user: User = Depends(admin_required),
+    db: Session = Depends(get_db)
+):
     if os.path.exists(filename):
+        create_audit_log(
+            db=db,
+            user_id=current_user.user_id,
+            user_name=current_user.full_name,
+            status="success",
+            action="download report",
+            module="Reports",
+            description=f"User downloaded report: {filename}",
+        )
         return FileResponse(
             path=filename, filename=filename, media_type="application/pdf"
         )

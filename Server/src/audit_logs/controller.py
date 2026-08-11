@@ -5,21 +5,42 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
-from database.core import get_db
-from entities.audit_logs import AuditLog
-from entities.user import User
-from users.service import admin_required
-from audit_logs.service import (
-    create_audit_log,
-    ensure_audit_schema,
-    export_logs,
-    get_audit_analytics,
-    get_entity_history,
-    query_logs,
-    seed_audit_data,
-    serialize_log,
-    summary,
-)
+try:
+    from database.core import get_db
+    from entities.audit_logs import AuditLog
+    from entities.user import User
+    from users.service import admin_required
+    from audit_logs.service import (
+        create_audit_log,
+        ensure_audit_schema,
+        export_logs,
+        get_audit_analytics,
+        get_entity_history,
+        query_activities,
+        query_logs,
+        seed_audit_data,
+        serialize_activity,
+        serialize_log,
+        summary,
+    )
+except ImportError:
+    from src.database.core import get_db
+    from src.entities.audit_logs import AuditLog
+    from src.entities.user import User
+    from src.users.service import admin_required
+    from src.audit_logs.service import (
+        create_audit_log,
+        ensure_audit_schema,
+        export_logs,
+        get_audit_analytics,
+        get_entity_history,
+        query_activities,
+        query_logs,
+        seed_audit_data,
+        serialize_activity,
+        serialize_log,
+        summary,
+    )
 
 router = APIRouter(prefix="/audit_logs", tags=["Audit Logs"])
 
@@ -55,6 +76,18 @@ def get_entity_audit_trail(
 ):
     logs = get_entity_history(prepared_db(db), entity_type, entity_id)
     return [serialize_log(log) for log in logs]
+
+
+@router.get("/activities")
+def get_activities(
+    limit: int = 50,
+    current_user: User = Depends(admin_required),
+    db: Session = Depends(get_db),
+):
+    return [
+        serialize_activity(activity)
+        for activity in query_activities(prepared_db(db), limit)
+    ]
 
 
 @router.get("")

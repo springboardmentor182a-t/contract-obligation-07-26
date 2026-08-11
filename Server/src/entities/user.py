@@ -1,3 +1,6 @@
+from sqlalchemy.sql import func
+from enum import Enum
+from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Column,
     Integer,
@@ -7,15 +10,15 @@ from sqlalchemy import (
     ForeignKey,
     Enum as SQLEnum,
 )
-from sqlalchemy.sql import func
-from enum import Enum
-from sqlalchemy.orm import relationship
 
-from database.core import Base
-from entities.organization import Organization
 
+from src.database.core import Base
+from src.entities.organization import Organization
+from src.entities.notification import Notification
+from src.entities.users_settings import UserSettings
 
 class UserRole(str, Enum):
+    
     ADMIN = "Admin"
     LEGAL_MANAGER = "Legal Manager"
     COMPLIANCE_OFFICER = "Compliance Officer"
@@ -23,6 +26,7 @@ class UserRole(str, Enum):
 
 
 class User(Base):
+    
     __tablename__ = "users"
 
     # Basic Information
@@ -38,6 +42,7 @@ class User(Base):
     organization_id = Column(
         Integer, ForeignKey("organization.organization_id"), nullable=True
     )
+    
     company_name = Column(String(255), nullable=True)
     department = Column(String(255), nullable=False)
     designation = Column(String(255), nullable=False)
@@ -45,5 +50,6 @@ class User(Base):
     join_date = Column(DateTime(timezone=True), server_default=func.now())
 
     notifications = relationship("Notification", back_populates="user")
-    settings = relationship("UserSettings", uselist=False, back_populates="user")
+    settings = relationship("UserSettings", back_populates="user", uselist=False)
     is_active = Column(Boolean, default=True)
+

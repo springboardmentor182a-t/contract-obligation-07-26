@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Calendar, User, Building2, Tag, Clock, DollarSign,
-  CheckCircle, XCircle, RefreshCw, AlertTriangle, Shield,
-  Bell, FileText, PlayCircle
+  CheckCircle, XCircle, RefreshCw, Shield, Bell, FileText, PlayCircle,
+  Ban, AlertTriangle, BrainCircuit
 } from 'lucide-react';
+
 import Button from '../../components/Buttons/Button';
+import {
+  getRenewalById,
+  updateRenewalStatus,
+  submitApproval,
+  scheduleReminder,
+} from '../../features/renewals/services/renewalAPI';
 import './RenewalDetail.css';
-import { API_BASE } from "../../constants";
 
 const RenewalDetail = () => {
   const { id } = useParams();
@@ -15,44 +21,38 @@ const RenewalDetail = () => {
   const [renewal, setRenewal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
+  const [feedback, setFeedback] = useState(null);
 
-  const fetchDetail = async () => {
+  const fetchDetail = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/renewals/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setRenewal(data);
-      }
+      const data = await getRenewalById(id);
+      setRenewal(data);
     } catch (err) {
       console.error('Failed to fetch renewal detail:', err);
+      setFeedback({ type: 'error', message: err.message || 'Failed to load renewal details.' });
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchDetail();
-  }, [id]);
+  }, [fetchDetail]);
 
   const handleApprovalAction = async (stepName, action) => {
     setActionLoading(stepName);
     try {
-      const res = await fetch(`${API_BASE}/renewals/${id}/approve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          step_name: stepName,
-          action: action,
-          approver: 'Current User',
-          comments: action === 'Approved' ? 'Approved by reviewer' : 'Rejected — needs revision',
-        }),
-      });
-      if (res.ok) {
-        await fetchDetail();
-      }
+      const comments = action === 'Approved'
+        ? 'Approved by reviewer'
+        : 'Rejected — needs revision';
+
+      await submitApproval(id, stepName, action, 'Current User', comments);
+      setFeedback({ type: 'success', message: `Step "${stepName}" marked as ${action}.` });
+      await fetchDetail();
     } catch (err) {
       console.error('Approval action failed:', err);
+      setFeedback({ type: 'error', message: err.message || 'Failed to submit approval action.' });
     } finally {
       setActionLoading(null);
     }
@@ -61,16 +61,12 @@ const RenewalDetail = () => {
   const handleStatusChange = async (newStatus) => {
     setActionLoading('status');
     try {
-      const res = await fetch(`${API_BASE}/renewals/${id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus, performed_by: 'Current User' }),
-      });
-      if (res.ok) {
-        await fetchDetail();
-      }
+      await updateRenewalStatus(id, newStatus, 'Current User');
+      setFeedback({ type: 'success', message: `Status updated to ${newStatus}.` });
+      await fetchDetail();
     } catch (err) {
       console.error('Status update failed:', err);
+      setFeedback({ type: 'error', message: err.message || 'Failed to update status.' });
     } finally {
       setActionLoading(null);
     }
@@ -82,20 +78,17 @@ const RenewalDetail = () => {
       const reminderDate = new Date();
       reminderDate.setDate(reminderDate.getDate() + 7);
 
-      const res = await fetch(`${API_BASE}/renewals/${id}/reminder`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reminder_date: reminderDate.toISOString(),
-          message: 'Renewal follow-up reminder',
-        }),
-      });
-      if (res.ok) {
-        alert('Reminder scheduled!');
-        await fetchDetail();
-      }
+      await scheduleReminder(
+        id,
+        reminderDate.toISOString(),
+        'Renewal follow-up reminder',
+      );
+
+      setFeedback({ type: 'success', message: 'Reminder scheduled successfully.' });
+      await fetchDetail();
     } catch (err) {
       console.error('Reminder failed:', err);
+      setFeedback({ type: 'error', message: err.message || 'Failed to schedule reminder.' });
     } finally {
       setActionLoading(null);
     }
@@ -103,11 +96,11 @@ const RenewalDetail = () => {
 
   const getStatusBadge = (status) => {
     const config = {
-      'Upcoming':    { icon: <Clock size={14} />, className: 'rd-badge-upcoming' },
+      'Upcoming': { icon: <Clock size={14} />, className: 'rd-badge-upcoming' },
       'In Progress': { icon: <RefreshCw size={14} />, className: 'rd-badge-progress' },
-      'Renewed':     { icon: <CheckCircle size={14} />, className: 'rd-badge-renewed' },
-      'Expired':     { icon: <XCircle size={14} />, className: 'rd-badge-expired' },
-      'Cancelled':   { icon: <XCircle size={14} />, className: 'rd-badge-cancelled' },
+      'Renewed': { icon: <CheckCircle size={14} />, className: 'rd-badge-renewed' },
+      'Expired': { icon: <XCircle size={14} />, className: 'rd-badge-expired' },
+      'Cancelled': { icon: <XCircle size={14} />, className: 'rd-badge-cancelled' },
     };
     const c = config[status] || { icon: null, className: '' };
     return (
@@ -172,6 +165,14 @@ const RenewalDetail = () => {
         <span>Back to Renewal Dashboard</span>
       </div>
 
+      {/* Feedback Banner */}
+      {feedback && (
+        <div className={`rnw-feedback rnw-feedback-${feedback.type}`} role="status">
+          <span>{feedback.message}</span>
+          <button type="button" onClick={() => setFeedback(null)} aria-label="Dismiss message">×</button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="rd-header">
         <div className="rd-header-left">
@@ -181,23 +182,58 @@ const RenewalDetail = () => {
             {getStatusBadge(renewal.status)}
           </div>
         </div>
+
         <div className="rd-header-actions">
+          <Button
+            variant="primary"
+            icon={BrainCircuit}
+            onClick={() => navigate(`/renewals/${id}/ai-recommendation`)}
+            className="rd-ai-btn"
+          >
+            AI Insight
+          </Button>
+          
           <Button
             variant="outline"
             icon={Bell}
             onClick={handleSendReminder}
             disabled={actionLoading === 'reminder'}
           >
-            Schedule Reminder
+            {actionLoading === 'reminder' ? 'Scheduling...' : 'Schedule Reminder'}
           </Button>
-          {renewal.status === 'Upcoming' && (
+
+          {renewal.status === 'Upcoming' && renewal.days_until_expiry >= 0 && (
             <Button
               variant="primary"
               icon={PlayCircle}
               onClick={() => handleStatusChange('In Progress')}
               disabled={actionLoading === 'status'}
             >
-              Start Renewal
+              {actionLoading === 'status' ? 'Updating...' : 'Start Renewal'}
+            </Button>
+          )}
+
+          {(renewal.status === 'Upcoming' || renewal.status === 'In Progress') && (
+            <Button
+              variant="outline"
+              icon={Ban}
+              onClick={() => handleStatusChange('Cancelled')}
+              disabled={actionLoading === 'status'}
+              className="rd-cancel-btn"
+            >
+              {actionLoading === 'status' ? 'Updating...' : 'Cancel Renewal'}
+            </Button>
+          )}
+
+          {renewal.status === 'Upcoming' && renewal.days_until_expiry < 0 && (
+            <Button
+              variant="outline"
+              icon={AlertTriangle}
+              onClick={() => handleStatusChange('Expired')}
+              disabled={actionLoading === 'status'}
+              className="rd-expire-btn"
+            >
+              {actionLoading === 'status' ? 'Updating...' : 'Mark Expired'}
             </Button>
           )}
         </div>
@@ -209,6 +245,7 @@ const RenewalDetail = () => {
           <h2 className="rd-panel-title">
             <FileText size={18} /> Contract Information
           </h2>
+
           <div className="rd-info-grid">
             <div className="rd-info-item">
               <span className="rd-info-label"><Building2 size={14} /> Vendor</span>
@@ -222,24 +259,29 @@ const RenewalDetail = () => {
               <span className="rd-info-label"><User size={14} /> Owner</span>
               <span className="rd-info-value">{renewal.owner}</span>
             </div>
+
             <div className="rd-info-item">
               <span className="rd-info-label"><DollarSign size={14} /> Contract Value</span>
               <span className="rd-info-value">{formatValue(renewal.value)}</span>
             </div>
+
             <div className="rd-info-item">
               <span className="rd-info-label"><Calendar size={14} /> Expiry Date</span>
               <span className="rd-info-value">{formatDate(renewal.expiry_date)}</span>
             </div>
+
             <div className="rd-info-item">
               <span className="rd-info-label"><Clock size={14} /> Days Until Expiry</span>
               <span className={`rd-info-value ${renewal.days_until_expiry <= 30 ? 'rd-text-danger' : renewal.days_until_expiry <= 90 ? 'rd-text-warning' : 'rd-text-success'}`}>
                 {renewal.days_until_expiry < 0 ? 'Expired' : `${renewal.days_until_expiry} days`}
               </span>
             </div>
+
             <div className="rd-info-item">
               <span className="rd-info-label"><Shield size={14} /> Notice Period</span>
               <span className="rd-info-value">{renewal.notice_period_days} days</span>
             </div>
+
             <div className="rd-info-item">
               <span className="rd-info-label"><RefreshCw size={14} /> Auto-Renew</span>
               <span className="rd-info-value">{renewal.auto_renew ? 'Yes' : 'No'}</span>
@@ -267,6 +309,7 @@ const RenewalDetail = () => {
                       )}
                     </div>
                   </div>
+
                   <div className="rd-step-right">
                     {step.status === 'Pending' ? (
                       <div className="rd-step-actions">
@@ -275,14 +318,14 @@ const RenewalDetail = () => {
                           onClick={() => handleApprovalAction(step.step_name, 'Approved')}
                           disabled={actionLoading === step.step_name}
                         >
-                          <CheckCircle size={14} /> Approve
+                          {actionLoading === step.step_name ? '...' : <><CheckCircle size={14} /> Approve</>}
                         </button>
                         <button
                           className="rd-reject-btn"
                           onClick={() => handleApprovalAction(step.step_name, 'Rejected')}
                           disabled={actionLoading === step.step_name}
                         >
-                          <XCircle size={14} /> Reject
+                          {actionLoading === step.step_name ? '...' : <><XCircle size={14} /> Reject</>}
                         </button>
                       </div>
                     ) : (
@@ -309,6 +352,7 @@ const RenewalDetail = () => {
         <h2 className="rd-panel-title">
           <Clock size={18} /> Renewal History
         </h2>
+
         {renewal.history && renewal.history.length > 0 ? (
           <div className="rd-timeline">
             {renewal.history.map((event) => (

@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
-from entities.user import UserRole
-from database.core import get_db
-from entities.user import User
-from audit_logs.service import create_audit_log
-from auth.service import verify_token
-from auth.models import UserResponse, UserUpdate
-from users.service import admin_required
+from src.entities.user import UserRole
+from src.database.core import get_db
+from src.entities.user import User
+from src.audit_logs.service import create_audit_log
+from src.auth.service import verify_token
+from src.auth.models import UserResponse, UserUpdate
+from src.users.service import admin_required
 
 router = APIRouter(
     prefix="/user",
@@ -28,6 +28,7 @@ def get_users(
     current_user: User = Depends(admin_required), db: Session = Depends(get_db)
 ):
     users = db.query(User).all()
+
     return users
 
 
@@ -61,6 +62,7 @@ def update_user(
         module="Users",
         description="User update successfully.by admin",
     )
+
     return user
 
 
@@ -87,6 +89,7 @@ def deactivate_user(
         module="Users",
         description=f"deactivate_user : {user.is_active} .by admin",
     )
+
     return user
 
 
@@ -102,14 +105,5 @@ def delete_user(
 
     db.delete(user)
     db.commit()
-
-    create_audit_log(
-        db=db,
-        user_id=user.user_id,
-        user_name=user.full_name,
-        action="change password",
-        status="success",
-        module="Users",
-        description="User deleted successfully.by admin",
-    )
+    
     return {"message": "User deleted successfully"}

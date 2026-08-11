@@ -1,9 +1,10 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+
 import PageContainer from './layout/PageContainer';
 import AuthLayout from './layout/AuthLayout';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import DashboardRouter from './pages/dashboards/DashboardRouter';
 import UserManagement from './pages/users/UserManagement';
@@ -17,9 +18,12 @@ import Obligations from './pages/obligations/Obligations';
 import Compliance from './pages/compliance/Compliance';
 import Renewals from './pages/renewals/Renewals';
 import RenewalDetail from './pages/renewals/RenewalDetail';
+import RenewalAIRecommendation from './pages/renewals/RenewalAIRecommendation';
 import AuditLogs from './pages/auditLogs/AuditLogs';
 import Settings from './pages/settings/Settings';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import NotificationEngine from './features/notifications/NotificationEngine';
+
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('access_token');
@@ -95,6 +99,7 @@ const PlaceholderPage = ({ title }) => (
 function App() {
   return (
     <AuthProvider>
+      <NotificationEngine />
       <BrowserRouter>
         <Routes>
           {/* Default Route */}
@@ -103,7 +108,6 @@ function App() {
           {/* Auth Routes */}
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
           
@@ -122,6 +126,7 @@ function App() {
             <Route path="obligations" element={<RoleProtectedRoute module="Obligation Tracker"><Obligations /></RoleProtectedRoute>} />
             <Route path="renewals" element={<RoleProtectedRoute module="Renewal Dashboard"><Renewals /></RoleProtectedRoute>} />
             <Route path="renewals/:id" element={<RoleProtectedRoute module="Renewal Dashboard"><RenewalDetail /></RoleProtectedRoute>} />
+            <Route path="renewals/:id/ai-recommendation" element={<RoleProtectedRoute module="Renewal Dashboard"><RenewalAIRecommendation /></RoleProtectedRoute>} />
             <Route path="compliance" element={<RoleProtectedRoute module="Compliance"><Compliance /></RoleProtectedRoute>} />
             
             {/* Settings */}

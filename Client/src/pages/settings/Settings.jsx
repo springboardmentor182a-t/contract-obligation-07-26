@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Bell, Shield, Palette, Save, Loader2 } from 'lucide-react';
+import { User, Bell, Shield, Palette, Save, Loader2, Eye, EyeOff } from 'lucide-react';
 import Button from '../../components/Buttons/Button';
 import FormInput from '../../components/Form/FormInput';
 import FormSelect from '../../components/Form/FormSelect';
@@ -44,6 +44,9 @@ const Settings = () => {
   });
   const [passwordStatus, setPasswordStatus] = useState({ type: '', message: '' });
   const [loadingPassword, setLoadingPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [notificationStatus, setNotificationStatus] = useState({ type: '', message: '' });
   const [loadingNotifications, setLoadingNotifications] = useState(false);
@@ -144,6 +147,13 @@ const Settings = () => {
         await refreshProfile();
       }
       setProfileStatus({ type: 'success', message: 'Profile updated successfully!' });
+      
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Profile Updated', message: 'Your profile information was updated.' });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
+
     } catch (err) {
       setProfileStatus({ type: 'error', message: err.message || 'Failed to update profile' });
     } finally {
@@ -168,6 +178,13 @@ const Settings = () => {
     try {
       await changePassword(passwordData.currentPassword, passwordData.newPassword);
       setPasswordStatus({ type: 'success', message: 'Password updated successfully!' });
+      
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Password & Security Alerts', message: 'Your password was successfully changed.' });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error('Failed to notify security alert:', err); }
+
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
       setPasswordStatus({ type: 'error', message: err.message || 'Failed to update password' });
@@ -182,6 +199,11 @@ const Settings = () => {
     try {
       await updateUserSettings(userSettings);
       setNotificationStatus({ type: 'success', message: 'Notification preferences saved!' });
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Settings Updated', message: 'Your notification preferences have been saved.' });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
     } catch (err) {
       setNotificationStatus({ type: 'error', message: err.message || 'Failed to save notifications' });
     } finally {
@@ -197,6 +219,12 @@ const Settings = () => {
       await updateUserSettings(userSettings);
       setAppearanceStatus({ type: 'success', message: 'Appearance settings applied!' });
       
+      try {
+        const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+        await createNotification({ title: 'Settings Updated', message: 'Your appearance settings have been applied.' });
+        window.dispatchEvent(new Event('notification-created'));
+      } catch (err) { console.error(err); }
+
       if (updateGlobalTheme) {
         updateGlobalTheme(userSettings.theme);
       }
@@ -341,31 +369,73 @@ const Settings = () => {
             )}
             
             <form className="settings-form-grid" onSubmit={handlePasswordChange}>
-              <FormInput 
-                label="Current Password" 
-                type="password" 
-                name="currentPassword"
-                value={passwordData.currentPassword}
-                onChange={handlePasswordInputChange}
-                className="settings-form-group full-width" 
-                required
-              />
-              <FormInput 
-                label="New Password" 
-                type="password" 
-                name="newPassword"
-                value={passwordData.newPassword}
-                onChange={handlePasswordInputChange}
-                required
-              />
-              <FormInput 
-                label="Confirm New Password" 
-                type="password" 
-                name="confirmPassword"
-                value={passwordData.confirmPassword}
-                onChange={handlePasswordInputChange}
-                required
-              />
+              <div style={{ position: 'relative' }}>
+                <FormInput 
+                  label="Current Password" 
+                  type={showCurrentPassword ? 'text' : 'password'} 
+                  name="currentPassword"
+                  value={passwordData.currentPassword}
+                  onChange={handlePasswordInputChange}
+                  className="settings-form-group full-width" 
+                  style={{ paddingRight: '2.5rem' }}
+                  required
+                />
+                <button 
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  style={{
+                    position: 'absolute', right: '0.75rem', bottom: '0.75rem',
+                    background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0
+                  }}
+                >
+                  {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              <div style={{ position: 'relative' }}>
+                <FormInput 
+                  label="New Password" 
+                  type={showNewPassword ? 'text' : 'password'} 
+                  name="newPassword"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordInputChange}
+                  style={{ paddingRight: '2.5rem' }}
+                  required
+                />
+                <button 
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  style={{
+                    position: 'absolute', right: '0.75rem', bottom: '0.75rem',
+                    background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0
+                  }}
+                >
+                  {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              <div style={{ position: 'relative' }}>
+                <FormInput 
+                  label="Confirm New Password" 
+                  type={showConfirmPassword ? 'text' : 'password'} 
+                  name="confirmPassword"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordInputChange}
+                  style={{ paddingRight: '2.5rem' }}
+                  required
+                />
+                <button 
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{
+                    position: 'absolute', right: '0.75rem', bottom: '0.75rem',
+                    background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0
+                  }}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </form>
             
             <div className="settings-footer">

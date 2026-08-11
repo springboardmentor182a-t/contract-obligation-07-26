@@ -1,34 +1,259 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldAlert, ShieldCheck, Search, AlertOctagon, 
   Activity, ChevronRight, CheckCircle, Clock, 
   FileText, ArrowUpRight, ArrowDownRight, Filter
 } from 'lucide-react';
-import FormInput from '../../components/Form/FormInput';
-import FormSelect from '../../components/Form/FormSelect';
 import Button from '../../components/Buttons/Button';
 import Badge from '../../components/DataDisplay/Badge';
-import Modal from '../../components/Modals/Modal';
 import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import { Doughnut, Line } from 'react-chartjs-2';
+import { API_URL } from '../../data/constants';
+import { useAuth } from '../../context/AuthContext';
+import Modal from '../../components/Modals/Modal';
 import '../contracts/Contracts.css';
 import './Compliance.css'; 
+import '../dashboards/Dashboard.css';
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 const Compliance = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('Overview');
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const complianceItems = [
-    { id: 'CMP-001', requirement: 'GDPR Data Processing', category: 'Data Privacy', entity: 'TechCorp Solutions', status: 'Compliant', risk: 'High', lastAudit: '2023-10-01', score: 98 },
-    { id: 'CMP-002', requirement: 'ISO 27001 Certification', category: 'Security', entity: 'Cloud Services LLC', status: 'Non-Compliant', risk: 'High', lastAudit: '2023-09-15', score: 45 },
-    { id: 'CMP-003', requirement: 'Annual Background Checks', category: 'HR Policy', entity: 'Staffing Agency', status: 'Under Review', risk: 'Medium', lastAudit: '2023-11-05', score: 72 },
-    { id: 'CMP-004', requirement: 'Anti-Bribery Clause', category: 'Legal', entity: 'GlobalTech', status: 'Compliant', risk: 'Low', lastAudit: '2023-01-10', score: 100 },
-    { id: 'CMP-005', requirement: 'SLA Uptime >= 99.9%', category: 'Operations', entity: 'HostProvider Inc', status: 'Warning', risk: 'Medium', lastAudit: '2023-11-20', score: 85 },
-  ];
+  // Dynamic userRole state for RBAC checks
+  const { role } = useAuth();
+  const currentRole = role || 'Legal Manager';
+
+  // API State Variables
+  const [summary, setSummary] = useState(null);
+  const [trend, setTrend] = useState([]);
+  const [riskDistribution, setRiskDistribution] = useState(null);
+  const [complianceItems, setComplianceItems] = useState([]);
+  const [anomalies, setAnomalies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Initiate Audit Modal State
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    requirement: '',
+    category: 'Data Privacy',
+    entity: '',
+    contractId: '',
+    status: 'Under Review',
+    risk: 'Medium',
+    score: 70,
+    lastAudit: new Date().toISOString().split('T')[0]
+  });
+  const [formSubmitting, setFormSubmitting] = useState(false);
+
+  // Compliance Details Modal State (from remote branch)
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  // Check if role has access to Compliance Dashboard (Legal Manager and Compliance Officer only)
+  const isAuthorized = currentRole === 'Legal Manager' || currentRole === 'Compliance Officer';
+
+  // Reusable refresh function
+  const refreshDashboardData = async () => {
+    if (!isAuthorized) return;
+    try {
+      const [summaryRes, trendRes, riskRes, anomaliesRes] = await Promise.all([
+        fetch(`${API_URL}/compliance/summary`, { headers: { 'X-User-Role': currentRole } }),
+        fetch(`${API_URL}/compliance/trend`, { headers: { 'X-User-Role': currentRole } }),
+        fetch(`${API_URL}/compliance/risk-distribution`, { headers: { 'X-User-Role': currentRole } }),
+        fetch(`${API_URL}/compliance/anomalies`, { headers: { 'X-User-Role': currentRole } })
+      ]);
+
+      if (summaryRes.ok && trendRes.ok && riskRes.ok) {
+        setSummary(await summaryRes.json());
+        setTrend(await trendRes.json());
+        setRiskDistribution(await riskRes.json());
+      }
+      if (anomaliesRes.ok) {
+        setAnomalies(await anomaliesRes.json());
+      }
+
+      if (activeTab === 'AI Anomalies') {
+        const anomaliesRes = await fetch(`${API_URL}/compliance/anomalies`, { headers: { 'X-User-Role': currentRole } });
+        if (anomaliesRes.ok) {
+          setAnomalies(await anomaliesRes.json());
+        }
+      } else {
+        let url = `${API_URL}/compliance/contracts?limit=100`;
+        
+        if (activeTab === 'High Risk') {
+          url += '&risk=High';
+        } else if (activeTab === 'Pending Review') {
+          url += '&status=Under%20Review';
+        }
+        
+        if (searchTerm) {
+          url += `&search=${encodeURIComponent(searchTerm)}`;
+        }
+
+        const tableRes = await fetch(url, { headers: { 'X-User-Role': currentRole } });
+        if (tableRes.ok) {
+          const data = await tableRes.json();
+          setComplianceItems(data.records || []);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to refresh dashboard data:", err);
+    }
+  };
+
+  // Fetch overall dashboard analytics on load
+  useEffect(() => {
+    if (!isAuthorized) return;
+    const fetchAnalytics = async () => {
+      setLoading(true);
+      try {
+        const [summaryRes, trendRes, riskRes, anomaliesRes] = await Promise.all([
+          fetch(`${API_URL}/compliance/summary`, { headers: { 'X-User-Role': currentRole } }),
+          fetch(`${API_URL}/compliance/trend`, { headers: { 'X-User-Role': currentRole } }),
+          fetch(`${API_URL}/compliance/risk-distribution`, { headers: { 'X-User-Role': currentRole } }),
+          fetch(`${API_URL}/compliance/anomalies`, { headers: { 'X-User-Role': currentRole } })
+        ]);
+
+        if (!summaryRes.ok || !trendRes.ok || !riskRes.ok || !anomaliesRes.ok) {
+          if (summaryRes.status === 403) {
+            throw new Error("Access Denied: You do not have permission to view compliance analytics.");
+          }
+          throw new Error("Failed to load dashboard analytics data");
+        }
+
+        const summaryData = await summaryRes.json();
+        const trendData = await trendRes.json();
+        const riskData = await riskRes.json();
+        const anomaliesData = await anomaliesRes.json();
+
+        setSummary(summaryData);
+        setTrend(trendData);
+        setRiskDistribution(riskData);
+        setAnomalies(anomaliesData || []);
+      } catch (err) {
+        console.error("Failed to load compliance analytics:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [currentRole, isAuthorized]);
+
+  // Fetch table records based on tab, search query, and active role updates
+  useEffect(() => {
+    if (!isAuthorized) return;
+    const fetchTableData = async () => {
+      try {
+        if (activeTab === 'AI Anomalies') {
+          const res = await fetch(`${API_URL}/compliance/anomalies`, { headers: { 'X-User-Role': currentRole } });
+          if (!res.ok) {
+            throw new Error("Failed to fetch compliance anomalies");
+          }
+          const data = await res.json();
+          setAnomalies(data || []);
+        } else {
+          let url = `${API_URL}/compliance/contracts?limit=100`;
+          
+          if (activeTab === 'High Risk') {
+            url += '&risk=High';
+          } else if (activeTab === 'Pending Review') {
+            url += '&status=Under%20Review';
+          }
+          
+          if (searchTerm) {
+            url += `&search=${encodeURIComponent(searchTerm)}`;
+          }
+
+          const res = await fetch(url, { headers: { 'X-User-Role': currentRole } });
+          if (!res.ok) {
+            throw new Error("Failed to fetch compliance table records");
+          }
+          const data = await res.json();
+          setComplianceItems(data.records || []);
+        }
+      } catch (err) {
+        console.error("Error fetching filtered table data:", err);
+      }
+    };
+
+    fetchTableData();
+  }, [activeTab, searchTerm, currentRole, isAuthorized]);
+
+  // Export report CSV download click handler (using Blob to attach X-User-Role header)
+  const handleExportReport = async () => {
+    try {
+      const res = await fetch(`${API_URL}/compliance/export`, {
+        headers: {
+          'X-User-Role': currentRole
+        }
+      });
+      if (!res.ok) {
+        if (res.status === 403) {
+          throw new Error("Access Denied: You do not have permission to export compliance data.");
+        }
+        throw new Error("Failed to export compliance report");
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'compliance_report.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  // Audit form submit handler
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    setFormSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/compliance/records`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-User-Role': currentRole
+        },
+        body: JSON.stringify({
+          ...formData,
+          score: parseInt(formData.score)
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to register new compliance record");
+      }
+
+      // Reset form and close modal
+      setFormData({
+        requirement: '',
+        category: 'Data Privacy',
+        entity: '',
+        contractId: '',
+        status: 'Under Review',
+        risk: 'Medium',
+        score: 70,
+        lastAudit: new Date().toISOString().split('T')[0]
+      });
+      setIsAuditModalOpen(false);
+
+      // Refresh dashboard analytics and tables
+      await refreshDashboardData();
+    } catch (err) {
+      alert("Error initiating compliance audit: " + err.message);
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
 
   const getStatusBadge = (status) => {
     switch(status) {
@@ -52,12 +277,13 @@ const Compliance = () => {
     );
   };
 
+  // Chart configs
   const lineChartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: trend.length > 0 ? trend.map(t => t.month) : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     datasets: [
       {
         label: 'Compliance Score Trend (%)',
-        data: [78, 82, 85, 84, 89, 94],
+        data: trend.length > 0 ? trend.map(t => t.compliance_score) : [78, 82, 85, 84, 89, 94],
         borderColor: '#10b981',
         backgroundColor: 'rgba(16, 185, 129, 0.15)',
         fill: true,
@@ -76,7 +302,7 @@ const Compliance = () => {
     },
     scales: {
       x: { grid: { display: false }, ticks: { font: { family: 'inherit' } } },
-      y: { grid: { color: 'rgba(0, 0, 0, 0.05)', borderDash: [5, 5] }, min: 50, max: 100, ticks: { font: { family: 'inherit' } } }
+      y: { grid: { color: 'rgba(0, 0, 0, 0.05)', borderDash: [5, 5] }, min: 0, max: 100, ticks: { font: { family: 'inherit' } } }
     }
   };
 
@@ -84,7 +310,9 @@ const Compliance = () => {
     labels: ['High Risk', 'Medium Risk', 'Low Risk'],
     datasets: [
       {
-        data: [2, 2, 1], // Matches dummy data length
+        data: riskDistribution 
+          ? [riskDistribution.high, riskDistribution.medium, riskDistribution.low] 
+          : [2, 2, 1],
         backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
         borderWidth: 0,
         hoverOffset: 8
@@ -100,87 +328,142 @@ const Compliance = () => {
     }
   };
 
-  return (
-    <div className="compliance-dashboard fade-in">
-      {/* Header Section */}
-      <div className="comp-header-section">
-        <div className="comp-header-content">
-          <h1 className="comp-title">Compliance Intelligence</h1>
-          <p className="comp-subtitle">Real-time monitoring of contractual and regulatory requirements across all vendors.</p>
+  // If not authorized, display Access Denied screen instead
+  if (!isAuthorized) {
+    return (
+      <div className="compliance-dashboard fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: '2rem' }}>
+        <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '1.5rem', borderRadius: '50%', marginBottom: '1.5rem', display: 'inline-flex' }}>
+          <AlertOctagon size={48} />
         </div>
-        <div className="comp-header-actions">
-          <Button variant="outline" icon={FileText}>Export Report</Button>
-          <Button variant="primary" icon={ShieldAlert} onClick={() => alert('Initiating audit across all entities...')}>Initiate Audit</Button>
+        <h1 className="comp-title" style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Access Denied</h1>
+        <p className="comp-subtitle" style={{ maxWidth: '500px', margin: '0 auto 1.5rem auto', lineHeight: '1.6' }}>
+          Your active role <strong>({currentRole})</strong> does not have permission to view the Compliance Intelligence dashboard.
+        </p>
+        <p className="text-muted" style={{ fontSize: '0.875rem' }}>
+          Please use the user profile dropdown in the top navbar to switch to an authorized role like <strong>Legal Manager</strong> or <strong>Compliance Officer</strong>.
+        </p>
+      </div>
+    );
+  }
+
+  // Overall metric configurations
+  const complianceScoreVal = summary ? summary.compliance_score : 84;
+  const compliantContractsCount = summary ? summary.compliant_contracts : 142;
+  const compliantContractsTrend = summary ? summary.compliant_contracts_trend : "+12 this month";
+  const criticalViolationsCount = summary ? summary.critical_violations : 3;
+  const criticalViolationsTrend = summary ? summary.critical_violations_trend : "Needs immediate action";
+  const pendingAuditsCount = summary ? summary.pending_audits : 18;
+  const pendingAuditsTrend = summary ? summary.pending_audits_trend : "Scheduled for Q4";
+  const scoreTrendVal = summary ? summary.trend_value : 2.4;
+
+  const scoreAssessment = complianceScoreVal >= 80 ? 'Healthy' : complianceScoreVal >= 60 ? 'Cautionary' : 'Critical';
+
+  return (
+    <div className="dashboard-container fade-in">
+      {/* Header Section */}
+      <div className="dashboard-header mb-2 stagger-1">
+        <div>
+          <h1 className="text-2xl font-bold">Compliance Intelligence</h1>
+          <p className="text-muted mt-1">Real-time monitoring of contractual and regulatory requirements across all vendors.</p>
+        </div>
+        <div className="dashboard-header-actions">
+          <Button variant="outline" icon={FileText} onClick={handleExportReport}>Export Report</Button>
+          <Button variant="primary" icon={ShieldAlert} onClick={() => setIsAuditModalOpen(true)}>Initiate Audit</Button>
         </div>
       </div>
 
       {/* Top Analytics Cards */}
-      <div className="comp-analytics-grid">
-        <div className="comp-card score-card">
-          <div className="score-card-header">
-            <h3>Overall Compliance</h3>
-            <div className="trend-badge positive"><ArrowUpRight size={14} /> 2.4%</div>
-          </div>
-          <div className="score-content">
-            <div className="circular-progress">
-              <svg viewBox="0 0 36 36" className="circular-chart">
-                <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <path className="circle-path" strokeDasharray="84, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <text x="18" y="20.5" className="percentage">84%</text>
-              </svg>
-            </div>
-            <div className="score-details">
-              <p>Your organization is currently operating at a <strong>Healthy</strong> compliance level.</p>
+      <div className="stats-grid stagger-1">
+        <div className="stat-card">
+          <div className="stat-card-header">
+            <p className="stat-label">Overall Compliance</p>
+            <div className="stat-icon" style={{ color: 'var(--color-primary)', backgroundColor: 'rgba(107, 142, 177, 0.15)' }}>
+              <ShieldCheck size={20} />
             </div>
           </div>
-        </div>
-
-        <div className="comp-card stat-card gradient-blue">
-          <div className="stat-icon-wrapper"><ShieldCheck size={28} /></div>
-          <div className="stat-info">
-            <span className="stat-label">Compliant Contracts</span>
-            <h2 className="stat-value">142</h2>
-            <span className="stat-trend">+12 this month</span>
+          <div className="stat-content">
+            <h3>{complianceScoreVal}%</h3>
+            <div className="stat-footer">
+              <span className={`stat-trend ${scoreTrendVal >= 0 ? 'positive' : 'danger'}`}>
+                {scoreTrendVal >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />} 
+                {Math.abs(scoreTrendVal)}%
+              </span>
+              <span className="stat-subtext">Assessment: {scoreAssessment}</span>
+            </div>
           </div>
         </div>
 
-        <div className="comp-card stat-card gradient-red">
-          <div className="stat-icon-wrapper"><AlertOctagon size={28} /></div>
-          <div className="stat-info">
-            <span className="stat-label">Critical Violations</span>
-            <h2 className="stat-value">3</h2>
-            <span className="stat-trend negative">Needs immediate action</span>
+        <div className="stat-card">
+          <div className="stat-card-header">
+            <p className="stat-label">Compliant Contracts</p>
+            <div className="stat-icon" style={{ color: 'var(--color-success)', backgroundColor: 'rgba(16, 185, 129, 0.15)' }}>
+              <ShieldCheck size={20} />
+            </div>
+          </div>
+          <div className="stat-content">
+            <h3>{compliantContractsCount}</h3>
+            <div className="stat-footer">
+              <span className="stat-trend positive">{compliantContractsTrend}</span>
+              <span className="stat-subtext">compliant</span>
+            </div>
           </div>
         </div>
 
-        <div className="comp-card stat-card gradient-purple">
-          <div className="stat-icon-wrapper"><Activity size={28} /></div>
-          <div className="stat-info">
-            <span className="stat-label">Pending Audits</span>
-            <h2 className="stat-value">18</h2>
-            <span className="stat-trend">Scheduled for Q4</span>
+        <div className="stat-card">
+          <div className="stat-card-header">
+            <p className="stat-label">Critical Violations</p>
+            <div className="stat-icon" style={{ color: 'var(--color-danger)', backgroundColor: 'rgba(239, 68, 68, 0.15)' }}>
+              <AlertOctagon size={20} />
+            </div>
+          </div>
+          <div className="stat-content">
+            <h3>{criticalViolationsCount}</h3>
+            <div className="stat-footer">
+              <span className="stat-trend danger">{criticalViolationsTrend}</span>
+              <span className="stat-subtext">non-compliant</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-card-header">
+            <p className="stat-label">Pending Audits</p>
+            <div className="stat-icon" style={{ color: 'var(--color-warning)', backgroundColor: 'rgba(245, 158, 11, 0.15)' }}>
+              <Clock size={20} />
+            </div>
+          </div>
+          <div className="stat-content">
+            <h3>{pendingAuditsCount}</h3>
+            <div className="stat-footer">
+              <span className="stat-trend warning">{pendingAuditsTrend}</span>
+              <span className="stat-subtext">under review</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Charts Section */}
-      <div className="comp-charts-section animate-slide-up" style={{ animationDelay: '0.05s' }}>
-        <div className="comp-chart-card">
-          <div className="comp-chart-header">
-            <h3>Compliance Score Trend</h3>
-            <p className="text-muted" style={{fontSize: '0.85rem', marginTop: '0.2rem'}}>6-month organizational average</p>
+      <div className="dashboard-middle-grid stagger-2">
+        <div className="dashboard-card main-chart-card">
+          <div className="dashboard-card-header">
+            <div>
+              <h3>Compliance Score Trend</h3>
+              <p>6-month organizational average</p>
+            </div>
           </div>
-          <div className="comp-chart-container" style={{ height: '280px' }}>
+          <div className="chart-wrapper">
             <Line data={lineChartData} options={lineChartOptions} />
           </div>
         </div>
 
-        <div className="comp-chart-card">
-          <div className="comp-chart-header">
-            <h3>Risk Distribution</h3>
-            <p className="text-muted" style={{fontSize: '0.85rem', marginTop: '0.2rem'}}>Based on current compliance items</p>
+        <div className="dashboard-card">
+          <div className="dashboard-card-header">
+            <div>
+              <h3>Risk Distribution</h3>
+              <p>Based on current compliance items</p>
+            </div>
           </div>
-          <div className="comp-chart-container" style={{ height: '280px', display: 'flex', alignItems: 'center', justifyItems: 'center' }}>
+          <div className="chart-wrapper doughnut-wrapper">
             <Doughnut data={doughnutData} options={doughnutOptions} />
           </div>
         </div>
@@ -189,7 +472,7 @@ const Compliance = () => {
       {/* Main Content Area */}
       <div className="comp-main-area">
         <div className="comp-tabs">
-          {['Overview', 'High Risk', 'Pending Review', 'Audit Log'].map(tab => (
+          {['Overview', 'High Risk', 'Pending Review', 'AI Anomalies', 'Audit Log'].map(tab => (
             <button 
               key={tab} 
               className={`comp-tab-btn ${activeTab === tab ? 'active' : ''}`}
@@ -200,82 +483,251 @@ const Compliance = () => {
           ))}
         </div>
 
-        <div className="comp-table-card">
-          <div className="comp-table-toolbar">
-            <div className="comp-search-wrapper">
-              <Search size={18} className="search-icon" />
-              <input type="text" placeholder="Search compliance requirements or entities..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+        {activeTab === 'AI Anomalies' ? (
+          <div className="comp-anomalies-section animate-slide-up">
+            <div className="anomalies-header">
+              <div className="anomalies-title-block">
+                <h3>Detected System Anomalies</h3>
+                <p className="text-muted">Real-time background scanning for data inconsistencies, outlier values, and audit risks.</p>
+              </div>
+              <span className="anomalies-count-badge">{anomalies.length} Alerts</span>
             </div>
-            <Button variant="outline" icon={Filter}>Filters</Button>
-          </div>
 
-          <div className="comp-table-container">
-            <table className="comp-data-table">
-              <thead>
-                <tr>
-                  <th>Requirement & Category</th>
-                  <th>Entity & Contract</th>
-                  <th>Risk Profile</th>
-                  <th>Health Score</th>
-                  <th>Status</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {complianceItems.map((item, index) => (
-                  <tr key={item.id} className="comp-table-row" style={{ animationDelay: `${index * 0.05}s` }}>
-                    <td>
-                      <div className="req-title">{item.requirement}</div>
-                      <div className="req-category">{item.category} • {item.id}</div>
-                    </td>
-                    <td>
-                      <div className="entity-name">{item.entity}</div>
-                      <div className="req-category">ID: {item.contractId}</div>
-                    </td>
-                    <td>
-                      {getRiskLevel(item.risk)}
-                    </td>
-                    <td>
-                      <div className="health-score-cell">
-                        <span className={`score-text ${item.score < 50 ? 'text-danger' : item.score < 80 ? 'text-warning' : 'text-success'}`}>{item.score}/100</span>
-                        <div className="mini-progress-bg">
-                          <div className={`mini-progress-fill ${item.score < 50 ? 'bg-danger' : item.score < 80 ? 'bg-warning' : 'bg-success'}`} style={{ width: `${item.score}%` }}></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>{getStatusBadge(item.status)}</td>
-                    <td className="action-cell">
-                      <button 
-                        className="comp-action-btn"
-                        onClick={() => {
-                          setSelectedItem(item);
-                          setIsModalOpen(true);
-                        }}
-                      >
-                        <ChevronRight size={20} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="anomalies-list-grid">
+              {anomalies.map((anm) => (
+                <div key={anm.id} className={`anomaly-card severity-${anm.severity.toLowerCase()}`}>
+                  <div className="anomaly-card-header">
+                    <span className={`severity-tag tag-${anm.severity.toLowerCase()}`}>{anm.severity} Severity</span>
+                    <span className="anomaly-category">{anm.category}</span>
+                  </div>
+                  <div className="anomaly-card-body">
+                    <h4 className="anomaly-contract-title">{anm.contractTitle}</h4>
+                    <p className="anomaly-description">{anm.description}</p>
+                  </div>
+                  <div className="anomaly-card-footer">
+                    <span className="anomaly-contract-id">Contract ID: {anm.contractId}</span>
+                  </div>
+                </div>
+              ))}
+
+              {anomalies.length === 0 && (
+                <div className="anomalies-empty-state">
+                  <ShieldCheck size={48} className="empty-shield" />
+                  <h4>No anomalies detected!</h4>
+                  <p>Your contract repository is fully compliant and consistent. Background scanning is running.</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="comp-table-card">
+            <div className="comp-table-toolbar">
+              <div className="comp-search-wrapper">
+                <Search size={18} className="search-icon" />
+                <input 
+                  type="text" 
+                  placeholder="Search compliance requirements or entities..." 
+                  value={searchTerm} 
+                  onChange={(e) => setSearchTerm(e.target.value)} 
+                />
+              </div>
+              <Button variant="outline" icon={Filter}>Filters</Button>
+            </div>
+
+            <div className="comp-table-container">
+              <table className="comp-data-table">
+                <thead>
+                  <tr>
+                    <th>Requirement & Category</th>
+                    <th>Entity & Contract</th>
+                    <th>Risk Profile</th>
+                    <th>Health Score</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {complianceItems.map((item, index) => (
+                    <tr key={item.id} className="comp-table-row" style={{ animationDelay: `${index * 0.05}s` }}>
+                      <td>
+                        <div className="req-title">{item.requirement}</div>
+                        <div className="req-category">{item.category} • {item.id}</div>
+                      </td>
+                      <td>
+                        <div className="entity-name">{item.entity}</div>
+                        <div className="req-category">ID: {item.contractId}</div>
+                      </td>
+                      <td>
+                        {getRiskLevel(item.risk)}
+                      </td>
+                      <td>
+                        <div className="health-score-cell">
+                           <span className={`score-text ${item.score < 50 ? 'text-danger' : item.score < 80 ? 'text-warning' : 'text-success'}`}>{item.score}/100</span>
+                          <div className="mini-progress-bg">
+                            <div className={`mini-progress-fill ${item.score < 50 ? 'bg-danger' : item.score < 80 ? 'bg-warning' : 'bg-success'}`} style={{ width: `${item.score}%` }}></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{getStatusBadge(item.status)}</td>
+                      <td className="action-cell">
+                        <button className="comp-action-btn" onClick={() => { setSelectedItem(item); setIsDetailsModalOpen(true); }}><ChevronRight size={20} /></button>
+                      </td>
+                    </tr>
+                  ))}
+                  {complianceItems.length === 0 && (
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                        No matching compliance requirements found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Compliance Details Modal */}
+      {/* Initiate Audit Modal Overlay */}
+      {isAuditModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsAuditModalOpen(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Initiate New Compliance Audit</h2>
+              <button className="modal-close-btn" onClick={() => setIsAuditModalOpen(false)}>
+                &times;
+              </button>
+            </div>
+            <form className="modal-form" onSubmit={handleFormSubmit}>
+              <div className="form-group">
+                <label htmlFor="requirement">Compliance Requirement</label>
+                <input 
+                  type="text" 
+                  id="requirement" 
+                  required
+                  placeholder="e.g. SOC 2 Type II Auditing"
+                  value={formData.requirement}
+                  onChange={(e) => setFormData({ ...formData, requirement: e.target.value })}
+                />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="category">Category</label>
+                  <select 
+                    id="category"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  >
+                    <option value="Data Privacy">Data Privacy</option>
+                    <option value="Security">Security</option>
+                    <option value="HR Policy">HR Policy</option>
+                    <option value="Legal">Legal</option>
+                    <option value="Operations">Operations</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="entity">Legal Entity / Vendor</label>
+                  <input 
+                    type="text" 
+                    id="entity" 
+                    required
+                    placeholder="e.g. AWS Cloud Services"
+                    value={formData.entity}
+                    onChange={(e) => setFormData({ ...formData, entity: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="contractId">Contract ID Reference</label>
+                  <input 
+                    type="text" 
+                    id="contractId" 
+                    required
+                    placeholder="e.g. 1"
+                    value={formData.contractId}
+                    onChange={(e) => setFormData({ ...formData, contractId: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="lastAudit">Last Audit Date</label>
+                  <input 
+                    type="date" 
+                    id="lastAudit" 
+                    required
+                    value={formData.lastAudit}
+                    onChange={(e) => setFormData({ ...formData, lastAudit: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="status">Compliance Status</label>
+                  <select 
+                    id="status"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  >
+                    <option value="Compliant">Compliant</option>
+                    <option value="Non-Compliant">Non-Compliant</option>
+                    <option value="Warning">Warning</option>
+                    <option value="Under Review">Under Review</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="risk">Risk Profile</label>
+                  <select 
+                    id="risk"
+                    value={formData.risk}
+                    onChange={(e) => setFormData({ ...formData, risk: e.target.value })}
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="score">Health Score Index (0 - 100)</label>
+                <input 
+                  type="number" 
+                  id="score" 
+                  required
+                  min="0"
+                  max="100"
+                  value={formData.score}
+                  onChange={(e) => setFormData({ ...formData, score: e.target.value })}
+                />
+              </div>
+              <div className="form-actions">
+                <Button type="button" variant="outline" onClick={() => setIsAuditModalOpen(false)}>Cancel</Button>
+                <Button type="submit" variant="primary" disabled={formSubmitting}>
+                  {formSubmitting ? 'Initiating...' : 'Submit Audit'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Compliance Details Modal (from remote branch) */}
       <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
         title="Compliance Details"
         footer={
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', width: '100%' }}>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setIsDetailsModalOpen(false)}>Close</Button>
             <Button 
               variant="primary" 
-              onClick={() => {
+              onClick={async () => {
+                try {
+                  const { createNotification } = await import('../../features/notifications/services/notificationAPI');
+                  await createNotification({ title: 'Compliance Action', message: `Action initiated for requirement: ${selectedItem?.requirement}.` });
+                  window.dispatchEvent(new Event('notification-created'));
+                } catch (err) { console.error(err); }
                 alert(`Action initiated for requirement: ${selectedItem?.requirement}`);
-                setIsModalOpen(false);
+                setIsDetailsModalOpen(false);
               }}
             >
               Initiate Action

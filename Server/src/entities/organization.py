@@ -9,10 +9,13 @@ from sqlalchemy import (
 from sqlalchemy.sql import func
 from enum import Enum
 
-from database.core import Base
+
+
+from src.database.core import Base
 
 
 class OrganizationType(str, Enum):
+    
     PRIVATE_LIMITED = "Private Limited"
     PUBLIC_LIMITED = "Public Limited"
     PARTNERSHIP = "Partnership"
@@ -22,10 +25,12 @@ class OrganizationType(str, Enum):
 
 
 class Organization(Base):
+    
     __tablename__ = "organization"
 
     # Basic Information
     organization_id = Column(Integer, primary_key=True, index=True)
+    
     organization_type = Column(SQLEnum(OrganizationType), nullable=False)
     company_name = Column(String(255), nullable=True)
     registration_number = Column(String(25), nullable=False)
