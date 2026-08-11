@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from src.database.core import get_db
 from src.database.models import Contract, Activity, Deadline, ComplianceItem, ReportHistory, Document, AppNotification, User, SupportTicket
-
 # Routers
 from src.users.controller import router as users_router
 from src.contracts.controller import router as contracts_router
@@ -35,26 +34,6 @@ app.include_router(calendar_router, prefix="/api/v1", tags=["Calendar"])
 app.include_router(renewals_router, prefix="/api/v1", tags=["Renewals"])
 app.include_router(tasks_router, prefix="/api/v1", tags=["Tasks"])
 
-class ContractCreate(BaseModel):
-    name: str
-    party: str
-    status: str
-    start_date: date
-    end_date: date
-    value: float
-    department: str = "General" 
-
-@app.post("/api/v1/contracts")
-def create_contract(contract: ContractCreate, db: Session = Depends(get_db)):
-    db_contract = Contract(
-        name=contract.name, party=contract.party, status=contract.status,
-        start_date=contract.start_date, end_date=contract.end_date,
-        value=contract.value, department=contract.department
-    )
-    db.add(db_contract)
-    db.commit()
-    db.refresh(db_contract)
-    return db_contract
 
 @app.get("/api/v1/dashboard")
 def get_dashboard_data(db: Session = Depends(get_db)):
@@ -150,13 +129,6 @@ def delete_compliance_item(item_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Compliance item deleted successfully"}
 
-@app.delete("/api/v1/contracts/{contract_id}")
-def delete_contract(contract_id: int, db: Session = Depends(get_db)):
-    contract = db.query(Contract).filter(Contract.id == contract_id).first()
-    if not contract: raise HTTPException(status_code=404, detail="Contract not found")
-    db.delete(contract)
-    db.commit()
-    return {"message": "Contract deleted successfully"}
 
 class ReportCreate(BaseModel):
     name: str

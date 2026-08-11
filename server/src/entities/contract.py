@@ -2,11 +2,11 @@ from pydantic import BaseModel
 
 
 class Contract(BaseModel):
-    id: str
-    company: str
-    contract: str
+    id: int
+    name: str
+    party: str
     category: str
-    value: str
+    value: float
     owner: str
     status: str
     compliance: int

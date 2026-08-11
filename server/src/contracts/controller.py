@@ -1,4 +1,6 @@
+
 from fastapi import APIRouter, HTTPException
+
 from src.contracts.service import (
     get_all_contracts,
     get_contract_by_id,
@@ -6,7 +8,10 @@ from src.contracts.service import (
     update_contract,
     delete_contract,
 )
+
 from src.entities.contract import Contract
+from src.contracts.models import ContractUpdate
+
 
 router = APIRouter()
 
@@ -17,7 +22,7 @@ def get_contracts():
 
 
 @router.get("/contracts/{contract_id}")
-def get_contract(contract_id: str):
+def get_contract(contract_id: int):
     contract = get_contract_by_id(contract_id)
 
     if contract is None:
@@ -35,7 +40,7 @@ def add_contract(contract: Contract):
 
 
 @router.put("/contracts/{contract_id}")
-def edit_contract(contract_id: str, contract: Contract):
+def edit_contract(contract_id: int, contract: ContractUpdate):
     updated = update_contract(contract_id, contract)
 
     if updated is None:
@@ -48,7 +53,7 @@ def edit_contract(contract_id: str, contract: Contract):
 
 
 @router.delete("/contracts/{contract_id}")
-def remove_contract(contract_id: str):
+def remove_contract(contract_id: int):
     deleted = delete_contract(contract_id)
 
     if deleted is None:
@@ -58,3 +63,4 @@ def remove_contract(contract_id: str):
         )
 
     return deleted
+

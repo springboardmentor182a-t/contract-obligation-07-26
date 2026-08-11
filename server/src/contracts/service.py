@@ -1,7 +1,6 @@
 from src.database.core import SessionLocal
-from src.contracts.models import ContractModel
+from src.contracts.models import ContractModel, ContractUpdate
 from src.entities.contract import Contract
-
 
 def get_all_contracts():
     db = SessionLocal()
@@ -12,8 +11,9 @@ def get_all_contracts():
         db.close()
 
 
-def get_contract_by_id(contract_id: str):
+def get_contract_by_id(contract_id: int):
     db = SessionLocal()
+
     try:
         return (
             db.query(ContractModel)
@@ -35,11 +35,12 @@ def create_contract(contract: Contract):
         db.refresh(db_contract)
 
         return db_contract
+
     finally:
         db.close()
 
 
-def update_contract(contract_id: str, updated_contract: Contract):
+def update_contract(contract_id: int, updated_contract: ContractUpdate):
     db = SessionLocal()
 
     try:
@@ -52,7 +53,7 @@ def update_contract(contract_id: str, updated_contract: Contract):
         if not contract:
             return None
 
-        data = updated_contract.model_dump()
+        data = updated_contract.model_dump(exclude_unset=True)
 
         for key, value in data.items():
             setattr(contract, key, value)
@@ -66,7 +67,7 @@ def update_contract(contract_id: str, updated_contract: Contract):
         db.close()
 
 
-def delete_contract(contract_id: str):
+def delete_contract(contract_id: int):
     db = SessionLocal()
 
     try:
