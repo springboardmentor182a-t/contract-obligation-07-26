@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FileText, Bell, ShieldCheck, CheckCircle, Clock } from "lucide-react";
+import { getAuthHeaders } from "../utils/auth";
 
 const ICON_MAP = {
   contract: { Icon: FileText, colorClass: "color-blue" },
@@ -42,7 +43,9 @@ export default function RecentActivities() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/notifications");
+        const res = await fetch("/api/notifications", {
+          headers: getAuthHeaders(),
+        });
         if (res.ok) {
           const data = await res.json();
           setActivities(data.slice(0, 6));

@@ -1,31 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from sqlalchemy import select, update
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
-from jose import JWTError, jwt as jose_jwt
 from datetime import datetime, timezone
 
 from src.audit.service import create_audit_log
-from src.auth.jwt import SECRET_KEY, ALGORITHM
+from src.auth.dependencies import NOTIFICATION_ROLES, require_roles
 from src.database.core import get_db
-from src.database.models import Notification
+from src.database.models import Notification, User
 
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
-
-
-def _get_user_id(token: Optional[str]) -> Optional[int]:
-    if not token:
-        return None
-    try:
-        payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return int(payload.get("sub", 0)) or None
-    except (JWTError, ValueError):
-        return None
-
-
 def _fmt_time(dt: datetime) -> str:
     if dt is None:
         return ""
@@ -57,13 +42,15 @@ class NotificationResponse(BaseModel):
 
 @router.get("", response_model=List[NotificationResponse])
 def list_notifications(
-    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(require_roles(*NOTIFICATION_ROLES)),
     db: Session = Depends(get_db),
 ):
-    user_id = _get_user_id(token)
-    query = select(Notification).order_by(Notification.id.desc())
-    if user_id:
-        query = query.where(Notification.user_id == user_id)
+    user_id = current_user.id
+    query = (
+        select(Notification)
+        .where(Notification.user_id == user_id)
+        .order_by(Notification.id.desc())
+    )
     items = db.execute(query).scalars().all()
     return [
         NotificationResponse(
@@ -83,13 +70,14 @@ def list_notifications(
 @router.patch("/{id}/read")
 def mark_as_read(
     id: int,
-    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(require_roles(*NOTIFICATION_ROLES)),
     db: Session = Depends(get_db),
 ):
-    user_id = _get_user_id(token)
-    q = select(Notification).where(Notification.id == id)
-    if user_id:
-        q = q.where(Notification.user_id == user_id)
+    user_id = current_user.id
+    q = select(Notification).where(
+        Notification.id == id,
+        Notification.user_id == user_id,
+    )
     item = db.execute(q).scalars().first()
     if not item:
         raise HTTPException(status_code=404, detail="Notification not found")
@@ -114,17 +102,19 @@ def mark_as_read(
 
 @router.post("/mark-all-read")
 def mark_all_read(
-    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(require_roles(*NOTIFICATION_ROLES)),
     db: Session = Depends(get_db),
 ):
-    user_id = _get_user_id(token)
-    q = update(Notification).values(is_read=True)
-    if user_id:
-        q = q.where(Notification.user_id == user_id)
+    user_id = current_user.id
+    q = (
+        update(Notification)
+        .where(Notification.user_id == user_id)
+        .values(is_read=True)
+    )
     result = db.execute(q)
     db.commit()
 
-    scope = f"user ID: {user_id}" if user_id else "all users"
+    scope = f"user ID: {user_id}"
     affected_count = getattr(result, "rowcount", None)
     count_description = (
         f", affected: {affected_count}"
@@ -149,13 +139,14 @@ def mark_all_read(
 @router.delete("/{id}")
 def dismiss_notification(
     id: int,
-    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(require_roles(*NOTIFICATION_ROLES)),
     db: Session = Depends(get_db),
 ):
-    user_id = _get_user_id(token)
-    q = select(Notification).where(Notification.id == id)
-    if user_id:
-        q = q.where(Notification.user_id == user_id)
+    user_id = current_user.id
+    q = select(Notification).where(
+        Notification.id == id,
+        Notification.user_id == user_id,
+    )
     item = db.execute(q).scalars().first()
     if not item:
         raise HTTPException(status_code=404, detail="Notification not found")

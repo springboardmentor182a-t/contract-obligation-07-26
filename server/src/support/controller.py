@@ -3,28 +3,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
-from jose import JWTError, jwt as jose_jwt
-from fastapi.security import OAuth2PasswordBearer
-
-from src.auth.jwt import SECRET_KEY, ALGORITHM
+from src.auth.dependencies import ALL_ROLES, require_roles
 from src.audit.service import create_audit_log
 from src.database.core import get_db
-from src.database.models import FAQ, SupportTicket
+from src.database.models import FAQ, SupportTicket, User
 
 router = APIRouter(prefix="", tags=["Support & FAQ"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
-
-
-def _get_user_id(token: Optional[str]) -> int:
-    if token:
-        try:
-            payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            uid = int(payload.get("sub", 0))
-            if uid:
-                return uid
-        except (JWTError, ValueError):
-            pass
-    return 1
 
 
 class FaqResponse(BaseModel):
@@ -55,10 +39,10 @@ def list_faqs(db: Session = Depends(get_db)):
 @router.post("/support/tickets", status_code=status.HTTP_201_CREATED)
 def create_ticket(
     payload: TicketCreate,
-    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(require_roles(*ALL_ROLES)),
     db: Session = Depends(get_db),
 ):
-    user_id = _get_user_id(token)
+    user_id = current_user.id
     ticket = SupportTicket(
         user_id=user_id,
         subject=payload.subject,
@@ -84,4 +68,3 @@ def create_ticket(
     )
 
     return {"id": ticket.id, "status": "created"}
-

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Link,
   useNavigate,
@@ -21,12 +21,11 @@ function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const emailFromUrl = useMemo(
-    () => searchParams.get("email") || "",
+  const resetToken = useMemo(
+    () => searchParams.get("token") || "",
     [searchParams]
   );
 
-  const [email, setEmail] = useState(emailFromUrl);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -39,6 +38,56 @@ function ResetPassword() {
 
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+  const [linkStatus, setLinkStatus] = useState(
+    resetToken ? "checking" : "invalid"
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!resetToken) {
+      setMessage("This password reset link is invalid or has expired.");
+      setMessageType("error");
+      setLinkStatus("invalid");
+      return undefined;
+    }
+
+    async function validateLink() {
+      try {
+        const response = await fetch(
+          `${API_BASE}/auth/reset-password/validate`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: resetToken }),
+          }
+        );
+
+        if (cancelled) return;
+
+        if (!response.ok) {
+          setLinkStatus("invalid");
+          setMessage("This password reset link is invalid or has expired.");
+          setMessageType("error");
+          return;
+        }
+
+        setLinkStatus("valid");
+        setMessage("");
+        setMessageType("");
+      } catch {
+        if (cancelled) return;
+        setLinkStatus("invalid");
+        setMessage("Unable to validate this password reset link.");
+        setMessageType("error");
+      }
+    }
+
+    validateLink();
+    return () => {
+      cancelled = true;
+    };
+  }, [resetToken]);
 
   const handleResetPassword = async (event) => {
     event.preventDefault();
@@ -46,8 +95,8 @@ function ResetPassword() {
     setMessage("");
     setMessageType("");
 
-    if (!email.trim()) {
-      setMessage("Please enter your registered email address.");
+    if (linkStatus !== "valid" || !resetToken) {
+      setMessage("This password reset link is invalid or has expired.");
       setMessageType("error");
       return;
     }
@@ -79,7 +128,7 @@ function ResetPassword() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: email.trim(),
+          token: resetToken,
           new_password: newPassword,
         }),
       });
@@ -93,6 +142,9 @@ function ResetPassword() {
       }
 
       if (!response.ok) {
+        if (response.status === 400) {
+          setLinkStatus("invalid");
+        }
         setMessage(
           data.detail || "Unable to reset your password."
         );
@@ -151,36 +203,33 @@ function ResetPassword() {
                   </p>
                 </header>
 
-                <form
-                  onSubmit={handleResetPassword}
-                  className="premium-login-form"
-                >
-                  <div className="premium-field">
-                    <label htmlFor="reset-email">
-                      Email Address
-                    </label>
-
-                    <div className="premium-input-wrapper">
-                      <ShieldCheck
-                        size={15}
-                        className="premium-input-icon"
-                      />
-
-                      <input
-                        id="reset-email"
-                        type="email"
-                        value={email}
-                        onChange={(event) =>
-                          setEmail(event.target.value)
-                        }
-                        placeholder="you@company.com"
-                        autoComplete="email"
-                        disabled={loading}
-                        required
-                      />
-                    </div>
+                {linkStatus === "checking" && (
+                  <div className="auth-message auth-message-success" role="status">
+                    Validating your secure reset link...
                   </div>
+                )}
 
+                {linkStatus === "invalid" && (
+                  <>
+                    {message && (
+                      <div className="auth-message auth-message-error" role="alert">
+                        {message}
+                      </div>
+                    )}
+                    <Link
+                      to="/forgot-password"
+                      className="premium-sign-in-button auth-link-button"
+                    >
+                      Request a New Reset Link
+                    </Link>
+                  </>
+                )}
+
+                {linkStatus === "valid" && (
+                  <form
+                    onSubmit={handleResetPassword}
+                    className="premium-login-form"
+                  >
                   <div className="premium-field">
                     <label htmlFor="new-password">
                       New Password
@@ -313,7 +362,8 @@ function ResetPassword() {
                       ? "Resetting Password..."
                       : "Reset Password"}
                   </button>
-                </form>
+                  </form>
+                )}
               </>
             ) : (
               <div className="forgot-success-content">
@@ -350,11 +400,11 @@ function ResetPassword() {
           </div>
 
           <footer className="premium-form-footer">
-            <button type="button">Privacy Policy</button>
+            <Link to="/privacy-policy">Privacy Policy</Link>
             <span>•</span>
-            <button type="button">Terms of Service</button>
+            <Link to="/terms-of-service">Terms of Service</Link>
             <span>•</span>
-            <button type="button">Help Center</button>
+            <Link to="/help">Help Center</Link>
           </footer>
         </div>
       </section>

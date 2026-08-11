@@ -1,21 +1,20 @@
 from fastapi import APIRouter, Depends
-from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 
-from jose import JWTError, jwt as jose_jwt
-
-from src.auth.jwt import SECRET_KEY, ALGORITHM
+from src.auth.dependencies import DASHBOARD_ROLES, require_roles
 from src.database.core import get_db
 from src.database.models import (
     AnalyticsSnapshot, MonthlyVolume, User, Notification
 )
 
-router = APIRouter(prefix="/analytics", tags=["Analytics"])
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+router = APIRouter(
+    prefix="/analytics",
+    tags=["Analytics"],
+    dependencies=[Depends(require_roles(*DASHBOARD_ROLES))],
+)
 
 
 class MetricResponse(BaseModel):
@@ -46,20 +45,6 @@ class DashboardSummaryResponse(BaseModel):
     user_role: str
 
 
-def _get_user_from_token(token: Optional[str], db: Session) -> Optional[User]:
-    """Return the User matching the JWT token, or None."""
-    if not token:
-        return None
-    try:
-        payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = int(payload.get("sub", 0))
-        if user_id:
-            return db.execute(select(User).where(User.id == user_id)).scalars().first()
-    except (JWTError, ValueError):
-        pass
-    return None
-
-
 @router.get("/metrics", response_model=List[MetricResponse])
 def get_metrics(db: Session = Depends(get_db)):
     result = db.execute(select(AnalyticsSnapshot).order_by(AnalyticsSnapshot.id.asc()))
@@ -79,21 +64,17 @@ def get_monthly_volume(db: Session = Depends(get_db)):
 
 @router.get("/dashboard-summary", response_model=DashboardSummaryResponse)
 def get_dashboard_summary(
-    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(require_roles(*DASHBOARD_ROLES)),
     db: Session = Depends(get_db),
 ):
     """Return live dashboard KPIs for the logged-in user (identified by JWT)."""
 
-    # ── Identify the logged-in user from JWT ──────────────────────────────────
-    current_user = _get_user_from_token(token, db)
-    if current_user is None:
-        # Fallback for unauthenticated / dev: first active user
-        current_user = db.execute(
-            select(User).where(User.is_active.is_(True)).order_by(User.id.asc())
-        ).scalars().first()
-
-    user_name = (current_user.full_name or current_user.name or current_user.email) if current_user else "User"
-    user_role = (current_user.role or "User") if current_user else "User"
+    user_name = (
+        current_user.full_name
+        or current_user.name
+        or current_user.email
+    )
+    user_role = current_user.role
 
     # ── Aggregate counts directly from DB tables ──────────────────────────────
     total_users = db.execute(select(func.count()).select_from(User)).scalar() or 0
@@ -102,7 +83,10 @@ def get_dashboard_summary(
     unread_notifications = db.execute(
         select(func.count())
         .select_from(Notification)
-        .where(Notification.is_read.is_(False))
+        .where(
+            Notification.user_id == current_user.id,
+            Notification.is_read.is_(False),
+        )
     ).scalar() or 0
 
     # Pull analytics snapshot key-value store

@@ -4,30 +4,12 @@ from sqlalchemy import select
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
-from jose import JWTError, jwt as jose_jwt
-from fastapi.security import OAuth2PasswordBearer
-
-from src.auth.jwt import SECRET_KEY, ALGORITHM
+from src.auth.dependencies import ALL_ROLES, require_roles
 from src.audit.service import create_audit_log
 from src.database.core import get_db
-from src.database.models import UserSetting, ApiKey
+from src.database.models import ApiKey, User, UserSetting
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
-
-
-def _get_user_id(token: Optional[str]) -> int:
-    if token:
-        try:
-            payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            uid = int(payload.get("sub", 0))
-            if uid:
-                return uid
-        except (JWTError, ValueError):
-            pass
-    return 1
-
-
 class SettingsUpdate(BaseModel):
     org_name: Optional[str] = None
     currency: Optional[str] = None
@@ -82,10 +64,10 @@ class InvoiceResponse(BaseModel):
 
 @router.get("", response_model=SettingsResponse)
 def get_settings(
-    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(require_roles(*ALL_ROLES)),
     db: Session = Depends(get_db),
 ):
-    user_id = _get_user_id(token)
+    user_id = current_user.id
     settings = db.execute(
         select(UserSetting).where(UserSetting.user_id == user_id)
     ).scalars().first()
@@ -102,10 +84,10 @@ def get_settings(
 @router.patch("", response_model=SettingsResponse)
 def update_settings(
     payload: SettingsUpdate,
-    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(require_roles(*ALL_ROLES)),
     db: Session = Depends(get_db),
 ):
-    user_id = _get_user_id(token)
+    user_id = current_user.id
     settings = db.execute(
         select(UserSetting).where(UserSetting.user_id == user_id)
     ).scalars().first()
@@ -159,10 +141,10 @@ def update_settings(
 @router.post("/notifications/gateways")
 def update_gateways(
     payload: GatewayUpdate,
-    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(require_roles(*ALL_ROLES)),
     db: Session = Depends(get_db),
 ):
-    user_id = _get_user_id(token)
+    user_id = current_user.id
     settings = db.execute(
         select(UserSetting).where(UserSetting.user_id == user_id)
     ).scalars().first()
@@ -197,10 +179,10 @@ def update_gateways(
 
 @router.get("/security/apikeys", response_model=List[ApiKeyResponse])
 def list_api_keys(
-    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(require_roles(*ALL_ROLES)),
     db: Session = Depends(get_db),
 ):
-    user_id = _get_user_id(token)
+    user_id = current_user.id
     keys = db.execute(
         select(ApiKey).where(ApiKey.user_id == user_id)
     ).scalars().all()
@@ -219,10 +201,10 @@ def list_api_keys(
 @router.post("/security/apikeys", response_model=ApiKeyResponse)
 def create_api_key(
     payload: ApiKeyCreate,
-    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(require_roles(*ALL_ROLES)),
     db: Session = Depends(get_db),
 ):
-    user_id = _get_user_id(token)
+    user_id = current_user.id
     import secrets
     raw_key = "ct_live_" + secrets.token_hex(16)
 

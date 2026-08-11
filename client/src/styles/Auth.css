@@ -668,7 +668,8 @@ body {
   color: #cbd5e1;
 }
 
-.premium-form-footer button {
+.premium-form-footer button,
+.premium-form-footer a {
   padding: 0;
   border: 0;
   color: #94a3b8;
@@ -798,7 +799,8 @@ body {
   accent-color: #3b82f6;
 }
 
-.signup-terms button {
+.signup-terms button,
+.signup-terms a {
   padding: 0;
   border: 0;
   color: #2563eb;
@@ -809,7 +811,8 @@ body {
   cursor: pointer;
 }
 
-.signup-terms button:hover {
+.signup-terms button:hover,
+.signup-terms a:hover {
   text-decoration: underline;
 }
 

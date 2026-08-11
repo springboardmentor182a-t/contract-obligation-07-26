@@ -3,28 +3,16 @@ from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
-from jose import JWTError, jwt as jose_jwt
-from fastapi.security import OAuth2PasswordBearer
-
-from src.auth.jwt import SECRET_KEY, ALGORITHM
+from src.auth.dependencies import QUICK_ACTION_ROLES, require_roles
 from src.audit.service import create_audit_log
 from src.database.core import get_db
-from src.database.models import QuickAction, QuickActionLog
+from src.database.models import QuickAction, QuickActionLog, User
 
-router = APIRouter(prefix="/quick-actions", tags=["Quick Actions"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
-
-
-def _get_user_id(token: Optional[str]) -> int:
-    if token:
-        try:
-            payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            uid = int(payload.get("sub", 0))
-            if uid:
-                return uid
-        except (JWTError, ValueError):
-            pass
-    return 1
+router = APIRouter(
+    prefix="/quick-actions",
+    tags=["Quick Actions"],
+    dependencies=[Depends(require_roles(*QUICK_ACTION_ROLES))],
+)
 
 
 class QuickActionResponse(BaseModel):
@@ -86,10 +74,10 @@ def get_logs(db: Session = Depends(get_db)):
 @router.post("/execute", response_model=QuickActionLogResponse)
 def execute_action(
     payload: ExecutePayload,
-    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(require_roles(*QUICK_ACTION_ROLES)),
     db: Session = Depends(get_db),
 ):
-    user_id = _get_user_id(token)
+    user_id = current_user.id
     action = db.execute(select(QuickAction).where(QuickAction.id == payload.action_id)).scalars().first()
     if not action:
         raise HTTPException(status_code=404, detail="Quick Action workflow not found")
@@ -122,4 +110,3 @@ def execute_action(
         time="Just now",
         status=log.status
     )
-

@@ -1,3 +1,20 @@
+export const sidebarRoutes = {
+  Dashboard: "/dashboard",
+  "Contract Repository": "/repository",
+  "Obligation Tracker": "/obligations",
+  "Renewal Dashboard": "/renewal-dashboard",
+  Compliance: "/compliance",
+  "Reports & Analytics": "/reports",
+  Notifications: "/notifications",
+  "Quick Actions": "/quick-actions",
+  Calendar: "/calendar",
+  "Audit Logs": "/audit",
+  "User Management": "/user-management",
+  Settings: "/settings",
+};
+
+export const allSidebarModules = Object.keys(sidebarRoutes);
+
 export const sidebarPermissions = {
   Administrator: [
     "Notifications",
@@ -44,30 +61,9 @@ export const sidebarPermissions = {
     "Settings",
   ],
 
-  Employee: [
-    "Dashboard",
-    "Contract Repository",
-    "Obligation Tracker",
-    "Renewal Dashboard",
-    "Notifications",
-    "Settings",
-  ],
-};
+  "Department Head": [...allSidebarModules],
 
-// Routes that are controlled by sidebar permissions
-const sidebarRoutes = {
-  Dashboard: "/dashboard",
-  "Contract Repository": "/repository",
-  "Obligation Tracker": "/obligations",
-  "Renewal Dashboard": "/renewal-dashboard",
-  Compliance: "/compliance",
-  "Reports & Analytics": "/reports",
-  Notifications: "/notifications",
-  "Quick Actions": "/quick-actions",
-  Calendar: "/calendar",
-  "Audit Logs": "/audit",
-  "User Management": "/user-management",
-  Settings: "/settings",
+  Employee: [...allSidebarModules],
 };
 
 // Routes that are always accessible to any authenticated user (not sidebar-gated)
@@ -78,12 +74,7 @@ const routeAliases = {
 };
 
 export function getCurrentUserRole(contextRole = "") {
-  return (
-    localStorage.getItem("role") ||
-    sessionStorage.getItem("role") ||
-    contextRole ||
-    ""
-  );
+  return contextRole || "";
 }
 
 export function canAccessSidebarItem(role, itemLabel) {

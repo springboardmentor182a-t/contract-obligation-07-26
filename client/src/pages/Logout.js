@@ -1,21 +1,15 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUI } from "../context/UIContext";
 
 export default function Logout() {
   const navigate = useNavigate();
+  const { logout } = useUI();
 
   useEffect(() => {
-    // Authentication information remove cheyyadam
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("role");
-
-    sessionStorage.clear();
-
-    // Login page ki redirect
+    logout();
     navigate("/login", { replace: true });
-  }, [navigate]);
+  }, [logout, navigate]);
 
   return (
     <div

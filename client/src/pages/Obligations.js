@@ -7,6 +7,7 @@ import {
 import ButtonGroup from "../components/Buttons/ButtonGroup";
 import Checkbox from "../components/Form/Checkbox";
 import { API_BASE } from "../config/api";
+import { getAuthHeaders } from "../utils/auth";
 const API_URL = `${API_BASE}/obligations/`;
 
 const FILTERS = [
@@ -119,9 +120,9 @@ export default function Obligations() {
     setError("");
 
     fetch(API_URL, {
-      headers: {
+      headers: getAuthHeaders({
         Accept: "application/json",
-      },
+      }),
     })
       .then((response) => {
         if (!response.ok) {
@@ -212,11 +213,11 @@ export default function Obligations() {
 
     fetch(API_URL, {
       method: "POST",
-      headers: {
+      headers: getAuthHeaders({
         "Content-Type":
           "application/json",
         Accept: "application/json",
-      },
+      }),
       body: JSON.stringify(requestBody),
     })
       .then((response) => {
@@ -299,11 +300,11 @@ export default function Obligations() {
 
     fetch(`${API_URL}${id}`, {
       method: "PATCH",
-      headers: {
+      headers: getAuthHeaders({
         "Content-Type":
           "application/json",
         Accept: "application/json",
-      },
+      }),
       body: JSON.stringify({
         status: newStatus,
       }),
@@ -384,9 +385,9 @@ export default function Obligations() {
 
     fetch(`${API_URL}${id}`, {
       method: "DELETE",
-      headers: {
+      headers: getAuthHeaders({
         Accept: "application/json",
-      },
+      }),
     })
       .then((response) => {
         if (!response.ok) {

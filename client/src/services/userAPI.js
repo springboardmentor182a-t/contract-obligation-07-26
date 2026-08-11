@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getStoredToken } from "../utils/auth";
 
 // Supports both Vite and Create React App
 const API_BASE =
@@ -13,6 +14,14 @@ const API = axios.create({
   },
 });
 
+API.interceptors.request.use((config) => {
+  const token = getStoredToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const getUsers = async () => {
   const response = await API.get("/users");
   return response.data;
@@ -25,6 +34,11 @@ export const updateUser = async (id, userData) => {
 
 export const deleteUser = async (id) => {
   const response = await API.delete(`/users/${id}`);
+  return response.data;
+};
+
+export const inviteUser = async (userData) => {
+  const response = await API.post("/users/invite", userData);
   return response.data;
 };
 

@@ -2,7 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUI } from "../context/UIContext";
 import { API_BASE } from "../config/api";
-import { hasQuickActions, getCurrentUserRole } from "../utils/sidebarPermissions";
+import {
+  canAccessRoute,
+  getCurrentUserRole,
+  hasQuickActions,
+} from "../utils/sidebarPermissions";
+import {
+  getAuthHeaders,
+} from "../utils/auth";
 import {
   ChevRightSmIcon, SearchIcon, MoonIcon, SunIcon, HelpIcon, BellIcon, PlusIcon,
   FileIcon, BarIcon, ChevDownIcon, UserIcon, CalendarIcon,
@@ -79,7 +86,7 @@ export default function Navbar({ onToggleSidebar }) {
   useOutsideClick(bellRef, () => setBellOpen(false));
   useOutsideClick(qaRef, () => setQaOpen(false));
 
-  const { notificationCount, user, toggleTheme, theme } = useUI();
+  const { notificationCount, user, logout, toggleTheme, theme } = useUI();
   const navigate = useNavigate();
   const location = useLocation();
   const currentRole = getCurrentUserRole(user?.role);
@@ -88,9 +95,9 @@ export default function Navbar({ onToggleSidebar }) {
   useEffect(() => {
     async function loadNotifs() {
       try {
-        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await fetch(`${API_BASE}/notifications`, { headers });
+        const response = await fetch(`${API_BASE}/notifications`, {
+          headers: getAuthHeaders(),
+        });
 
         if (response.ok) {
           const data = await response.json();
@@ -104,7 +111,7 @@ export default function Navbar({ onToggleSidebar }) {
   }, [notificationCount]);
 
   const userName = user?.name || localStorage.getItem("name") || sessionStorage.getItem("name") || "User";
-  const userRole = user?.role || localStorage.getItem("role") || sessionStorage.getItem("role") || "Administrator";
+  const userRole = user?.role || "User";
   const userEmail = user?.email || localStorage.getItem("email") || sessionStorage.getItem("email") || "";
 
   const initials = userName
@@ -118,8 +125,12 @@ export default function Navbar({ onToggleSidebar }) {
 
   const q = query.trim().toLowerCase();
   const matches = q
-    ? SEARCH_INDEX.filter((it) =>
-        (it.label + " " + it.sub + " " + it.group).toLowerCase().includes(q)
+    ? SEARCH_INDEX.filter(
+        (it) =>
+          canAccessRoute(currentRole, it.to) &&
+          (it.label + " " + it.sub + " " + it.group)
+            .toLowerCase()
+            .includes(q)
       ).slice(0, 8)
     : [];
 
@@ -133,14 +144,7 @@ export default function Navbar({ onToggleSidebar }) {
   }
 
   function handleLogout() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("token");
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("user");
-    localStorage.removeItem("role");
-    localStorage.removeItem("name");
-    localStorage.removeItem("email");
-    sessionStorage.clear();
+    logout();
     setOpen(false);
     setBellOpen(false);
     setQaOpen(false);
@@ -259,9 +263,11 @@ export default function Navbar({ onToggleSidebar }) {
               <button type="button" className="dd-item" onClick={() => goTo("/quick-actions")}>
                 <PlusIcon size={17} color="#3B82F6" /> Open Quick Actions
               </button>
-              <button type="button" className="dd-item" onClick={() => goTo("/reports")}>
-                <BarIcon size={17} color="#F59E0B" /> View Analytics
-              </button>
+              {canAccessRoute(currentRole, "/reports") && (
+                <button type="button" className="dd-item" onClick={() => goTo("/reports")}>
+                  <BarIcon size={17} color="#F59E0B" /> View Analytics
+                </button>
+              )}
               <button type="button" className="dd-item" onClick={() => goTo("/help")}>
                 <HelpIcon size={17} color="#10B981" /> File Support Ticket
               </button>

@@ -6,6 +6,7 @@ from src.auth.models import (
     RegisterRequest,
     ForgotPasswordRequest,
     ResetPasswordRequest,
+    ResetTokenRequest,
     TokenResponse,
 )
 from src.auth.service import AuthService
@@ -51,3 +52,11 @@ def reset_password(
     db: Session = Depends(get_db),
 ):
     return auth_service.reset_password(request, db)
+
+
+@router.post("/reset-password/validate")
+def validate_reset_password_token(
+    request: ResetTokenRequest,
+    db: Session = Depends(get_db),
+):
+    return auth_service.validate_reset_token(request, db)
