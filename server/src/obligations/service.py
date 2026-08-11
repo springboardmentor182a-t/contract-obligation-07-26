@@ -1,9 +1,14 @@
+from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import joinedload
 
 from src.audit.service import create_audit_log
-from src.database.models import ObligationModel
+from src.contract_repository.models import Contract
+from src.database.models import ObligationModel, User
 from src.obligations.schemas import (
     ObligationCreate,
+    ObligationResponse,
     ObligationUpdate,
 )
 
@@ -11,21 +16,107 @@ from src.obligations.schemas import (
 class ObligationService:
 
     @staticmethod
+    def _to_response(
+        obligation: ObligationModel,
+    ) -> ObligationResponse:
+        response = ObligationResponse.model_validate(
+            obligation
+        )
+
+        return response.model_copy(
+            update={
+                "contract_name": (
+                    obligation.contract.contract_name
+                    if obligation.contract
+                    else None
+                ),
+                "owner_name": (
+                    obligation.owner.full_name
+                    if obligation.owner
+                    else None
+                ),
+            }
+        )
+
+    @staticmethod
     def get_all_obligations(db: Session):
-        return db.query(ObligationModel).all()
+        obligations = (
+            db.query(ObligationModel)
+            .options(
+                joinedload(ObligationModel.contract),
+                joinedload(ObligationModel.owner),
+            )
+            .all()
+        )
+        return [
+            ObligationService._to_response(obligation)
+            for obligation in obligations
+        ]
 
     @staticmethod
     def create_obligation(
         db: Session,
         obligation_data: ObligationCreate,
     ):
+        if obligation_data.contract_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A contract is required.",
+            )
+
+        contract = (
+            db.query(Contract)
+            .filter(
+                Contract.id == obligation_data.contract_id
+            )
+            .first()
+        )
+        if contract is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Contract not found.",
+            )
+
+        owner = None
+        if obligation_data.owner_id is not None:
+            owner = (
+                db.query(User)
+                .filter(
+                    User.id == obligation_data.owner_id
+                )
+                .first()
+            )
+            if owner is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Obligation owner not found.",
+                )
+
         new_obligation = ObligationModel(
             **obligation_data.model_dump()
         )
+        new_obligation.contract = contract
+        new_obligation.owner = owner
 
-        db.add(new_obligation)
-        db.commit()
-        db.refresh(new_obligation)
+        try:
+            db.add(new_obligation)
+            db.commit()
+            db.refresh(new_obligation)
+        except IntegrityError as exc:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    "Unable to create obligation because the "
+                    "selected contract or owner is invalid."
+                ),
+            ) from exc
+        except SQLAlchemyError as exc:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Unable to create obligation.",
+            ) from exc
 
         create_audit_log(
             db=db,
@@ -40,7 +131,9 @@ class ObligationService:
             ),
         )
 
-        return new_obligation
+        return ObligationService._to_response(
+            new_obligation
+        )
 
     @staticmethod
     def update_obligation(
@@ -117,7 +210,9 @@ class ObligationService:
             description=description,
         )
 
-        return obligation
+        return ObligationService._to_response(
+            obligation
+        )
 
     @staticmethod
     def delete_obligation(

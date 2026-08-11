@@ -7,6 +7,8 @@ import {
 import ButtonGroup from "../components/Buttons/ButtonGroup";
 import Checkbox from "../components/Form/Checkbox";
 import { API_BASE } from "../config/api";
+import { getContracts } from "../services/contractAPI";
+import { getUsers } from "../services/userAPI";
 import { getAuthHeaders } from "../utils/auth";
 const API_URL = `${API_BASE}/obligations/`;
 
@@ -112,6 +114,13 @@ export default function Obligations() {
     useState(INITIAL_FORM);
   const [submitting, setSubmitting] =
     useState(false);
+  const [contracts, setContracts] =
+    useState([]);
+  const [users, setUsers] = useState([]);
+  const [formOptionsLoading, setFormOptionsLoading] =
+    useState(true);
+  const [formOptionsError, setFormOptionsError] =
+    useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -170,6 +179,57 @@ export default function Obligations() {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    setFormOptionsLoading(true);
+    setFormOptionsError("");
+
+    Promise.all([
+      getContracts(),
+      getUsers(),
+    ])
+      .then(([
+        contractData,
+        userData,
+      ]) => {
+        if (
+          !Array.isArray(contractData) ||
+          !Array.isArray(userData)
+        ) {
+          throw new Error(
+            "Invalid contract or user response"
+          );
+        }
+
+        if (isMounted) {
+          setContracts(contractData);
+          setUsers(userData);
+        }
+      })
+      .catch((optionsError) => {
+        console.error(
+          "Failed to load obligation form options:",
+          optionsError
+        );
+
+        if (isMounted) {
+          setFormOptionsError(
+            "Unable to load contracts and assignees."
+          );
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setFormOptionsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   function handleFormChange(event) {
     const { name, value } = event.target;
 
@@ -189,7 +249,7 @@ export default function Obligations() {
       !formData.due_date
     ) {
       setError(
-        "Title, Contract ID, Owner ID and Due Date are required."
+        "Title, Contract, Owner and Due Date are required."
       );
 
       return;
@@ -513,6 +573,15 @@ export default function Obligations() {
             Create Obligation
           </h3>
 
+          {formOptionsError && (
+            <p
+              className="muted"
+              style={{ marginTop: 0 }}
+            >
+              {formOptionsError}
+            </p>
+          )}
+
           <div
             style={{
               display: "grid",
@@ -545,42 +614,20 @@ export default function Obligations() {
 
             <div>
               <label htmlFor="contract_id">
-                Contract ID
+                Contract
               </label>
 
-              <input
+              <select
                 id="contract_id"
                 name="contract_id"
-                type="number"
-                min="1"
                 value={
                   formData.contract_id
                 }
                 onChange={
                   handleFormChange
                 }
-                required
-                style={{
-                  width: "100%",
-                  padding: 10,
-                  marginTop: 6,
-                }}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="owner_id">
-                Owner ID
-              </label>
-
-              <input
-                id="owner_id"
-                name="owner_id"
-                type="number"
-                min="1"
-                value={formData.owner_id}
-                onChange={
-                  handleFormChange
+                disabled={
+                  formOptionsLoading
                 }
                 required
                 style={{
@@ -588,7 +635,63 @@ export default function Obligations() {
                   padding: 10,
                   marginTop: 6,
                 }}
-              />
+              >
+                <option value="">
+                  {formOptionsLoading
+                    ? "Loading contracts..."
+                    : "Select a contract"}
+                </option>
+
+                {contracts.map(
+                  (contract) => (
+                    <option
+                      key={contract.id}
+                      value={contract.id}
+                    >
+                      {contract.contract_name}
+                    </option>
+                  )
+                )}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="owner_id">
+                Owner / Assignee
+              </label>
+
+              <select
+                id="owner_id"
+                name="owner_id"
+                value={formData.owner_id}
+                onChange={
+                  handleFormChange
+                }
+                disabled={
+                  formOptionsLoading
+                }
+                required
+                style={{
+                  width: "100%",
+                  padding: 10,
+                  marginTop: 6,
+                }}
+              >
+                <option value="">
+                  {formOptionsLoading
+                    ? "Loading assignees..."
+                    : "Select an owner"}
+                </option>
+
+                {users.map((user) => (
+                  <option
+                    key={user.id}
+                    value={user.id}
+                  >
+                    {user.full_name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -710,7 +813,11 @@ export default function Obligations() {
 
           <button
             type="submit"
-            disabled={submitting}
+            disabled={
+              submitting ||
+              formOptionsLoading ||
+              Boolean(formOptionsError)
+            }
             style={{
               marginTop: 16,
               padding: "10px 18px",
