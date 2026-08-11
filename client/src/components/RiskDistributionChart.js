@@ -3,7 +3,7 @@ import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
-  Legend
+  Legend,
 } from "chart.js";
 
 import { Doughnut } from "react-chartjs-2";
@@ -15,96 +15,77 @@ ChartJS.register(
 );
 
 function RiskDistributionChart({ renewals }) {
-
-  // Count renewals based on status
-  const lowRisk = renewals.filter(
-    (r) => r.status === "Completed"
+  const active = renewals.filter(
+    (r) => r.status === "Active"
   ).length;
 
-  const mediumRisk = renewals.filter(
+  const pending = renewals.filter(
     (r) => r.status === "Pending"
   ).length;
 
-  const highRisk = renewals.filter(
-    (r) => r.status === "Overdue"
+  const expired = renewals.filter(
+    (r) => r.status === "Expired"
   ).length;
 
   const data = {
     labels: [
-      "Completed",
+      "Active",
       "Pending",
-      "Overdue"
+      "Expired",
     ],
 
     datasets: [
       {
         data: [
-          lowRisk,
-          mediumRisk,
-          highRisk
+          active,
+          pending,
+          expired,
         ],
 
         backgroundColor: [
           "#22C55E",
           "#F59E0B",
-          "#EF4444"
+          "#EF4444",
         ],
 
         borderColor: "#ffffff",
-        borderWidth: 4,
-        hoverOffset: 12
-      }
-    ]
+        borderWidth: 3,
+        hoverOffset: 6,
+      },
+    ],
   };
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
 
     plugins: {
       legend: {
         position: "bottom",
 
         labels: {
-          boxWidth: 14,
-          padding: 20,
+          boxWidth: 12,
+          padding: 12,
+
           font: {
-            size: 13
-          }
-        }
-      }
+            size: 11,
+          },
+
+          color: "#666",
+        },
+      },
     },
 
-    cutout: "70%"
+    cutout: "68%",
   };
 
   return (
     <div
       style={{
-        background: "#fff",
-        borderRadius: 18,
-        padding: 20,
-        boxShadow: "0 4px 12px rgba(0,0,0,.08)"
+        width: "100%",
+        height: "250px",
       }}
     >
-      <h3
-        style={{
-          marginTop: 0,
-          marginBottom: 5
-        }}
-      >
-        Risk Distribution
-      </h3>
-
-      <p
-        style={{
-          color: "#777",
-          fontSize: 13,
-          marginBottom: 20
-        }}
-      >
-        Contract risk analysis
-      </p>
-
       <Doughnut
         data={data}
         options={options}

@@ -1,13 +1,26 @@
+const API = "http://localhost:8000/api/v1/renewals/";
 
-const API = `${process.env.REACT_APP_API_URL}/renewals/`;
 export async function getRenewals() {
   const response = await fetch(API);
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch renewals");
+  const text = await response.text();
+
+  let result;
+  try {
+    result = JSON.parse(text);
+  } catch {
+    result = text;
   }
 
-  return await response.json();
+  if (!response.ok) {
+    throw new Error(
+      typeof result === "string"
+        ? result
+        : JSON.stringify(result)
+    );
+  }
+
+  return result;
 }
 
 export async function addRenewal(data) {
@@ -19,21 +32,28 @@ export async function addRenewal(data) {
     body: JSON.stringify(data),
   });
 
-  const result = await response.json();
+  const text = await response.text();
+
+  let result;
+  try {
+    result = JSON.parse(text);
+  } catch {
+    result = text;
+  }
 
   if (!response.ok) {
-    console.log(result);
-    throw new Error(JSON.stringify(result));
+    throw new Error(
+      typeof result === "string"
+        ? result
+        : JSON.stringify(result)
+    );
   }
 
   return result;
 }
 
-  
-
-
 export async function updateRenewal(id, data) {
-  const response = await fetch(API + id, {
+  const response = await fetch(`${API}${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -41,13 +61,50 @@ export async function updateRenewal(id, data) {
     body: JSON.stringify(data),
   });
 
-  return await response.json();
+  const text = await response.text();
+
+  let result;
+  try {
+    result = JSON.parse(text);
+  } catch {
+    result = text;
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      typeof result === "string"
+        ? result
+        : JSON.stringify(result)
+    );
+  }
+
+  return result;
 }
 
 export async function deleteRenewal(id) {
-  const response = await fetch(API + id, {
+  const response = await fetch(`${API}${id}`, {
     method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
 
-  return await response.json();
+  const text = await response.text();
+
+  let result;
+  try {
+    result = JSON.parse(text);
+  } catch {
+    result = text;
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      typeof result === "string"
+        ? result
+        : JSON.stringify(result)
+    );
+  }
+
+  return result;
 }
