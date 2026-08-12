@@ -5,6 +5,7 @@ from sqlalchemy import select
 from typing import List
 
 from src.audit.service import create_audit_log
+from src.auth.dependencies import COMPLIANCE_ROLES, require_roles
 from src.database.core import get_db
 from src.database.models import ComplianceControl, ComplianceLog
 from .schemas import (
@@ -15,7 +16,11 @@ from .schemas import (
     ComplianceSummaryResponse,
 )
 
-router = APIRouter(prefix="/compliance", tags=["Compliance"])
+router = APIRouter(
+    prefix="/compliance",
+    tags=["Compliance"],
+    dependencies=[Depends(require_roles(*COMPLIANCE_ROLES))],
+)
 
 
 def _format_iso(dt: datetime | None) -> str:

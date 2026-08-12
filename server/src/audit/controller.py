@@ -7,11 +7,16 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from src.audit.service import create_audit_log
+from src.auth.dependencies import AUDIT_ROLES, require_roles
 from src.database.core import get_db
 from src.database.models import AuditLogModel, UserModel
 
 
-router = APIRouter(prefix="/audit-logs", tags=["Audit"])
+router = APIRouter(
+    prefix="/audit-logs",
+    tags=["Audit"],
+    dependencies=[Depends(require_roles(*AUDIT_ROLES))],
+)
 
 
 def apply_audit_filters(

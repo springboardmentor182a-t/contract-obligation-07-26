@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { getAuthHeaders } from "../utils/auth";
 
 export default function ContractActivityChart() {
   const [activeTooltip, setActiveTooltip] = useState(null);
@@ -7,7 +8,9 @@ export default function ContractActivityChart() {
   useEffect(() => {
     async function loadData() {
       try {
-        const res = await fetch("/api/analytics/monthly-volume");
+        const res = await fetch("/api/analytics/monthly-volume", {
+          headers: getAuthHeaders(),
+        });
         if (res.ok) {
           const data = await res.json();
           setMonthlyData(data);

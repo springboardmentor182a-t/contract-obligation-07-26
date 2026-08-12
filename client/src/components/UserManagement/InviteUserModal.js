@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+import { getUsers, inviteUser } from "../../services/userAPI";
 
 function InviteUserModal({open,onClose,users,setUsers,}) {
   const [formData, setFormData] = useState({
@@ -32,7 +31,7 @@ function InviteUserModal({open,onClose,users,setUsers,}) {
 
   try {
     // Send data to backend
-    await axios.post(`${API_BASE_URL}/users/invite`, {
+    await inviteUser({
       full_name: formData.name,
       email: formData.email,
       role: formData.role,
@@ -41,8 +40,8 @@ function InviteUserModal({open,onClose,users,setUsers,}) {
     });
 
     // Refresh users from backend
-    const response = await axios.get(`${API_BASE_URL}/users`);
-    setUsers(response.data);
+    const refreshedUsers = await getUsers();
+    setUsers(refreshedUsers);
 
     // Clear form
     setFormData({

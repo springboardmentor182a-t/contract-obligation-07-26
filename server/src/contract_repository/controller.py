@@ -11,6 +11,7 @@ from fastapi import (
     status,
 )
 from src.audit.service import create_audit_log
+from src.auth.dependencies import CONTRACT_ROLES, require_roles
 from fastapi.responses import FileResponse
 from sqlalchemy import select
 from typing import List
@@ -31,6 +32,7 @@ from src.contract_repository.schemas import (
 router = APIRouter(
     prefix="/contracts",
     tags=["Contract Repository"],
+    dependencies=[Depends(require_roles(*CONTRACT_ROLES))],
 )
 
 

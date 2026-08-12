@@ -1,22 +1,17 @@
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from jose import JWTError, jwt as jose_jwt
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.audit.service import create_audit_log
-from src.auth.jwt import SECRET_KEY, ALGORITHM
+from src.auth.dependencies import ALL_ROLES, require_roles
 from src.database.core import get_db
 from src.database.models import User
 
 router = APIRouter(prefix="/profile", tags=["Profile"])
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
-
 
 class ProfileUpdate(BaseModel):
     full_name: Optional[str] = None
@@ -43,30 +38,6 @@ class ProfileResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-def _get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    """Decode JWT and return the matching User row.  
-    Falls back to the first active user when the token is missing/invalid
-    (useful for unauthenticated local dev – NEVER do this in production).
-    """
-    if token:
-        try:
-            payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            user_id = int(payload.get("sub", 0))
-            if user_id:
-                user = db.execute(select(User).where(User.id == user_id)).scalars().first()
-                if user:
-                    return user
-        except (JWTError, ValueError):
-            pass
-
-    # Unauthenticated fallback: first active user in DB
-    user = db.execute(select(User).where(User.is_active.is_(True))).scalars().first()
-    if user:
-        return user
-
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-
-
 def _build_response(user: User) -> ProfileResponse:
     return ProfileResponse(
         id=user.id,
@@ -84,7 +55,9 @@ def _build_response(user: User) -> ProfileResponse:
 
 # ── GET /api/profile ────────────────────────────────────────────────────────
 @router.get("", response_model=ProfileResponse)
-def get_profile(current_user: User = Depends(_get_current_user)):
+def get_profile(
+    current_user: User = Depends(require_roles(*ALL_ROLES)),
+):
     return _build_response(current_user)
 
 
@@ -92,7 +65,7 @@ def get_profile(current_user: User = Depends(_get_current_user)):
 @router.patch("", response_model=ProfileResponse)
 def update_profile(
     profile_data: ProfileUpdate,
-    current_user: User = Depends(_get_current_user),
+    current_user: User = Depends(require_roles(*ALL_ROLES)),
     db: Session = Depends(get_db),
 ):
     update_data = profile_data.model_dump(exclude_unset=True)

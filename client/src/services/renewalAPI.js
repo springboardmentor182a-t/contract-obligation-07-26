@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getStoredToken } from "../utils/auth";
 
 // Supports both Vite and Create React App
 const API_BASE =
@@ -11,6 +12,14 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+api.interceptors.request.use((config) => {
+  const token = getStoredToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // ===============================

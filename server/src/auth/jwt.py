@@ -34,7 +34,10 @@ def create_access_token(data: dict):
     )
 
     to_encode.update(
-        {"exp": expire}
+        {
+            "exp": expire,
+            "type": "access",
+        }
     )
 
     return jwt.encode(

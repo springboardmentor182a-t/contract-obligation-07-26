@@ -1,10 +1,13 @@
 from typing import List
+import logging
 import secrets
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.future import select
 
 from src.audit.service import create_audit_log
+from src.auth.dependencies import USER_MANAGEMENT_ROLES, require_roles
+from src.auth.security import hash_password
 from src.database.core import get_db
 from src.database.models import User, UserInvitation
 from .schemas import (
@@ -14,7 +17,12 @@ from .schemas import (
     UserUpdateRequest,
 )
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(
+    prefix="/users",
+    tags=["Users"],
+    dependencies=[Depends(require_roles(*USER_MANAGEMENT_ROLES))],
+)
+logger = logging.getLogger(__name__)
 
 
 @router.get("", response_model=List[UserResponse])
@@ -72,7 +80,7 @@ def invite_user(
         name=full_name,
         full_name=full_name,
         email=payload.email,
-        password=temp_password,
+        password=hash_password(temp_password),
         role=payload.role,
         department=payload.department,
         status="Active",
@@ -136,15 +144,11 @@ ContractIQ Legal Operations Team
                 server.starttls()
                 server.login(smtp_user, smtp_pass)
                 server.sendmail(smtp_user, [payload.email], msg.as_string())
-            print(f"[EMAIL DISPATCH SUCCESS] Invitation sent to {payload.email}")
-        except Exception as exc:
-            print(f"[EMAIL DISPATCH WARNING] Could not send via SMTP ({exc}), logged email to console.")
+            logger.info("Invitation email accepted by SMTP.")
+        except Exception:
+            logger.warning("Invitation email was not accepted by SMTP.")
     else:
-        print("=" * 60)
-        print(f"[INVITATION EMAIL SENT TO: {payload.email}]")
-        print(f"Subject: {email_subject}")
-        print(email_body)
-        print("=" * 60)
+        logger.warning("Invitation email was not sent because SMTP is unavailable.")
 
     return UserInviteResponse(
         id=new_invitation.id,

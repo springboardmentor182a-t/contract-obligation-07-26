@@ -10,7 +10,6 @@ import {
 import AuthLeftPanel from "../components/AuthLeftPanel";
 import "../styles/Auth.css";
 import { API_BASE } from "../config/api";
-const API_BASE_URL = API_BASE;
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -62,7 +61,7 @@ function ForgotPassword() {
       setSent(true);
       setMessage(
         data.message ||
-          "Email verified. You can now reset your password."
+          "If an account exists for this email, a password reset link has been sent."
       );
       setMessageType("success");
     } catch (error) {
@@ -101,8 +100,8 @@ function ForgotPassword() {
                 <header className="premium-form-header">
                   <h2>Forgot Password?</h2>
                   <p>
-                    Enter your registered email address to continue with
-                    password reset.
+                    Enter your registered email address to request a secure
+                    password reset link.
                   </p>
                 </header>
 
@@ -155,22 +154,22 @@ function ForgotPassword() {
                     disabled={loading}
                   >
                     {loading
-                      ? "Verifying Email..."
-                      : "Verify Email Address"}
+                      ? "Sending Reset Link..."
+                      : "Send Reset Link"}
                   </button>
                 </form>
               </>
             ) : (
-                            <div className="forgot-success-content">
+              <div className="forgot-success-content">
                 <div className="forgot-success-icon">
                   <CheckCircle size={30} />
                 </div>
 
-                <h2>Email Verified</h2>
+                <h2>Check Your Email</h2>
 
                 <p>
-                  Your account has been verified successfully. Continue to
-                  create a new password.
+                  If an active account matches that address, ContractIQ has
+                  sent a secure password reset link.
                 </p>
 
                 {message && (
@@ -179,14 +178,6 @@ function ForgotPassword() {
                   </div>
                 )}
 
-                <Link
-                  to={`/reset-password?email=${encodeURIComponent(
-                    email.trim()
-                  )}`}
-                  className="premium-sign-in-button auth-link-button"
-                >
-                  Continue to Reset Password
-                </Link>
               </div>
             )}
 
@@ -197,11 +188,11 @@ function ForgotPassword() {
           </div>
 
           <footer className="premium-form-footer">
-            <button type="button">Privacy Policy</button>
+            <Link to="/privacy-policy">Privacy Policy</Link>
             <span>•</span>
-            <button type="button">Terms of Service</button>
+            <Link to="/terms-of-service">Terms of Service</Link>
             <span>•</span>
-            <button type="button">Help Center</button>
+            <Link to="/help">Help Center</Link>
           </footer>
         </div>
       </section>

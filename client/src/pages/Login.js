@@ -15,7 +15,7 @@ import { getDefaultRouteForRole } from "../utils/sidebarPermissions";
 import { useUI } from "../context/UIContext";
 import "../styles/Auth.css";
 import { API_BASE } from "../config/api";
-const API_BASE_URL = API_BASE;
+import { clearStoredAuth } from "../utils/auth";
 const ROLES = [
   "Administrator",
   "Legal Manager",
@@ -62,6 +62,7 @@ function Login() {
         body: JSON.stringify({
           email: email.trim(),
           password,
+          role,
         }),
       });
 
@@ -79,17 +80,21 @@ function Login() {
         return;
       }
 
-      const authenticatedRole = data.role || role;
-      const defaultRoute = getDefaultRouteForRole(authenticatedRole) || "/dashboard";
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("name");
-      localStorage.removeItem("email");
+      if (!data.role) {
+        setMessage("Login failed. Please try again.");
+        setMessageType("error");
+        return;
+      }
 
-      sessionStorage.removeItem("token");
-      sessionStorage.removeItem("role");
-      sessionStorage.removeItem("name");
-      sessionStorage.removeItem("email");
+      const authenticatedRole = data.role;
+      const defaultRoute = getDefaultRouteForRole(authenticatedRole);
+      if (!defaultRoute) {
+        setMessage("This account role is not configured for application access.");
+        setMessageType("error");
+        return;
+      }
+
+      clearStoredAuth();
 
       const storage = remember ? localStorage : sessionStorage;
 
@@ -102,10 +107,16 @@ function Login() {
       setMessageType("success");
 
       if (refreshUser) {
-        await refreshUser();
+        const verifiedUser = await refreshUser();
+        if (!verifiedUser || verifiedUser.role !== authenticatedRole) {
+          clearStoredAuth();
+          setMessage("Unable to verify the authenticated account.");
+          setMessageType("error");
+          return;
+        }
       }
 
-      navigate(defaultRoute || "/dashboard");
+      navigate(defaultRoute);
     } catch (error) {
 
       console.error("Login error:", error);
@@ -309,11 +320,11 @@ function Login() {
           </div>
 
           <footer className="premium-form-footer">
-            <button type="button">Privacy Policy</button>
+            <Link to="/privacy-policy">Privacy Policy</Link>
             <span>•</span>
-            <button type="button">Terms of Service</button>
+            <Link to="/terms-of-service">Terms of Service</Link>
             <span>•</span>
-            <button type="button">Help Center</button>
+            <Link to="/help">Help Center</Link>
           </footer>
         </div>
       </section>
