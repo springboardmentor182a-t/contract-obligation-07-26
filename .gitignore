@@ -13,6 +13,13 @@ environment.prod.ts
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Python virtual environments
+server/venv/
+venv/
+.venv/
 
 # Logs
 logs/

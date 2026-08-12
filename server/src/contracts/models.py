@@ -28,20 +28,6 @@ class ContractModel(Base):
     paid_amount = Column(Text)
     outstanding = Column(Text)
     currency = Column(Text)
-    payment_progress = Column(Integer)
-
-    renewal_type = Column(Text)
-    notice_period = Column(Text)
-    auto_renewal = Column(Text)
-
-    created_on = Column(Text)
-    effective_date = Column(Text)
-    expiry_date = Column(Text)
-    renewal_reminder = Column(Text)
-
-    documents = Column(Integer)
-    obligations = Column(Integer)
-    tasks = Column(Integer)
 
 
 class ContractCreate(BaseModel):
