@@ -17,11 +17,15 @@ import {
 } from "./utils/sidebarPermissions";
 
 // Authentication pages
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Logout from "./pages/Logout";
+
+import GoogleCallback from "./features/authentication/GoogleCallback";
+import Onboarding from "./features/authentication/Onboarding";
 
 // Application pages
 import Home from "./pages/Home";
@@ -146,6 +150,7 @@ function App() {
     <BrowserRouter>
       <UIProvider>
         <Routes>
+          <Route path="/" element={<PublicOnlyRoute><Landing /></PublicOnlyRoute>} />
           <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
           <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -154,6 +159,8 @@ function App() {
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/help" element={<HelpRoute />} />
           <Route path="/logout" element={<Logout />} />
+          <Route path="/auth/callback" element={<GoogleCallback />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route
             path="/*"
             element={
