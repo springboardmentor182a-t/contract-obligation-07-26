@@ -5,7 +5,7 @@ import {
   LinearScale,
   BarElement,
   Tooltip,
-  Legend
+  Legend,
 } from "chart.js";
 
 import { Bar } from "react-chartjs-2";
@@ -19,7 +19,6 @@ ChartJS.register(
 );
 
 function ContractActivityChart({ renewals }) {
-
   const months = [
     "Jan",
     "Feb",
@@ -32,95 +31,83 @@ function ContractActivityChart({ renewals }) {
     "Sep",
     "Oct",
     "Nov",
-    "Dec"
+    "Dec",
   ];
 
   const monthCounts = new Array(12).fill(0);
 
   renewals.forEach((renewal) => {
     const date = new Date(renewal.renewal_date);
-    const month = date.getMonth();
-    monthCounts[month]++;
+
+    if (!isNaN(date.getTime())) {
+      const month = date.getMonth();
+      monthCounts[month]++;
+    }
   });
 
   const data = {
     labels: months,
-
     datasets: [
       {
         label: "Renewals",
         data: monthCounts,
         backgroundColor: "#6C4CFF",
-        borderRadius: 8,
+        borderRadius: 6,
         borderSkipped: false,
-        barThickness: 35
-      }
-    ]
+        barThickness: 20,
+      },
+    ],
   };
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
 
     plugins: {
       legend: {
-        display: false
-      }
+        display: false,
+      },
     },
 
     scales: {
       x: {
         grid: {
-          display: false
-        }
+          display: false,
+        },
+
+        ticks: {
+          font: {
+            size: 11,
+          },
+          color: "#666",
+        },
       },
 
       y: {
         beginAtZero: true,
 
         ticks: {
-          stepSize: 1
+          stepSize: 1,
+          font: {
+            size: 11,
+          },
+          color: "#666",
         },
 
         grid: {
-          color: "#EEEEEE"
-        }
-      }
-    }
+          color: "#EEEEEE",
+        },
+      },
+    },
   };
 
   return (
     <div
       style={{
-        background: "#fff",
-        borderRadius: 18,
-        padding: 20,
-        boxShadow: "0 4px 12px rgba(0,0,0,.08)"
+        width: "100%",
+        height: "250px",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: 20
-        }}
-      >
-        <div>
-          <h3 style={{ margin: 0 }}>
-            Contract Activity
-          </h3>
-
-          <p
-            style={{
-              color: "#777",
-              fontSize: 13,
-              marginTop: 6
-            }}
-          >
-            Monthly renewal overview
-          </p>
-        </div>
-      </div>
-
       <Bar data={data} options={options} />
     </div>
   );

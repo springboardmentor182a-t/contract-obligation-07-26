@@ -54,7 +54,7 @@ def update_renewal(renewal_id: str, updated_renewal: Renewal):
         if not renewal:
             return None
 
-        data = updated_renewal.model_dump()
+        data = updated_renewal.model_dump(exclude={"id"})
 
         for key, value in data.items():
             setattr(renewal, key, value)
@@ -66,7 +66,6 @@ def update_renewal(renewal_id: str, updated_renewal: Renewal):
 
     finally:
         db.close()
-
 
 def delete_renewal(renewal_id: str):
     db = SessionLocal()

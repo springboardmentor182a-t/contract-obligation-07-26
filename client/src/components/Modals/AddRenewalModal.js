@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { addRenewal } from "../../services/renewalService";
 
 export default function AddRenewalModal({
-  open,
   onClose,
   onSuccess,
 }) {
@@ -13,8 +12,6 @@ export default function AddRenewalModal({
     reminder_days: "",
     status: "",
   });
-
-  if (!open) return null;
 
   const handleChange = (e) => {
     setForm({
@@ -36,7 +33,6 @@ export default function AddRenewalModal({
 
       onClose();
 
-      // Clear form after saving
       setForm({
         contract_name: "",
         renewal_type: "",
@@ -44,11 +40,18 @@ export default function AddRenewalModal({
         reminder_days: "",
         status: "",
       });
+    } 
+catch (err) {
+  console.error(err);
 
-    } catch (err) {
-      console.error(err);
-      alert("Failed to add renewal");
-    }
+  if (err.message) {
+    alert(err.message);
+  } else {
+    alert("Failed to add renewal");
+  }
+}
+
+
   };
 
   return (

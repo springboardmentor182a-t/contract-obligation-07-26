@@ -7,32 +7,78 @@ import {
   FaClipboardList
 } from "react-icons/fa";
 
-function MetricsCard({ title, value, color, percentage }) {
+function MetricsCard({ title, value, percentage }) {
   const getIcon = () => {
     switch (title) {
       case "Total Contracts":
         return <FaFileContract />;
+
       case "Renewing Soon":
         return <FaCalendarCheck />;
+
       case "Expired":
         return <FaExclamationTriangle />;
+
       case "Auto Renewal":
         return <FaSyncAlt />;
+
       case "Manual Renewal":
         return <FaClipboardList />;
+
       default:
-        return <FaFileContract />;
+        return null;
     }
   };
+
+  const getIconColor = () => {
+    switch (title) {
+      case "Total Contracts":
+        return {
+          background: "#EDE9FE",
+          color: "#7C3AED"
+        };
+
+      case "Renewing Soon":
+        return {
+          background: "#FEF3C7",
+          color: "#D97706"
+        };
+
+      case "Expired":
+        return {
+          background: "#FEE2E2",
+          color: "#DC2626"
+        };
+
+      case "Auto Renewal":
+        return {
+          background: "#D1FAE5",
+          color: "#059669"
+        };
+
+      case "Manual Renewal":
+        return {
+          background: "#DBEAFE",
+          color: "#2563EB"
+        };
+
+      default:
+        return {
+          background: "#F1F1F1",
+          color: "#555"
+        };
+    }
+  };
+
+  const iconStyle = getIconColor();
 
   return (
     <div
       style={{
         background: "#fff",
-        borderRadius: 18,
-        padding: 22,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-        borderTop: `4px solid ${color}`,
+        borderRadius: 14,
+        padding: 14,
+        boxShadow: "0 3px 10px rgba(0,0,0,0.06)",
         transition: "0.3s"
       }}
     >
@@ -41,31 +87,35 @@ function MetricsCard({ title, value, color, percentage }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: 20
+          marginBottom: 12
         }}
       >
+        {/* ICON */}
         <div
           style={{
-            width: 50,
-            height: 50,
+            width: 40,
+            height: 40,
             borderRadius: "50%",
-            background: color,
-            color: "#fff",
+            background: iconStyle.background,
+            color: iconStyle.color,
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            fontSize: 22
+            fontSize: 18
           }}
         >
           {getIcon()}
         </div>
 
+        {/* PERCENTAGE */}
         {percentage && (
           <span
             style={{
-              color: percentage.startsWith("-") ? "#DC2626" : "#16A34A",
+              color: percentage.startsWith("-")
+                ? "#DC2626"
+                : "#16A34A",
               fontWeight: "bold",
-              fontSize: 14
+              fontSize: 12
             }}
           >
             {percentage}
@@ -73,19 +123,21 @@ function MetricsCard({ title, value, color, percentage }) {
         )}
       </div>
 
+      {/* TITLE */}
       <div
         style={{
           color: "#666",
-          fontSize: 15,
-          marginBottom: 8
+          fontSize: 14,
+          marginBottom: 5
         }}
       >
         {title}
       </div>
 
+      {/* VALUE */}
       <div
         style={{
-          fontSize: 32,
+          fontSize: 26,
           fontWeight: "700",
           color: "#222"
         }}
