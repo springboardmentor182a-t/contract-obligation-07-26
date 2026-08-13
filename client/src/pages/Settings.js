@@ -6,6 +6,7 @@ import {
   GearIcon, LockIcon, CreditCardIcon, UsersIcon, MoonIcon, SunIcon, PlusIcon, KeyIcon
 } from "../components/Icons";
 import { API_BASE } from "../config/api";
+import { getAuthHeaders } from "../utils/auth";
 // Static integrations config (UI-only — list of available integration providers)
 const INTEGRATIONS_LIST = [
   { key: "salesforce", name: "Salesforce CRM", desc: "Sync contract records", color: "#3B82F6" },
@@ -177,7 +178,7 @@ export default function Settings() {
     try {
       await fetch(`${API_BASE}/settings/notifications/gateways`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(payload),
       });
       showToast("Notification gateways configured!");
@@ -208,15 +209,18 @@ export default function Settings() {
       Database mapping: Updates "users" password_hash field where id = 1
     */
     try {
-      await fetch(`${API_BASE}/profile/security/password`, {
+      const response = await fetch(`${API_BASE}/profile/security/password`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(payload),
       });
+      if (!response.ok) {
+        throw new Error("Password update is unavailable.");
+      }
       showToast("Password updated successfully!");
     } catch (err) {
-      console.warn("Could not sync password change with backend", err);
-      showToast("Password changed locally");
+      console.warn("Could not update password through the backend.");
+      showToast("Password was not changed. Please try again later.");
     }
     setPasswords({ current: "", newPass: "", confirm: "" });
     setTimeout(() => setSaved(false), 2000);
@@ -239,31 +243,18 @@ export default function Settings() {
     try {
       const res = await fetch(`${API_BASE}/settings/security/apikeys`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(payload)
       });
       if (res.ok) {
         const keyData = await res.json();
         setApiKeys(prev => [...prev, keyData]);
       } else {
-        const fallbackKey = {
-          id: Date.now(),
-          name: newKeyName,
-          key: `ct_live_...${Math.random().toString(16).substr(2, 4)}`,
-          created: new Date().toISOString().split("T")[0]
-        };
-        setApiKeys(prev => [...prev, fallbackKey]);
+        throw new Error("API key generation failed.");
       }
       showToast(`API Key "${newKeyName}" generated!`);
     } catch {
-      const fallbackKey = {
-        id: Date.now(),
-        name: newKeyName,
-        key: `ct_live_...${Math.random().toString(16).substr(2, 4)}`,
-        created: new Date().toISOString().split("T")[0]
-      };
-      setApiKeys(prev => [...prev, fallbackKey]);
-      showToast(`API Key generated locally`);
+      showToast("API key was not generated. Please try again.");
     }
     setNewKeyName("");
   }
@@ -308,35 +299,18 @@ export default function Settings() {
     try {
       const res = await fetch(`${API_BASE}/users/invite`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(payload),
       });
       if (res.ok) {
         const newInvite = await res.json();
         setInvitedUsers(prev => [newInvite, ...prev]);
       } else {
-        const fallbackInvite = {
-          id: Date.now(),
-          email: inviteForm.email,
-          role: inviteForm.role,
-          department: inviteForm.department || "N/A",
-          status: "Pending",
-          invitedAt: new Date().toISOString()
-        };
-        setInvitedUsers(prev => [fallbackInvite, ...prev]);
+        throw new Error("Invitation could not be created.");
       }
       showToast(`Invitation sent to ${inviteForm.email}`);
     } catch (err) {
-      const fallbackInvite = {
-        id: Date.now(),
-        email: inviteForm.email,
-        role: inviteForm.role,
-        department: inviteForm.department || "N/A",
-        status: "Pending",
-        invitedAt: new Date().toISOString()
-      };
-      setInvitedUsers(prev => [fallbackInvite, ...prev]);
-      showToast(`Invited ${inviteForm.email} locally`);
+      showToast("Invitation was not created. Please try again.");
     }
 
     setInviteForm({ email: "", role: "Viewer", department: "", message: "" });

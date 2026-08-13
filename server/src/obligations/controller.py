@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.database.core import get_db
+from src.auth.dependencies import OBLIGATION_ROLES, require_roles
 from src.obligations.schemas import (
     ObligationCreate,
     ObligationResponse,
@@ -12,6 +13,7 @@ from src.obligations.service import ObligationService
 router = APIRouter(
     prefix="/obligations",
     tags=["Obligations"],
+    dependencies=[Depends(require_roles(*OBLIGATION_ROLES))],
 )
 
 

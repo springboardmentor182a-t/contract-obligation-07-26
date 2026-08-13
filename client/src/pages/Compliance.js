@@ -3,6 +3,7 @@ import { ShieldIcon, DownloadIcon } from "../components/Icons";
 import "./Compliance.css";
 import ComplianceDetailsModal from "../components/AICompliance/ComplianceDetailsModal";
 import { API_BASE } from "../config/api";
+import { getAuthHeaders } from "../utils/auth";
 import { getComplianceDashboard } from "../services/complianceAPI";
 import PriorityTasks from "../components/AICompliance/PriorityTasks";
 import SummaryCards from "../components/AICompliance/SummaryCards";
@@ -23,7 +24,9 @@ export default function Compliance() {
   useEffect(() => {
     async function fetchControls() {
       try {
-        const response = await fetch(`${API_BASE}/compliance/controls`);
+        const response = await fetch(`${API_BASE}/compliance/controls`, {
+          headers: getAuthHeaders(),
+        });
         if (response.ok) {
           const data = await response.json();
           setControls(data);

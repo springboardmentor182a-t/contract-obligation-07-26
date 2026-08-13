@@ -16,14 +16,7 @@ import {
 import AuthLeftPanel from "../components/AuthLeftPanel";
 import "../styles/Auth.css";
 import { API_BASE } from "../config/api";
-const ROLES = [
-  "Administrator",
-  "Legal Manager",
-  "Compliance Officer",
-  "Contract Manager",
-  "Department Head",
-  "Employee",
-];
+const ROLES = ["Employee"];
 
 function Signup() {
   const navigate = useNavigate();
@@ -455,8 +448,20 @@ function Signup() {
 
                 <span>
                   I accept the{" "}
-                  <button type="button">Terms of Service</button> and{" "}
-                  <button type="button">Privacy Policy</button>.
+                  <Link
+                    to="/terms-of-service"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    to="/privacy-policy"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    Privacy Policy
+                  </Link>
+                  .
                 </span>
               </label>
 
@@ -491,11 +496,11 @@ function Signup() {
           </div>
 
           <footer className="premium-form-footer">
-            <button type="button">Privacy Policy</button>
+            <Link to="/privacy-policy">Privacy Policy</Link>
             <span>•</span>
-            <button type="button">Terms of Service</button>
+            <Link to="/terms-of-service">Terms of Service</Link>
             <span>•</span>
-            <button type="button">Help Center</button>
+            <Link to="/help">Help Center</Link>
           </footer>
         </div>
       </section>

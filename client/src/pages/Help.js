@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import "./Help.css";
 import {
   SearchIcon, ChevDownIcon, SendIcon, CheckIcon, HelpIcon,
@@ -30,6 +31,9 @@ function FaqAccordionItem({ item }) {
 }
 
 export default function Help() {
+  const isAuthenticated = Boolean(
+    localStorage.getItem("token") || sessionStorage.getItem("token")
+  );
   const [faqs, setFaqs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -71,7 +75,7 @@ export default function Help() {
     };
 
     try {
-      await fetch(`${API_BASE}/support/tickets`, {
+      const response = await fetch(`${API_BASE}/support/tickets`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,16 +83,18 @@ export default function Help() {
         },
         body: JSON.stringify(payload),
       });
-    } catch (e) {
-      console.warn("Could not submit ticket to backend API");
-    }
+      if (!response.ok) {
+        throw new Error("Support ticket was not accepted.");
+      }
 
-    setTimeout(() => {
-      setSubmitting(false);
       setSubmitted(true);
       setSubject("");
       setDetails("");
-    }, 1200);
+    } catch (e) {
+      console.warn("Could not submit ticket to backend API");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
 
@@ -101,6 +107,14 @@ export default function Help() {
 
   return (
     <div className="help-page-wrapper fade-in-el">
+      {!isAuthenticated && (
+        <div style={{ marginBottom: 14 }}>
+          <Link to="/login" className="btn btn-ghost">
+            Back to Sign In
+          </Link>
+        </div>
+      )}
+
       {/* Search Hero banner */}
       <div className="help-hero-enhanced">
         <h2>Documentation & Support</h2>
@@ -148,7 +162,21 @@ export default function Help() {
 
         {/* Ticket Form */}
         <div className="card ticket-card-enhanced">
-          {submitted ? (
+          {!isAuthenticated ? (
+            <div className="ticket-success-container fade-in-el">
+              <div className="success-icon-circle">
+                <HelpIcon size={24} color="var(--info)" />
+              </div>
+              <h3>Sign in for Help & Support</h3>
+              <p className="muted">
+                Frequently asked questions are available here. Sign in to
+                submit and track a support ticket for your ContractIQ account.
+              </p>
+              <Link to="/login" className="btn btn-primary">
+                Sign In
+              </Link>
+            </div>
+          ) : submitted ? (
             <div className="ticket-success-container fade-in-el">
               <div className="success-icon-circle">
                 <CheckIcon size={24} color="var(--emerald)" />

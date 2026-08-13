@@ -29,9 +29,7 @@ def initialize_database():
 
     database_url = os.getenv("DATABASE_URL")
 
-    print("=" * 60)
-    print("DATABASE_URL =", database_url)
-    print("=" * 60)
+    print("Database configuration loaded.")
 
     # Local SQLite fallback
     if not database_url or not database_url.strip():

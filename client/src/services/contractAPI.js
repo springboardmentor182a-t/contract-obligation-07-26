@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getStoredToken } from "../utils/auth";
 
 // Supports both Vite and Create React App
 const API_BASE =
@@ -8,6 +9,14 @@ const API_BASE =
 
 const API = axios.create({
   baseURL: API_BASE,
+});
+
+API.interceptors.request.use((config) => {
+  const token = getStoredToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 // ======================
 // Contract APIs
@@ -72,13 +81,28 @@ export const getDocuments = async (contractId) => {
 };
 
 // Preview Document URL
-export const previewDocument = (documentId) => {
-  return `/api/contracts/documents/${documentId}/preview`;
+export const previewDocument = async (documentId) => {
+  const response = await API.get(
+    `/contracts/documents/${documentId}/preview`,
+    { responseType: "blob" }
+  );
+  return URL.createObjectURL(response.data);
 };
 
 // Download Document URL
-export const downloadDocument = (documentId) => {
-  return `/api/contracts/documents/${documentId}/download`;
+export const downloadDocument = async (documentId, fileName) => {
+  const response = await API.get(
+    `/contracts/documents/${documentId}/download`,
+    { responseType: "blob" }
+  );
+  const objectUrl = URL.createObjectURL(response.data);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = fileName || "contract-document";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(objectUrl);
 };
 
 // Delete Document

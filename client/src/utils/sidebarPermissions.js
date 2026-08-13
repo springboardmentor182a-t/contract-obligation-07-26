@@ -1,27 +1,4 @@
-const ALL_ITEMS = [
-  "Dashboard",
-  "Contract Repository",
-  "Obligation Tracker",
-  "Renewal Dashboard",
-  "Compliance",
-  "Reports & Analytics",
-  "Notifications",
-  "Quick Actions",
-  "Calendar",
-  "Audit Logs",
-  "User Management",
-  "Settings",
-];
-
-export const sidebarPermissions = {
-  Administrator: ALL_ITEMS,
-  "Legal Manager": ALL_ITEMS,
-  "Compliance Officer": ALL_ITEMS,
-  "Contract Manager": ALL_ITEMS,
-  Employee: ALL_ITEMS,
-};
-
-const sidebarRoutes = {
+export const sidebarRoutes = {
   Dashboard: "/dashboard",
   "Contract Repository": "/repository",
   "Obligation Tracker": "/obligations",
@@ -36,6 +13,18 @@ const sidebarRoutes = {
   Settings: "/settings",
 };
 
+export const allSidebarModules = Object.keys(sidebarRoutes);
+export const ALL_ITEMS = allSidebarModules;
+
+export const sidebarPermissions = {
+  Administrator: allSidebarModules,
+  "Legal Manager": allSidebarModules,
+  "Compliance Officer": allSidebarModules,
+  "Contract Manager": allSidebarModules,
+  "Department Head": allSidebarModules,
+  Employee: allSidebarModules,
+};
+
 const alwaysAllowedRoutes = new Set(["/profile", "/help"]);
 
 const routeAliases = {
@@ -44,9 +33,9 @@ const routeAliases = {
 
 export function getCurrentUserRole(contextRole = "") {
   return (
+    contextRole ||
     localStorage.getItem("role") ||
     sessionStorage.getItem("role") ||
-    contextRole ||
     "Administrator"
   );
 }

@@ -33,6 +33,8 @@ class ObligationResponse(ObligationBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    contract_name: Optional[str] = None
+    owner_name: Optional[str] = None
 
     class Config:
         from_attributes = True

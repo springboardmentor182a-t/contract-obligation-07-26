@@ -38,27 +38,31 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
 import "./assets/global.css";
-
-function isAuthenticated() {
-  return Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"));
-}
+import {
+  PrivacyPolicy,
+  TermsOfService,
+} from "./pages/LegalPages";
 
 function ProtectedRoute({ children }) {
-  const { user } = useUI();
+  const { authReady, authenticated, user } = useUI();
   const role = getCurrentUserRole(user?.role);
 
-  if (!isAuthenticated() || !isKnownRole(role)) {
+  if (!authReady) return null;
+
+  if (!authenticated || !isKnownRole(role)) {
     return <Navigate to="/login" replace />;
   }
   return children;
 }
 
 function PublicOnlyRoute({ children }) {
-  const { user } = useUI();
+  const { authReady, authenticated, user } = useUI();
   const role = getCurrentUserRole(user?.role);
   const defaultRoute = getDefaultRouteForRole(role);
 
-  if (isAuthenticated()) {
+  if (!authReady) return null;
+
+  if (authenticated) {
     return defaultRoute
       ? <Navigate to={defaultRoute} replace />
       : children;
@@ -90,6 +94,28 @@ function DefaultRoleRoute() {
   return <Navigate to={defaultRoute || "/login"} replace />;
 }
 
+function HelpRoute() {
+  const { authReady, authenticated } = useUI();
+
+  if (!authReady) return null;
+
+  if (authenticated) {
+    return (
+      <ProtectedRoute>
+        <PageContainer>
+          <Help />
+        </PageContainer>
+      </ProtectedRoute>
+    );
+  }
+
+  return (
+    <main className="content" style={{ minHeight: "100vh" }}>
+      <Help />
+    </main>
+  );
+}
+
 function AppShell() {
   return (
     <PageContainer>
@@ -109,7 +135,6 @@ function AppShell() {
         <Route path="/user-management" element={<AuthorizedRoute path="/user-management"><UserManagement /></AuthorizedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/settings" element={<AuthorizedRoute path="/settings"><Settings /></AuthorizedRoute>} />
-        <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
         <Route path="*" element={<DefaultRoleRoute />} />
       </Routes>
     </PageContainer>
@@ -125,6 +150,9 @@ function App() {
           <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/help" element={<HelpRoute />} />
           <Route path="/logout" element={<Logout />} />
           <Route
             path="/*"

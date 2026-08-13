@@ -52,7 +52,7 @@ export default function Profile() {
 
   const getInitialUser = () => {
     const storedName = localStorage.getItem("name") || sessionStorage.getItem("name") || globalUser?.name || "";
-    const storedRole = localStorage.getItem("role") || sessionStorage.getItem("role") || globalUser?.role || "User";
+    const storedRole = globalUser?.role || "User";
     const storedEmail = localStorage.getItem("email") || sessionStorage.getItem("email") || globalUser?.email || "";
     return {
       full_name: storedName,

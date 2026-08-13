@@ -72,6 +72,30 @@ export default function ViewContractModal({
     }
   };
 
+  const handlePreview = async (id) => {
+    const previewWindow = window.open("", "_blank");
+    try {
+      const objectUrl = await previewDocument(id);
+      if (previewWindow) {
+        previewWindow.location = objectUrl;
+      }
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+    } catch (error) {
+      if (previewWindow) previewWindow.close();
+      console.error(error);
+      alert("Preview failed.");
+    }
+  };
+
+  const handleDownload = async (document) => {
+    try {
+      await downloadDocument(document.id, document.original_name);
+    } catch (error) {
+      console.error(error);
+      alert("Download failed.");
+    }
+  };
+
   if (!contract) return null;
 
   return (
@@ -228,12 +252,7 @@ export default function ViewContractModal({
                     <button
                       className="document-icon-btn"
                       title="Preview"
-                      onClick={() =>
-                        window.open(
-                          previewDocument(doc.id),
-                          "_blank"
-                        )
-                      }
+                      onClick={() => handlePreview(doc.id)}
                     >
                       <Eye size={18} />
                     </button>
@@ -241,12 +260,7 @@ export default function ViewContractModal({
                     <button
                       className="document-icon-btn"
                       title="Download"
-                      onClick={() =>
-                        window.open(
-                          downloadDocument(doc.id),
-                          "_blank"
-                        )
-                      }
+                      onClick={() => handleDownload(doc)}
                     >
                       <Download size={18} />
                     </button>
