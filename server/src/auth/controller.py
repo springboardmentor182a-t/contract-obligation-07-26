@@ -7,6 +7,7 @@ from src.auth.models import (
     ForgotPasswordRequest,
 )
 
+<<<<<<< HEAD
 from src.auth.service import (
     register_user,
     login_user,
@@ -39,3 +40,14 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
 @router.post("/forgot-password")
 def forgot_password(data: ForgotPasswordRequest):
     return forgot_password_user(data)
+=======
+@router.post("/login", response_model=Token, status_code=status.HTTP_200_OK)
+def login(credentials: UserLogin):
+    token = authenticate_user(credentials)
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Invalid credentials"
+        )
+    return token
+>>>>>>> origin/main-group-D

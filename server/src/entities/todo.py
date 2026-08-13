@@ -8,3 +8,4 @@ class TodoEntity(Base):
     title = Column(String, index=True)
     description = Column(String, index=True, nullable=True)
     completed = Column(Boolean, default=False)
+  

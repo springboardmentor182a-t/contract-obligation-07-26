@@ -22,49 +22,16 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
     navigate('/login');
   };
 
+  // --- UPDATED: Global Unified Notification Polling ---
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        if (location.pathname === '/compliance') {
-          // Fetch upcoming reviews for Compliance page
-          const response = await fetch(`${API_BASE_URL}/compliance`);
-          if (response.ok) {
-            const data = await response.json();
-            const complianceNotifs = (data.upcomingReviews || []).map(review => ({
-              title: `Review: ${review.itemName}`,
-              date: `${review.date} (${review.daysLeft} days left)`
-            }));
-            setLiveNotifications(complianceNotifs);
-          }
-        } else if (location.pathname === '/reports') {
-          // Fetch Report Insights for the Reports page
-          const response = await fetch(`${API_BASE_URL}/reports`);
-          if (response.ok) {
-            const data = await response.json();
-            const reportNotifs = (data.insights || []).map(insight => ({
-              title: insight.title,
-              date: insight.subtext
-            }));
-            setLiveNotifications(reportNotifs);
-          }
-        } else if (location.pathname === '/documents') {
-          // --- NEW: Fetch live Document Notifications ---
-          const response = await fetch(`${API_BASE_URL}/notifications`);
-          if (response.ok) {
-            const data = await response.json();
-            const docsNotifs = data.map(n => ({
-              title: n.message,
-              date: n.time
-            }));
-            setLiveNotifications(docsNotifs);
-          }
-        } else {
-          // Fetch general deadlines for Dashboard/other pages
-          const response = await fetch(`${API_BASE_URL}/dashboard`);
-          if (response.ok) {
-            const data = await response.json();
-            setLiveNotifications(data.deadlines || []);
-          }
+        const response = await fetch(`${API_BASE_URL}/notifications`);
+        if (response.ok) {
+          const data = await response.json();
+          // The Bell icon only counts items that are genuinely unread
+          const unread = data.filter(n => n.isUnread);
+          setLiveNotifications(unread);
         }
       } catch (error) {
         console.error("Failed to fetch notifications", error);
@@ -72,14 +39,9 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
     };
     
     fetchNotifications();
-
-    // Set up polling for the Documents page to keep notifications extremely live
-    let interval;
-    if (location.pathname === '/documents') {
-      interval = setInterval(fetchNotifications, 5000);
-    }
+    const interval = setInterval(fetchNotifications, 5000); // 5-second live polling
     return () => clearInterval(interval);
-  }, [location.pathname]); 
+  }, []); 
 
   return (
     <header className="navbar">
@@ -100,7 +62,7 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
           </div>
         )}
 
-        {/* Live Notifications Bell */}
+        {/* Global Live Notifications Bell */}
         <div 
           className="notifications-icon"
           onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
@@ -118,25 +80,25 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
           
           {isNotificationsOpen && (
             <div className="dropdown-menu" style={{
-              position: 'absolute', top: '120%', right: '-50px', background: 'white', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '10px 0', minWidth: '250px', zIndex: 1000
+              position: 'absolute', top: '120%', right: '-50px', background: 'white', border: '1px solid #e0e0e0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '10px 0', minWidth: '320px', zIndex: 1000
             }}>
-              <div style={{ padding: '10px 20px', borderBottom: '1px solid #eee', fontWeight: 'bold', color: 'black' }}>
-                {location.pathname === '/compliance' ? 'Upcoming Reviews' : 
-                 location.pathname === '/reports' ? 'Report Alerts' : 
-                 location.pathname === '/documents' ? 'Recent Activity' : 'Deadlines'}
+              <div style={{ padding: '10px 20px', borderBottom: '1px solid #eee', fontWeight: 'bold', color: 'black', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Recent Alerts</span>
+                <span onClick={() => navigate('/notifications')} style={{ fontSize: '12px', color: '#5f27cd', cursor: 'pointer' }}>View All</span>
               </div>
               
-              {/* Mapping over context-aware live data */}
-              {liveNotifications.length > 0 ? liveNotifications.map((notif, idx) => (
+              {liveNotifications.length > 0 ? liveNotifications.slice(0, 5).map((notif, idx) => (
                 <div key={idx} style={{ padding: '10px 20px', fontSize: '14px', borderBottom: '1px solid #eee', color: '#555' }}>
-                  <strong>{notif.title}</strong><br/>
-                  <span style={{ fontSize: '12px', color: '#888' }}>{notif.date}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <span style={{ background: notif.iconBg, padding: '4px', borderRadius: '4px' }}>{notif.icon}</span> 
+                    <strong>{notif.title}</strong>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#888' }}>{notif.desc}</div>
+                  <div style={{ fontSize: '10px', color: '#aaa', marginTop: '4px' }}>{notif.time}</div>
                 </div>
               )) : (
-                <div style={{ padding: '10px 20px', fontSize: '14px', color: '#888' }}>No new notifications</div>
+                <div style={{ padding: '10px 20px', fontSize: '14px', color: '#888' }}>No new notifications. You're all caught up!</div>
               )}
-              
-              <div style={{ padding: '10px 20px', fontSize: '14px', color: '#5f27cd', textAlign: 'center', cursor: 'pointer' }}>Mark all as read</div>
             </div>
           )}
         </div>
@@ -159,7 +121,6 @@ const Navbar = ({ user, onNewContract, onSearch }) => {
           )}
         </div>
         
-        {/* Conditionally render New Contract button ONLY on dashboard */}
         {isDashboard && (
           <button className="new-contract-btn" onClick={onNewContract}>+ New Contract</button>
         )}

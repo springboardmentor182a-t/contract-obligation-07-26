@@ -5,6 +5,7 @@ import os
 SQLALCHEMY_DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql://postgres:admin123@localhost:5432/contractiq"
+    
 )
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)

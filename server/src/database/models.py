@@ -1,51 +1,43 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, Float
 from .core import Base
 
 class Contract(Base):
     __tablename__ = "contracts"
-    __table_args__ = {'extend_existing': True} 
-    
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    party = Column(String)
     __table_args__ = {"extend_existing": True}
 
-    id = Column(String, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Base fields correctly mapped to 'name' and 'party'
+    name = Column(String, nullable=True)
+    party = Column(String, nullable=True)
+    category = Column(String, nullable=True)
+    owner = Column(String, nullable=True)
+    status = Column(String, nullable=True)
+    start_date = Column(Date, nullable=True)
+    end_date = Column(Date, nullable=True)
+    value = Column(Float, nullable=True)
+    department = Column(String, default="General")
 
-    company = Column(String)
-    contract = Column(String)
-    category = Column(String)
-    value = Column(String)
-
-    owner = Column(String)
-    status = Column(String)
-    compliance = Column(Integer)
-    renewal = Column(String)
-
-    start_date = Column(String)
-    end_date = Column(String)
-
-    days_remaining = Column(Integer)
-    priority = Column(String)
-    description = Column(String)
-
-    paid_amount = Column(String)
-    outstanding = Column(String)
-    currency = Column(String)
-    payment_progress = Column(Integer)
-
-    renewal_type = Column(String)
-    notice_period = Column(String)
-    auto_renewal = Column(String)
-
-    created_on = Column(String)
-    effective_date = Column(String)
-    expiry_date = Column(String)
-    renewal_reminder = Column(String)
-
-    documents = Column(Integer)
-    obligations = Column(Integer)
-    tasks = Column(Integer)
+    # --- Extended fields ---
+    compliance = Column(Integer, nullable=True)
+    renewal = Column(String, nullable=True)
+    days_remaining = Column(Integer, nullable=True)
+    priority = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    paid_amount = Column(String, nullable=True)
+    outstanding = Column(String, nullable=True)
+    currency = Column(String, nullable=True)
+    payment_progress = Column(Integer, nullable=True)
+    renewal_type = Column(String, nullable=True)
+    notice_period = Column(String, nullable=True)
+    auto_renewal = Column(String, nullable=True)
+    created_on = Column(String, nullable=True)
+    effective_date = Column(String, nullable=True)
+    expiry_date = Column(String, nullable=True)
+    renewal_reminder = Column(String, nullable=True)
+    documents = Column(Integer, nullable=True)
+    obligations = Column(Integer, nullable=True)
+    tasks = Column(Integer, nullable=True)
 
 class Activity(Base):
     __tablename__ = "activities"
@@ -116,7 +108,6 @@ class Document(Base):
     time = Column(String)
     size = Column(String, nullable=True)
     
-    # --- NEW: Enables Folder Hierarchy ---
     parent_id = Column(Integer, nullable=True)
 
 class AppNotification(Base):
@@ -126,3 +117,19 @@ class AppNotification(Base):
     message = Column(String)
     time = Column(String)
     is_read = Column(Boolean, default=False)
+
+# -----------------------------
+# Support Ticket Model
+# -----------------------------
+class SupportTicket(Base):
+    __tablename__ = "support_tickets"
+    __table_args__ = {'extend_existing': True}
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    email = Column(String)
+    subject = Column(String)
+    priority = Column(String)
+    message = Column(String)
+    status = Column(String, default="Open")
+    updated_on = Column(String)

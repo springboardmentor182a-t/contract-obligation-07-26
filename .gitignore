@@ -1,15 +1,24 @@
 # Node
 node_modules/
-dist/
 build/
+dist/
 coverage/
 package-lock.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.py[cod]
+.venv/
+venv/
 
 # Environment
 .env
 environment.ts
 environment.prod.ts
 
+<<<<<<< HEAD
 # Python
 __pycache__/
 *.pyc
@@ -20,6 +29,11 @@ __pycache__/
 server/venv/
 venv/
 .venv/
+=======
+# Editors
+.vscode/
+.idea/
+>>>>>>> origin/main-group-D
 
 # Logs
 logs/

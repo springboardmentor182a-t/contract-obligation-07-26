@@ -1,138 +1,134 @@
-import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
-import {
-  FiHome,
-  FiFileText,
-  FiCheckCircle,
-  FiShield,
-  FiCalendar,
-  FiFolder,
-  FiCheckSquare,
-  FiBarChart2,
-  FiBell,
-  FiUsers,
-  FiSettings,
-} from "react-icons/fi";
-
-import "../../styles/sidebar.css";
-
-const menuItems = [
-  { icon: <FiHome size={18} />, text: "Dashboard" },
-  { icon: <FiFileText size={18} />, text: "Contracts" },
-  { icon: <FiCheckCircle size={18} />, text: "Obligations" },
-  { icon: <FiShield size={18} />, text: "Compliance" },
-  { icon: <FiCalendar size={18} />, text: "Calendar" },
-  { icon: <FiFolder size={18} />, text: "Documents" },
-  { icon: <FiCheckSquare size={18} />, text: "Tasks" },
-  { icon: <FiBarChart2 size={18} />, text: "Reports" },
-  { icon: <FiBell size={18} />, text: "Notifications" },
-  { icon: <FiUsers size={18} />, text: "Users" },
-  { icon: <FiSettings size={18} />, text: "Settings" },
-];
-
-function Sidebar() {
-  const navigate = useNavigate();
+const Sidebar = () => {
   const location = useLocation();
+
+  // Dynamically grab user info from local storage
+  const storedUser = JSON.parse(localStorage.getItem('user'));
+  const displayName = storedUser?.name || 'Guest User';
+  const displayRole = storedUser?.role || 'Member';
+
+  const linkStyle = {
+    textDecoration: 'none',
+    color: 'inherit',
+    display: 'block',
+  };
+
   return (
     <aside className="sidebar">
-
-      <div>
-
-        <div className="logo">
-
-          <div className="logo-icon">
-            CI
-          </div>
-
-          <div className="logo-text">
-
-            <h2>ContractIQ</h2>
-
-            <p>Tracking Assistant</p>
-
-          </div>
-
-        </div>
-
-        <nav className="menu">
-
-          {menuItems.map((item) => (
-
-            <div
-              key={item.text}
-              className={`menu-item ${
-                (item.text === "Contracts" &&
-                  location.pathname.startsWith("/contracts")) ||
-                (item.text === "Users" &&
-                  location.pathname.startsWith("/users")) ||
-                (item.text === "Dashboard" &&
-                  (location.pathname === "/" ||
-                   location.pathname === "/dashboard")) ||
-                (item.text === "Compliance" &&
-                  location.pathname.startsWith("/compliance"))
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() => {
-                if (item.text === "Dashboard") navigate("/dashboard");
-                else if (item.text === "Contracts") navigate("/contracts");
-                else if (item.text === "Compliance") navigate("/compliance");
-                else if (item.text === "Users") navigate("/users");
-              }}
-              style={{ cursor: "pointer" }}
-            >
-
-              <span className="menu-icon">
-                {item.icon}
-              </span>
-
-              <p>{item.text}</p>
-
-            </div>
-
-          ))}
-
-        </nav>
-
+      <div className="sidebar-logo">
+        <h2>ContractIQ</h2>
+        <p>Contract Obligation Tracking Assistant</p>
       </div>
 
-      <div className="sidebar-bottom">
+      <nav className="sidebar-nav">
+        <ul>
+          <li className={location.pathname === '/dashboard' ? 'active' : ''}>
+            <Link to="/dashboard" style={linkStyle}>
+              Dashboard
+            </Link>
+          </li>
 
+          <li className={location.pathname === '/contracts' ? 'active' : ''}>
+            <Link to="/contracts" style={linkStyle}>
+              Contracts
+            </Link>
+          </li>
+
+          <li className={location.pathname === '/obligations' ? 'active' : ''}>
+            <Link to="/obligations" style={linkStyle}>
+              Obligations
+            </Link>
+          </li>
+
+          <li className={location.pathname === '/compliance' ? 'active' : ''}>
+            <Link to="/compliance" style={linkStyle}>
+              Compliance
+            </Link>
+          </li>
+
+          {/* NEW RENEWALS MENU */}
+          <li className={location.pathname === '/renewals' ? 'active' : ''}>
+            <Link to="/renewals" style={linkStyle}>
+              Renewals
+            </Link>
+          </li>
+
+         
+
+          <li className={location.pathname === '/documents' ? 'active' : ''}>
+            <Link to="/documents" style={linkStyle}>
+              Documents
+            </Link>
+          </li>
+
+          <li className={location.pathname === '/tasks' ? 'active' : ''}>
+            <Link to="/tasks" style={linkStyle}>
+              Tasks
+            </Link>
+          </li>
+
+          <li className={location.pathname === '/reports' ? 'active' : ''}>
+            <Link to="/reports" style={linkStyle}>
+              Reports
+            </Link>
+          </li>
+
+          <li className={location.pathname === '/notifications' ? 'active' : ''}>
+            <Link to="/notifications" style={linkStyle}>
+              Notifications <span className="badge">3</span>
+            </Link>
+          </li>
+
+          <li className={location.pathname === '/users' ? 'active' : ''}>
+            <Link to="/users" style={linkStyle}>
+              Users
+            </Link>
+          </li>
+
+          <li className={location.pathname === '/settings' ? 'active' : ''}>
+            <Link to="/settings" style={linkStyle}>
+              Settings
+            </Link>
+          </li>
+        </ul>
+      </nav>
+
+      <div className="sidebar-alerts">
         <div className="alert-card">
+          <h4>Need help?</h4>
+          <p>We are here to help you anytime</p>
 
-          <h4>Stay on top of your obligations</h4>
-
-          <p>
-            Get real-time alerts and never miss a deadline.
-          </p>
-
-          <button>
-            Manage Alerts
+          <button
+            style={{
+              background: '#5f27cd',
+              color: 'white',
+              width: '100%',
+              padding: '10px',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              marginTop: '10px',
+            }}
+          >
+            Manage Plans
           </button>
-
         </div>
-
-        <div className="profile-card">
-
-          <div className="profile-avatar">
-            JD
-          </div>
-
-          <div className="profile-info">
-
-            <h4>John Doe</h4>
-
-            <span>Administrator</span>
-
-          </div>
-
-        </div>
-
       </div>
 
+      <div className="sidebar-profile">
+        <img
+          src={storedUser?.profilePic || 'default_profile.png'}
+          alt="Profile"
+        />
+        <div>
+          <p>{displayName}</p>
+          <span>{displayRole}</span>
+        </div>
+      </div>
     </aside>
   );
-}
+};
 
 export default Sidebar;

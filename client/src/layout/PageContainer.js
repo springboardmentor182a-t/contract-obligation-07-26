@@ -1,6 +1,5 @@
 import React from 'react';
 import Sidebar from './Sidebar';
-import Navbar from './Navbar';
 import '../assets/global.css';
 
 const PageContainer = ({ children }) => {
