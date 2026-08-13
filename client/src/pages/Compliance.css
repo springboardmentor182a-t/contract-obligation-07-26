@@ -1,0 +1,993 @@
+/* ============================================================
+   Compliance and Risk Dashboard — Page Styles
+   Neutral corporate aesthetic: grey, blue, green, amber shades.
+   Emoji-free. Professional. Scannable.
+   ============================================================ */
+
+/* ----- Page Shell ----- */
+.compliance-dashboard {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dashboard-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dashboard-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
+  letter-spacing: -0.2px;
+}
+
+.dashboard-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ----- Metrics Summary Grid (4 Cards) ----- */
+.metrics-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 980px) {
+  .metrics-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .metrics-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Metric Indicator Card */
+.metric-indicator-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top-width: 3px;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.metric-indicator-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+/* Colour accent top borders */
+.metric-indicator-card.border-blue  { border-top-color: #3B82F6; }
+.metric-indicator-card.border-green { border-top-color: #22C55E; }
+.metric-indicator-card.border-amber { border-top-color: #F59E0B; }
+.metric-indicator-card.border-red   { border-top-color: #EF4444; }
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.metric-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+}
+
+/* Icon accent colours */
+.metric-accent-blue  { color: #3B82F6; display: flex; }
+.metric-accent-green { color: #22C55E; display: flex; }
+.metric-accent-amber { color: #F59E0B; display: flex; }
+.metric-accent-red   { color: #EF4444; display: flex; }
+
+/* Value readouts */
+.metric-value {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.metric-value .metric-divider {
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin: 0 4px;
+}
+
+.metric-value.text-blue  { color: #2563EB; }
+.metric-value.text-green { color: #16A34A; }
+.metric-value.text-amber { color: #B45309; }
+.metric-value.text-red   { color: #DC2626; }
+
+/* ----- Two-Column Workspace ----- */
+.workspace-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .workspace-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ----- Left Column: Control Inventory ----- */
+.inventory-section {
+  min-width: 0;
+}
+
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.section-heading {
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.control-count-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563EB;
+  background: rgba(59, 130, 246, 0.10);
+  border: 1px solid rgba(59, 130, 246, 0.20);
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Table */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.compliance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.compliance-table thead th {
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  white-space: nowrap;
+}
+
+.compliance-table tbody td {
+  padding: 11px 16px;
+  font-size: 13px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.compliance-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Row hover and active selection */
+.control-row {
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+
+.control-row:hover td {
+  background: var(--hover);
+}
+
+.control-row.row-selected td {
+  background: rgba(59, 130, 246, 0.07);
+}
+
+.control-row.row-selected:first-child td:first-child {
+  border-left: 3px solid #3B82F6;
+  padding-left: 13px;
+}
+
+/* Monospace Control ID cell */
+.monospace-cell {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+
+/* Title cell */
+.title-cell {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+/* Weight Score cell */
+.weight-cell {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* ----- Status Badges ----- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* Green — PASSED */
+.status-badge-passed {
+  background: rgba(34, 197, 94, 0.10);
+  color: #15803D;
+  border-color: rgba(34, 197, 94, 0.30);
+}
+
+/* Amber — WARNING */
+.status-badge-warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400E;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+/* Red — FAILED */
+.status-badge-failed {
+  background: rgba(239, 68, 68, 0.10);
+  color: #991B1B;
+  border-color: rgba(239, 68, 68, 0.30);
+}
+
+/* ----- Right Column: Audit Evidence Trail Panel ----- */
+.audit-section {
+  min-width: 0;
+  position: sticky;
+  top: 16px;
+}
+
+/* Panel card (both active and placeholder) */
+.audit-panel-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideInFromRight {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-slide-in {
+  animation: slideInFromRight 0.28s ease forwards;
+}
+
+/* Panel header */
+.panel-header-badge {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-secondary);
+}
+
+/* Selected summary card */
+.selected-summary-card {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(59, 130, 246, 0.03);
+}
+
+.summary-id {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563EB;
+  background: rgba(59, 130, 246, 0.10);
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 5px;
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+
+.summary-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.summary-timestamp {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.timestamp-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.timestamp-value {
+  color: var(--text);
+}
+
+/* Logs section */
+.logs-container {
+  padding: 14px 16px 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.logs-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+  margin: 0 0 10px;
+}
+
+.logs-scroll-area {
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 2px;
+  padding-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Individual log item */
+.log-item-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: border-color 0.15s ease;
+}
+
+.log-item-card:hover {
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.log-item-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.log-timestamp {
+  font-size: 10.5px;
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Log status keyword (uppercase) */
+.log-status-keyword {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.keyword-verified {
+  background: rgba(34, 197, 94, 0.12);
+  color: #15803D;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.keyword-warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400E;
+  border: 1px solid rgba(245, 158, 11, 0.30);
+}
+
+.keyword-failed {
+  background: rgba(239, 68, 68, 0.10);
+  color: #991B1B;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* Log message body */
+.log-message-block {
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.55;
+  margin: 0 0 10px;
+}
+
+/* Download hyperlink */
+.log-action-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.download-hyperlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #2563EB;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s ease, text-decoration 0.15s ease;
+}
+
+.download-hyperlink:hover {
+  color: #1D4ED8;
+  text-decoration: underline;
+}
+
+.download-icon-spacing {
+  flex-shrink: 0;
+}
+
+/* Empty logs placeholder */
+.empty-logs-state {
+  text-align: center;
+  padding: 24px 12px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+/* ----- Placeholder / No Selection State ----- */
+.audit-panel-card.placeholder-state {
+  min-height: 340px;
+  justify-content: center;
+  align-items: center;
+  border-style: dashed;
+}
+
+.placeholder-content {
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.placeholder-icon-container {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(59, 130, 246, 0.08);
+  color: #93C5FD;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.placeholder-heading {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.placeholder-text {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 240px;
+  margin-inline: auto;
+}
+
+/* ==========================================
+   DARK MODE — COMPLIANCE PAGE
+========================================== */
+
+[data-theme="dark"] .compliance-dashboard { color: #F1F5F9; }
+[data-theme="dark"] .dashboard-title    { color: #F1F5F9; }
+[data-theme="dark"] .dashboard-subtitle { color: #94A3B8; }
+
+/* Metric cards */
+[data-theme="dark"] .metric-card,
+[data-theme="dark"] .compliance-metric-card {
+  background: #111B2A;
+  border-color: #1E2D40;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .metric-card:hover { box-shadow: 0 10px 28px rgba(0,0,0,0.45); }
+[data-theme="dark"] .metric-value,
+[data-theme="dark"] .metric-number { color: #F1F5F9; }
+[data-theme="dark"] .metric-label,
+[data-theme="dark"] .metric-subtitle { color: #94A3B8; }
+
+/* Controls table / list */
+[data-theme="dark"] .controls-table-wrapper,
+[data-theme="dark"] .controls-container {
+  background: #111B2A;
+  border-color: #1E2D40;
+}
+[data-theme="dark"] .controls-table thead,
+[data-theme="dark"] .controls-header-row { background: #0D1828; }
+[data-theme="dark"] .controls-table th { color: #94A3B8; border-color: #1E2D40; }
+[data-theme="dark"] .controls-table td { color: #CBD5E1; border-color: #162032; }
+[data-theme="dark"] .controls-table tbody tr:hover,
+[data-theme="dark"] .control-row:hover { background: #162032; }
+[data-theme="dark"] .control-name,
+[data-theme="dark"] .control-title { color: #F1F5F9; }
+[data-theme="dark"] .control-desc,
+[data-theme="dark"] .control-meta { color: #94A3B8; }
+
+/* Control detail panel */
+[data-theme="dark"] .control-detail-panel,
+[data-theme="dark"] .control-detail-card {
+  background: #111B2A;
+  border-color: #1E2D40;
+}
+[data-theme="dark"] .control-detail-panel h3 { color: #F1F5F9; }
+[data-theme="dark"] .detail-section-label { color: #64748B; }
+[data-theme="dark"] .detail-section-value { color: #CBD5E1; }
+[data-theme="dark"] .detail-divider       { border-color: #1E2D40; }
+
+/* Compliance log table */
+[data-theme="dark"] .compliance-log-row   { border-color: #162032; }
+[data-theme="dark"] .compliance-log-row:hover { background: #162032; }
+[data-theme="dark"] .log-timestamp { color: #64748B; }
+
+/* Score gauge */
+[data-theme="dark"] .score-track { background: #1E2D40; }
+
+/* Buttons */
+[data-theme="dark"] .compliance-outline-btn {
+  background: #1E293B;
+  border-color: #2A3A50;
+  color: #CBD5E1;
+}
+[data-theme="dark"] .compliance-outline-btn:hover {
+  background: #243450;
+  border-color: #3B82F6;
+  color: #F1F5F9;
+}
+
+/* Search / filter */
+[data-theme="dark"] .compliance-search-input,
+[data-theme="dark"] .compliance-filter-select {
+  background: #0D1828;
+  border-color: #1E2D40;
+  color: #F1F5F9;
+}
+
+/* Badges */
+[data-theme="dark"] .status-badge-passed  { background: rgba(21,128,61,0.2);  color: #4ADE80; }
+[data-theme="dark"] .status-badge-warning { background: rgba(217,119,6,0.2);  color: #FCD34D; }
+[data-theme="dark"] .status-badge-failed  { background: rgba(220,38,38,0.2);  color: #F87171; }
+
+/* Empty / placeholder */
+[data-theme="dark"] .placeholder-title { color: #CBD5E1; }
+[data-theme="dark"] .placeholder-text  { color: #64748B; }
+/* =======================================================
+   AI Compliance Guardian
+======================================================= */
+
+.ai-guardian-wrapper {
+  margin: 32px 0;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.ai-guardian-header {
+  margin-bottom: 24px;
+}
+
+.ai-guardian-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ai-guardian-header p {
+  margin-top: 8px;
+  color: #64748b;
+  line-height: 1.6;
+  max-width: 720px;
+}
+/* ===========================
+   AI Compliance Filters
+=========================== */
+
+.ai-filter-card {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.ai-filter-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ai-search-box {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.ai-search-box input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+}
+
+.ai-filter-select {
+  min-width: 180px;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: white;
+  font-size: 14px;
+}
+.border-purple {
+  border-top: 3px solid #8b5cf6;
+}
+
+.text-purple {
+  color: #8b5cf6;
+}
+.ai-alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ai-alert-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.ai-alert-content strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.ai-alert-content p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.ai-alert-icon {
+  margin-top: 2px;
+}
+/* ===============================
+   Compliance Details Modal
+================================= */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.compliance-details-modal {
+  width: 700px;
+  max-width: 92%;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.modal-close-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.compliance-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.compliance-details-grid label {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.compliance-details-grid p {
+  margin: 0;
+  font-size: 15px;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.recommendation-box {
+  margin-top: 28px;
+  padding: 18px;
+  border-radius: 12px;
+  background: #eff6ff;
+  border-left: 4px solid #2563eb;
+}
+
+.recommendation-box h4 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.recommendation-box p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .compliance-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .compliance-details-modal {
+    padding: 20px;
+  }
+}
+/* =======================================================
+   AI Priority Tasks
+======================================================= */
+
+.priority-task-card {
+    margin: 24px 0;
+}
+
+.priority-task-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 18px;
+    margin-top: 20px;
+}
+
+.priority-item {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-left: 5px solid transparent;
+    border-radius: 12px;
+    padding: 18px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.priority-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.priority-item.critical {
+    border-left-color: #dc2626;
+}
+
+.priority-item.high {
+    border-left-color: #f97316;
+}
+
+.priority-item.medium {
+    border-left-color: #f59e0b;
+}
+
+.priority-item.low {
+    border-left-color: #22c55e;
+}
+
+.priority-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+
+.priority-contract {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.priority-vendor {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.priority-reason {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.priority-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.priority-deadline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.priority-badge {
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.priority-critical {
+    background: #dc2626;
+}
+
+.priority-high {
+    background: #f97316;
+}
+
+.priority-medium {
+    background: #f59e0b;
+}
+
+.priority-low {
+    background: #22c55e;
+}
+
+/* =======================================================
+   AI COMPLIANCE GUARDIAN — DARK MODE OVERRIDES
+   ======================================================= */
+[data-theme="dark"] .ai-guardian-wrapper,
+[data-theme="dark"] .ai-filter-card,
+[data-theme="dark"] .priority-task-card,
+[data-theme="dark"] .compliance-details-modal {
+  background: #0F172A !important;
+  border-color: #1E293B !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="dark"] .ai-guardian-header h2,
+[data-theme="dark"] .priority-contract,
+[data-theme="dark"] .compliance-details-grid p {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .ai-guardian-header p,
+[data-theme="dark"] .ai-alert-content p,
+[data-theme="dark"] .priority-vendor,
+[data-theme="dark"] .priority-reason,
+[data-theme="dark"] .priority-deadline {
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .ai-search-box,
+[data-theme="dark"] .ai-filter-select,
+[data-theme="dark"] .ai-alert-item,
+[data-theme="dark"] .priority-item {
+  background: #162032 !important;
+  border-color: #26354A !important;
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .ai-search-box input {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .recommendation-box {
+  background: rgba(37, 99, 235, 0.12) !important;
+  border-left-color: #3B82F6 !important;
+  color: #93C5FD !important;
+}
+
+[data-theme="dark"] .recommendation-box p {
+  color: #CBD5E1 !important;
+}
