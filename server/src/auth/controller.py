@@ -26,11 +26,16 @@ import httpx
 from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config
 
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+
 try:
     from passlib.context import CryptContext
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 except Exception:
     pwd_context = None
+
 
 try:
     import jwt
@@ -264,7 +269,43 @@ def register(data: SignupRequest, db: Session = Depends(get_db)):
         "message": "User created successfully"
     }
 
+
+@router.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @router.post("/login")
+
+def login(data: LoginRequest, db: Session = Depends(get_db)):
+    result = login_user(data, db)
+
+    if result:
+        return result
+
+    raise HTTPException(
+        status_code=401,
+        detail="Invalid credentials"
+    )
+
+
+@router.post("/register", status_code=201)
+def register(data: SignupRequest, db: Session = Depends(get_db)):
+    if data.password != data.confirm_password:
+        raise HTTPException(
+            status_code=400,
+            detail="Passwords do not match"
+        )
+
+    return signup_user(data, db)
+
+
+@router.post("/signup", status_code=201)
+def signup(data: SignupRequest, db: Session = Depends(get_db)):
+    return signup_user(data, db)
+
+
+
 def login(user_data: LoginRequest, db: Session = Depends(get_db)):
     email_clean = user_data.email.strip().lower()
     user = db.query(User).filter(User.email == email_clean).first()
@@ -373,9 +414,40 @@ def demo_login(db: Session = Depends(get_db)):
         "message": "Demo environment provisioned successfully"
     }
 
+
 @router.post("/logout")
 def logout():
-    return {"message": "Logged out successfully", "status": "success"}
+    return {
+        "message": "Logged out successfully",
+        "status": "success"
+    }
+
+
+
+@router.post("/reset-password")
+def reset_password(data: ResetPasswordRequest):
+    reset_token = str(uuid.uuid4())
+    reset_link = (
+        f"http://localhost:3000/reset-password?token={reset_token}"
+    )
+
+    success, extra = send_reset_email(data.email, reset_link)
+
+    if success:
+        if extra:
+            return {
+                "message": "Email sent! (Test Mode)",
+                "preview_url": extra,
+            }
+
+        return {
+            "message": "Password reset link sent to your email."
+        }
+
+    raise HTTPException(
+        status_code=500,
+        detail="Failed to send email."
+    )
 
 @router.post("/forgot-password")
 def forgot_password(data: ForgotPasswordRequest, db: Session = Depends(get_db)):
@@ -529,3 +601,4 @@ def get_current_user_profile(email: str = None, db: Session = Depends(get_db)):
         "company": "ContractIQ Technologies Inc.",
         "timezone": "UTC (Coordinated Universal Time)"
     }
+

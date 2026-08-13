@@ -1,3 +1,10 @@
+
+"""Database session and connection pool setup. Hidden from domain entities."""
+
+from src.database.db import get_db
+
+__all__ = ["get_db"]
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os

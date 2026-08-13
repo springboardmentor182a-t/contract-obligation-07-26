@@ -8,7 +8,22 @@ def hash_password(password: str) -> str:
     """Standard SHA-256 hash for secure password storage"""
     return hashlib.sha256(password.encode('utf-8')).hexdigest()
 
+
 def login_user(data: LoginRequest, db):
+<<<<<<< HEAD
+    if data.email and data.password:
+        user = db.query(User).filter(User.email == data.email).first()
+        name = user.name if user else data.email.split("@")[0]
+
+        return {
+            "token": "mock-jwt-token-12345",
+            "user": {
+                "email": data.email,
+                "name": name,
+            },
+        }
+    return None
+=======
     """
     Authenticate user against the PostgreSQL database.
     Verifies user existence and password hash.
@@ -49,8 +64,28 @@ def login_user(data: LoginRequest, db):
             "status": user.status or "Active"
         }
     }
+>>>>>>> origin/main-group-B
+
 
 def signup_user(data: SignupRequest, db):
+<<<<<<< HEAD
+    new_user = User(
+        user_id=f"USR-{uuid.uuid4().hex[:6].upper()}",
+        name=data.name or data.email.split("@")[0],
+        email=data.email,
+        role="User",
+        status="Active",
+        lastLogin="Never",
+    )
+
+    db.add(new_user)
+    db.commit()
+
+    return {
+        "token": "mock-jwt-token-67890",
+        "message": "User created successfully",
+    }
+=======
     """
     Register or request access for a user in the PostgreSQL database.
     Stores password hash and initializes user notifications.
@@ -96,3 +131,4 @@ def signup_user(data: SignupRequest, db):
         },
         "message": "Account created and access granted successfully."
     }
+>>>>>>> origin/main-group-B

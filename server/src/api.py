@@ -1,5 +1,7 @@
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
 from src.auth.controller import router as auth_router
 from src.todos.controller import router as todos_router
 from src.users.controller import router as users_router
@@ -10,24 +12,51 @@ api_router.include_router(todos_router)
 api_router.include_router(users_router)
 
 from src.contracts.controller import router as contracts_router
+from src.todos.controller import router as todos_router
+from src.users.controller import router as users_router
 from src.dashboard.controller import router as dashboard_router
 from src.obligation.controller import router as obligation_router
 from src.notifications.controller import router as notifications_router
 from src.audit.controller import router as audit_router
 from src.ai.controller import router as ai_router
 from src.database.db import get_db
+
+
+from src.database.models import (
+    User,
+    Contract,
+    Obligation,
+    Renewal,
+    Transaction,
+    AuditLog,
+    TaxEstimator,
+)
+
+
+from src.database.models import User, Contract, Obligation, Renewal, Transaction, TaxEstimator
+
+
 from src.database.models import User, Contract, Obligation, Renewal, Transaction, AuditLog, TaxEstimator, Notification
+
 from pydantic import BaseModel
 import uuid
 from datetime import datetime
 
+
+api_router = APIRouter()
+api_router.include_router(auth_router)
+
+
 api_router.include_router(contracts_router, prefix="/contracts", tags=["contracts"])
+api_router.include_router(todos_router)
+api_router.include_router(users_router)
 api_router.include_router(dashboard_router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(obligation_router, prefix="/obligations", tags=["obligations"])
 api_router.include_router(notifications_router, prefix="/notifications", tags=["notifications"])
 api_router.include_router(audit_router, prefix="/audit-logs", tags=["audit-logs"])
 api_router.include_router(ai_router, prefix="/ai", tags=["ai"])
 api_router.include_router(ai_router, tags=["ai"])
+
 
 @api_router.post("/demo/load")
 def load_demo_data(db: Session = Depends(get_db)):
@@ -228,6 +257,7 @@ def delete_user(user_id: str, db: Session = Depends(get_db)):
         return {"message": "User deactivated"}
     return {"error": "User not found"}
 
+
 @api_router.get("/compliance/summary")
 @api_router.get("/compliance/dashboard")
 def get_compliance_summary(db: Session = Depends(get_db)):
@@ -272,3 +302,4 @@ def get_compliance_summary(db: Session = Depends(get_db)):
         "activeAudits": min(5, audit_count) if audit_count else 3,
         "departments": dept_stats
     }
+

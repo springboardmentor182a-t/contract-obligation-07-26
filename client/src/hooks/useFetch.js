@@ -1,6 +1,5 @@
-
-import { useState, useEffect } from 'react';
-import { apiFetch } from '../utils/api';
+import { useState, useEffect } from "react";
+import { apiFetch } from "../utils/api";
 
 export default function useFetch(endpoint, options = {}) {
   const [data, setData] = useState(null);
@@ -13,12 +12,21 @@ export default function useFetch(endpoint, options = {}) {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
+
         const result = await apiFetch(endpoint, options);
-        if (isMounted) setData(result);
+
+        if (isMounted) {
+          setData(result);
+        }
       } catch (err) {
-        if (isMounted) setError(err);
+        if (isMounted) {
+          setError(err);
+        }
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -27,8 +35,7 @@ export default function useFetch(endpoint, options = {}) {
     return () => {
       isMounted = false;
     };
-  }, [endpoint]); // re-fetch if endpoint changes
+  }, [endpoint]);
 
   return { data, loading, error };
 }
-

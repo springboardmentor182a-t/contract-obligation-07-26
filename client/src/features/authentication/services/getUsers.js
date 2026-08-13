@@ -1,7 +1,5 @@
-
-import { apiFetch } from '../../../utils/api';
+import { apiFetch } from "../../../utils/api";
 
 export async function getUsers() {
-  return apiFetch('/users/');
+  return apiFetch("/users/");
 }
-

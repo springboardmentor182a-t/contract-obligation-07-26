@@ -1,7 +1,44 @@
+<<<<<<< HEAD
+import React, { useEffect, useState } from "react";
+=======
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+>>>>>>> origin/main-group-B
 
+const API_URL = `${process.env.REACT_APP_API_BASE_URL}/api/contracts/compliance`;
 const ComplianceDashboard = () => {
+<<<<<<< HEAD
+  const [data, setData] = useState({
+  stats: [],
+  departments: [],
+  riskContracts: [],
+  activities: [],
+  reviews: [],
+}); 
+  useEffect(() => {
+  async function loadData() {
+    try {
+      const res = await fetch(API_URL);
+      console.log("Status:", res.status);
+
+      const result = await res.json();
+      console.log("Response:", result);
+
+      setData(result);
+    } catch (err) {
+      console.error("Fetch failed:", err);
+    }
+  }
+
+  loadData();
+  }, []);
+  
+const stats = data.stats;
+const departments = data.departments;
+const riskContracts = data.riskContracts;
+const activities = data.activities;
+const reviews = data.reviews;
+=======
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,81 +73,245 @@ const ComplianceDashboard = () => {
     return <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-sm">No compliance data found. Click 'Load Demo Data' in Settings to populate.</div>;
   }
 
+>>>>>>> origin/main-group-B
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white m-0">
-          Compliance Dashboard
-        </h1>
-        <p className="text-sm text-[#64748B] dark:text-[#8E9BAE] mt-1 m-0">
-          Monitor company-wide compliance, regulatory health, and audit milestones.
-        </p>
+    <div style={{ padding: "20px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "30px",
+        }}
+      >
+        <div>
+          <h1 style={{ color: "#2563EB", marginBottom: "5px" }}>
+            Compliance Dashboard
+          </h1>
+          <p style={{ color: "#6B7280" }}>
+            Monitor company-wide compliance and regulatory health.
+          </p>
+        </div>
+
+        <button
+          style={{
+            background: "#2563EB",
+            color: "white",
+            border: "none",
+            padding: "10px 18px",
+            borderRadius: "8px",
+            cursor: "pointer",
+          }}
+        >
+          Export Report
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-[#161F2E] border border-slate-200 dark:border-[#2A364F] rounded-xl p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] dark:text-[#8E9BAE]">Overall Health Score</span>
-            <div className="mt-4 flex items-baseline gap-3">
-              <span className="text-5xl font-extrabold text-emerald-600 dark:text-emerald-400">{data.healthGrade}</span>
-              <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">{data.healthScore}</span>
-            </div>
-          </div>
-          <p className="text-xs text-[#64748B] dark:text-[#8E9BAE] mt-4 mb-0">Verified for SOC2 Type II, GDPR, and ISO-27001 compliance.</p>
-        </div>
+      {/* KPI Cards */}
 
-        <div className="bg-white dark:bg-[#161F2E] border border-slate-200 dark:border-[#2A364F] rounded-xl p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] dark:text-[#8E9BAE]">Obligations Met (YTD)</span>
-            <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-4xl font-extrabold text-slate-900 dark:text-white">{data.obligationsMet}</span>
-              <span className="text-sm text-[#64748B] dark:text-[#8E9BAE]">/ {data.obligationsTotal} due</span>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="flex justify-between text-xs font-semibold mb-1 text-slate-600 dark:text-slate-300">
-              <span>Fulfillment Rate</span>
-              <span className="text-emerald-600 dark:text-emerald-400">{data.fulfillmentRate}</span>
-            </div>
-            <div className="w-full h-2 bg-slate-100 dark:bg-[#0B1121] rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 rounded-full" style={{ width: data.fulfillmentRate }}></div>
-            </div>
-          </div>
-        </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4,1fr)",
+          gap: "20px",
+          marginBottom: "30px",
+        }}
+      >
+        {stats.map((item) => (
+          <div
+            key={item.title}
+            style={{
+              background: "white",
+              padding: "20px",
+              borderRadius: "12px",
+              boxShadow: "0 2px 8px rgba(0,0,0,.08)",
+            }}
+          >
+            <div style={{ fontSize: "28px" }}>{item.icon}</div>
 
-        <div className="bg-white dark:bg-[#161F2E] border border-slate-200 dark:border-[#2A364F] rounded-xl p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] dark:text-[#8E9BAE]">Active Regulatory Audits</span>
-            <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-4xl font-extrabold text-blue-600 dark:text-blue-400">{data.activeAudits}</span>
-              <span className="text-sm text-emerald-600 dark:text-emerald-400 font-semibold">0 Critical Deficiencies</span>
-            </div>
+            <h2
+              style={{
+                margin: "10px 0 5px",
+                color: item.color,
+              }}
+            >
+              {item.value}
+            </h2>
+
+            <p style={{ color: "#666" }}>{item.title}</p>
           </div>
-          <p className="text-xs text-[#64748B] dark:text-[#8E9BAE] mt-4 mb-0">Continuous monitoring of PostgreSQL compliance events.</p>
-        </div>
+        ))}
       </div>
+            {/* Department Compliance & Health Score */}
 
-      <div className="bg-white dark:bg-[#161F2E] border border-slate-200 dark:border-[#2A364F] rounded-xl p-6 shadow-sm">
-        <h3 className="text-base font-bold text-slate-900 dark:text-white m-0 mb-4 pb-3 border-b border-slate-100 dark:border-[#2A364F]">
-          Departmental Compliance Breakdown
-        </h3>
-        <div className="space-y-4">
-          {data.departments?.map((dept, idx) => (
-            <div key={idx} className="space-y-1.5">
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-semibold text-slate-800 dark:text-slate-200">{dept.name}</span>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold border bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-500/30">{dept.status}</span>
-                  <span className="font-bold text-slate-900 dark:text-white w-10 text-right">{dept.score}%</span>
-                </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "2fr 1fr",
+          gap: "20px",
+          marginBottom: "30px",
+        }}
+      >
+        <div
+          style={{
+            background: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 2px 8px rgba(0,0,0,.08)",
+          }}
+        >
+          <h2 style={{ color: "#2563EB", marginBottom: "20px" }}>
+            Department Compliance
+          </h2>
+
+          {departments.map((item) => (
+            <div key={item.name} style={{ marginBottom: "20px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "8px",
+                }}
+              >
+                <span>{item.name}</span>
+                <b>{item.value}%</b>
               </div>
-              <div className="w-full h-2.5 bg-slate-100 dark:bg-[#0B1121] rounded-full overflow-hidden">
-                <div className={`h-full ${dept.color} rounded-full`} style={{ width: `${dept.score}%` }}></div>
+
+              <div
+                style={{
+                  background: "#E5E7EB",
+                  height: "10px",
+                  borderRadius: "20px",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${item.value}%`,
+                    height: "10px",
+                    background: item.color,
+                    borderRadius: "20px",
+                  }}
+                ></div>
               </div>
             </div>
           ))}
         </div>
+
+        <div
+          style={{
+            background: "#2563EB",
+            color: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            textAlign: "center",
+          }}
+        >
+          <h2>Overall Health</h2>
+
+          <h1
+            style={{
+              fontSize: "70px",
+              margin: "20px 0",
+              color: "#22C55E",
+            }}
+          >
+            A-
+          </h1>
+
+          <p>✔ GDPR Compliant</p>
+          <p>✔ SOC2 Certified</p>
+          <p>✔ ISO 27001 Ready</p>
+        </div>
       </div>
+            {/* High Risk Contracts */}
+
+      <div
+        style={{
+          background: "white",
+          padding: "20px",
+          borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0,0,0,.08)",
+          marginBottom: "30px",
+        }}
+      >
+        <h2 style={{ color: "#2563EB", marginBottom: "20px" }}>
+          High Risk Contracts
+        </h2>
+
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+          }}
+        >
+          <thead>
+            <tr style={{ background: "#F3F4F6" }}>
+              <th style={{ padding: "12px" }}>Contract ID</th>
+              <th>Vendor</th>
+              <th>Risk</th>
+              <th>Status</th>
+              <th>Review Date</th>
+            </tr>
+          </thead>
+
+          <tbody>
+          {riskContracts.map((contract) => (
+            <tr key={contract.id}>
+              <td style={{ padding: "12px" }}>{contract.id}</td>
+              <td>{contract.vendor}</td>
+              <td>{contract.risk}</td>
+              <td>{contract.status}</td>
+              <td>{contract.reviewDate}</td>
+            </tr>
+          ))}
+        </tbody>
+        </table>
+      </div>
+
+      {/* Recent Activities */}
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "20px",
+        }}
+      >
+        <div
+          style={{
+            background: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 2px 8px rgba(0,0,0,.08)",
+          }}
+        >
+          <h2 style={{ color: "#2563EB" }}>Recent Activities</h2>
+         <ul style={{ lineHeight: "2" }}>
+          {activities.map((activity, index) => (
+            <li key={index}>{activity}</li>
+          ))}
+        </ul>
+          
+        </div>
+
+        <div
+          style={{
+            background: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 2px 8px rgba(0,0,0,.08)",
+          }}
+        >
+          <h2 style={{ color: "#2563EB" }}>Upcoming Reviews</h2>
+
+        <ul style={{ lineHeight: "2" }}>
+          {reviews.map((review, index) => (
+            <li key={index}>{review}</li>
+          ))}
+        </ul>  
+        </div>
+      </div>
+
     </div>
   );
 };

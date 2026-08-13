@@ -1,12 +1,17 @@
+# Node
 node_modules/
 client/node_modules/
-server/contractiq.db
-*.db
-*.sqlite3
-__pycache__/
-**/__pycache__/
-*.pyc
-.env
-.DS_Store
 build/
-dist/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment
+.env
+
+# Editors
+.vscode/
+.idea/
