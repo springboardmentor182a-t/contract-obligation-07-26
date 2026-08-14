@@ -200,11 +200,7 @@ const Renewals = () => {
   };
 
   const getStatusBadge = (status) => {
-<<<<<<< HEAD
     const displayStatus = (status === 'Cancelled') ? 'Closed' : status;
-=======
-
->>>>>>> origin/main-group-A
     const config = {
       'Upcoming': { icon: <Clock size={13} />, className: 'rnw-badge-upcoming' },
       'In Progress': { icon: <RefreshCw size={13} />, className: 'rnw-badge-progress' },
