@@ -102,7 +102,7 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login_user(request: UserLogin, response: Response, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email.ilike(request.email.strip())).first()
+    user = db.query(User).filter(User.email == request.email).first()
 
     if not user:
         raise HTTPException(status_code=404, detail="User not exist!!")
