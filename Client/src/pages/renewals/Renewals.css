@@ -70,6 +70,24 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+}
+
+.rnw-stat-card.active {
+  outline: 3px solid #ffffff;
+  outline-offset: -3px;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+}
+
+.rnw-badge-closed {
+  background: rgba(107, 114, 128, 0.12);
+  color: #374151;
+}
+
+.rnw-badge-cancelled {
+  background: rgba(107, 114, 128, 0.12);
+  color: #374151;
 }
 
 .rnw-stat-card::after {
