@@ -95,17 +95,19 @@ const RenewalDetail = () => {
   };
 
   const getStatusBadge = (status) => {
+    const displayStatus = (status === 'Cancelled') ? 'Closed' : status;
     const config = {
       'Upcoming': { icon: <Clock size={14} />, className: 'rd-badge-upcoming' },
       'In Progress': { icon: <RefreshCw size={14} />, className: 'rd-badge-progress' },
       'Renewed': { icon: <CheckCircle size={14} />, className: 'rd-badge-renewed' },
       'Expired': { icon: <XCircle size={14} />, className: 'rd-badge-expired' },
-      'Cancelled': { icon: <XCircle size={14} />, className: 'rd-badge-cancelled' },
+      'Closed': { icon: <XCircle size={14} />, className: 'rd-badge-closed' },
+      'Cancelled': { icon: <XCircle size={14} />, className: 'rd-badge-closed' },
     };
-    const c = config[status] || { icon: null, className: '' };
+    const c = config[displayStatus] || { icon: null, className: '' };
     return (
       <span className={`rd-status-badge ${c.className}`}>
-        {c.icon} {status}
+        {c.icon} {displayStatus}
       </span>
     );
   };
@@ -208,11 +210,11 @@ const RenewalDetail = () => {
             <Button
               variant="outline"
               icon={Ban}
-              onClick={() => handleStatusChange('Cancelled')}
+              onClick={() => handleStatusChange('Close Renewal')}
               disabled={actionLoading === 'status'}
               className="rd-cancel-btn"
             >
-              {actionLoading === 'status' ? 'Updating...' : 'Cancel Renewal'}
+              {actionLoading === 'status' ? 'Updating...' : 'Close Renewal'}
             </Button>
           )}
 

@@ -187,19 +187,21 @@ const Renewals = () => {
   };
 
   const getStatusBadge = (status) => {
+    const displayStatus = (status === 'Cancelled') ? 'Closed' : status;
     const config = {
       'Upcoming': { icon: <Clock size={13} />, className: 'rnw-badge-upcoming' },
       'In Progress': { icon: <RefreshCw size={13} />, className: 'rnw-badge-progress' },
       'Renewed': { icon: <CheckCircle size={13} />, className: 'rnw-badge-renewed' },
       'Expired': { icon: <XCircle size={13} />, className: 'rnw-badge-expired' },
-      'Cancelled': { icon: <XCircle size={13} />, className: 'rnw-badge-cancelled' },
+      'Closed': { icon: <XCircle size={13} />, className: 'rnw-badge-closed' },
+      'Cancelled': { icon: <XCircle size={13} />, className: 'rnw-badge-closed' },
     };
 
-    const c = config[status] || { icon: null, className: '' };
+    const c = config[displayStatus] || { icon: null, className: '' };
 
     return (
       <span className={`rnw-status-badge ${c.className}`}>
-        {c.icon} {status}
+        {c.icon} {displayStatus}
       </span>
     );
   };
@@ -218,9 +220,9 @@ const Renewals = () => {
 
   const getActionRequired = (renewal) => {
     if (renewal.status === 'Expired') return 'Review Required';
-    if (renewal.status === 'Cancelled') return 'N/A';
+    if (renewal.status === 'Closed' || renewal.status === 'Cancelled') return 'Closed';
     if (renewal.status === 'Renewed') return 'On Track';
-    if (renewal.status === 'In Progress') return 'Initiate Renewal';
+    if (renewal.status === 'In Progress') return 'Approval Pending';
     if (renewal.days_until_expiry <= 30) return 'Initiate Renewal';
     return 'Monitor Closely';
   };
@@ -265,11 +267,11 @@ const Renewals = () => {
       desc: 'Past expiry date'
     },
     {
-      label: 'Cancelled',
-      count: summary.cancelled,
+      label: 'Closed',
+      count: summary.closed !== undefined ? summary.closed : summary.cancelled,
       icon: <AlertTriangle size={22} />,
       colorClass: 'rnw-card-cancelled',
-      desc: 'Renewal cancelled'
+      desc: 'Renewal closed'
     },
   ] : [];
 
@@ -306,16 +308,26 @@ const Renewals = () => {
       {/* Stat Cards */}
       {summary && (
         <div className="rnw-stat-cards">
-          {summaryCards.map((card) => (
-            <div key={card.label} className={`rnw-stat-card ${card.colorClass}`}>
-              <div className="rnw-stat-icon">{card.icon}</div>
-              <div className="rnw-stat-info">
-                <div className="rnw-stat-count">{card.count}</div>
-                <div className="rnw-stat-label">{card.label}</div>
-                <div className="rnw-stat-desc">{card.desc}</div>
+          {summaryCards.map((card) => {
+            const isActive = statusFilter === card.label;
+            return (
+              <div
+                key={card.label}
+                className={`rnw-stat-card ${card.colorClass} ${isActive ? 'active' : ''}`}
+                onClick={() => handleCardClick(card.label)}
+                role="button"
+                tabIndex={0}
+                title={`Filter by ${card.label}`}
+              >
+                <div className="rnw-stat-icon">{card.icon}</div>
+                <div className="rnw-stat-info">
+                  <div className="rnw-stat-count">{card.count}</div>
+                  <div className="rnw-stat-label">{card.label}</div>
+                  <div className="rnw-stat-desc">{card.desc}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

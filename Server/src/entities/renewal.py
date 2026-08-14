@@ -14,6 +14,7 @@ class RenewalStatus(str, Enum):
     IN_PROGRESS = "In Progress"
     RENEWED = "Renewed"
     EXPIRED = "Expired"
+    CLOSED = "Closed"
     CANCELLED = "Cancelled"
 
 
@@ -40,7 +41,11 @@ class Renewal(Base):
     expiry_date = Column(DateTime, nullable=False, index=True)
     notice_period_days = Column(Integer, nullable=False, default=30)
     value = Column(Float, nullable=False, default=0.0)
-    status = Column(SQLEnum(RenewalStatus), nullable=False, default=RenewalStatus.UPCOMING)
+    status = Column(
+        String(50),
+        nullable=False,
+        default=RenewalStatus.UPCOMING.value,
+    )
     auto_renew = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, nullable=True, onupdate=func.now())
@@ -57,7 +62,11 @@ class RenewalApproval(Base):
     approval_id = Column(Integer, primary_key=True, index=True)
     renewal_id = Column(Integer, ForeignKey("renewals.renewal_id"), nullable=False, index=True)
     step_name = Column(String(150), nullable=False)
-    status = Column(SQLEnum(ApprovalStatus), nullable=False, default=ApprovalStatus.PENDING)
+    status = Column(
+        String(50),
+        nullable=False,
+        default=ApprovalStatus.PENDING.value,
+    )
     approver = Column(String(255), nullable=False)
     comments = Column(String(1000), nullable=True)
     acted_at = Column(DateTime, nullable=True)
