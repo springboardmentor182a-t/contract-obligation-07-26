@@ -345,8 +345,8 @@ const Renewals = () => {
       {/* Contracts Table Section */}
       <div className="rnw-main-area animate-slide-up">
         <div className="rnw-section-header">
-          <h2>Contracts Requiring Renewal Action</h2>
-          <span className="rnw-view-all" onClick={() => setStatusFilter('All')}>
+          <h2>Renewal Tracking</h2>
+          <span className="rnw-view-all" onClick={() => navigate('/contracts')} role="button" tabIndex={0}>
             View All Contracts →
           </span>
         </div>
