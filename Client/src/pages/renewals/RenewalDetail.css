@@ -94,7 +94,8 @@
 .rd-badge-progress { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
 .rd-badge-renewed { background: rgba(16, 185, 129, 0.1); color: #059669; }
 .rd-badge-expired { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
-.rd-badge-cancelled { background: rgba(107, 114, 128, 0.1); color: #4b5563; }
+.rd-badge-closed { background: rgba(107, 114, 128, 0.12); color: #374151; }
+.rd-badge-cancelled { background: rgba(107, 114, 128, 0.12); color: #374151; }
 
 /* Content Grid */
 .rd-content-grid {

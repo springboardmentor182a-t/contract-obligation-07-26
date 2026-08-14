@@ -71,12 +71,15 @@ def get_dashboard_summary(db: Session):
         .scalar()
     )
 
+    closed_count = counts.get(RenewalStatus.CLOSED.value, 0) + counts.get(RenewalStatus.CANCELLED.value, 0)
+
     return {
         "upcoming": counts.get(RenewalStatus.UPCOMING.value, 0),
         "in_progress": counts.get(RenewalStatus.IN_PROGRESS.value, 0),
         "renewed": counts.get(RenewalStatus.RENEWED.value, 0),
         "expired": counts.get(RenewalStatus.EXPIRED.value, 0),
-        "cancelled": counts.get(RenewalStatus.CANCELLED.value, 0),
+        "closed": closed_count,
+        "cancelled": closed_count,
         "expiring_soon_no_action": expiring_soon,
         "total_value_at_risk": float(value_at_risk or 0),
     }
@@ -84,8 +87,13 @@ def get_dashboard_summary(db: Session):
 
 def _resolve_status_enum(status_str: str) -> RenewalStatus:
     """Convert a raw status string to RenewalStatus enum, or raise ValueError."""
+    if not status_str:
+        raise ValueError("Status string cannot be empty")
+    s_lower = status_str.strip().lower()
+    if s_lower in ("closed", "close renewal", "close", "cancelled", "canceled"):
+        return RenewalStatus.CLOSED
     for member in RenewalStatus:
-        if member.value == status_str:
+        if member.value.lower() == s_lower or member.name.lower() == s_lower:
             return member
     raise ValueError(f"Invalid status: {status_str}")
 
@@ -115,7 +123,10 @@ def get_renewals(
     if status and status != "All":
         try:
             status_enum = _resolve_status_enum(status)
-            query = query.filter(Renewal.status == status_enum)
+            if status_enum == RenewalStatus.CLOSED:
+                query = query.filter(Renewal.status.in_([RenewalStatus.CLOSED, RenewalStatus.CANCELLED]))
+            else:
+                query = query.filter(Renewal.status == status_enum)
         except ValueError:
             query = query.filter(Renewal.status == status)
 
@@ -150,18 +161,45 @@ def get_renewals(
 
 
 def create_renewal(db: Session, data):
-    """Create a renewal record and its initial audit-history entry."""
-    renewal = Renewal(**data.model_dump())
+    """Create a renewal record, initialize default approval steps, and log history."""
+    renewal_data = data.model_dump()
+    if "status" in renewal_data:
+        try:
+            status_enum = _resolve_status_enum(renewal_data["status"])
+            renewal_data["status"] = status_enum
+        except ValueError:
+            renewal_data["status"] = RenewalStatus.UPCOMING
+
+    renewal = Renewal(**renewal_data)
     db.add(renewal)
     db.flush()
     db.add(
         RenewalHistory(
             renewal_id=renewal.renewal_id,
             action="Renewal record created",
-            performed_by=renewal.owner,
+            performed_by=renewal.owner or "System",
             details=f"Contract {renewal.contract_id_ref} added to renewal tracking",
         )
     )
+
+    if renewal.status in (RenewalStatus.UPCOMING, RenewalStatus.IN_PROGRESS):
+        db.add(
+            RenewalApproval(
+                renewal_id=renewal.renewal_id,
+                step_name="Manager Review",
+                approver=renewal.owner or "Manager",
+                status=ApprovalStatus.PENDING,
+            )
+        )
+        db.add(
+            RenewalApproval(
+                renewal_id=renewal.renewal_id,
+                step_name="Legal Approval",
+                approver="Legal Department",
+                status=ApprovalStatus.PENDING,
+            )
+        )
+
     db.commit()
     db.refresh(renewal)
     
@@ -243,19 +281,41 @@ def update_renewal_status(db: Session, renewal_id: int, new_status: str, perform
 
     old_status = renewal.status.value if hasattr(renewal.status, "value") else renewal.status
 
-    # Convert string to enum for storage
     try:
         status_enum = _resolve_status_enum(new_status)
     except ValueError:
         return None
+
     renewal.status = status_enum
 
-    # Log to history
+    # If transitioning to In Progress and no approval steps exist, add default approval steps
+    if status_enum == RenewalStatus.IN_PROGRESS and not renewal.approvals:
+        db.add(
+            RenewalApproval(
+                renewal_id=renewal.renewal_id,
+                step_name="Manager Review",
+                approver=renewal.owner or "Manager",
+                status=ApprovalStatus.PENDING,
+            )
+        )
+        db.add(
+            RenewalApproval(
+                renewal_id=renewal.renewal_id,
+                step_name="Legal Approval",
+                approver="Legal Department",
+                status=ApprovalStatus.PENDING,
+            )
+        )
+
+    action_text = f"Status changed from {old_status} to {status_enum.value}"
+    if status_enum in (RenewalStatus.CLOSED, RenewalStatus.CANCELLED):
+        action_text = f"Renewal closed by {performed_by}"
+
     history = RenewalHistory(
         renewal_id=renewal_id,
-        action=f"Status changed from {old_status} to {status_enum.value}",
+        action=action_text,
         performed_by=performed_by,
-        details=f"Renewal status updated by {performed_by}",
+        details=f"Renewal status updated to {status_enum.value} by {performed_by}",
     )
     db.add(history)
     create_audit_log(db, user_name=performed_by, action="updated renewal status", module="Renewals", category="Change", entity_type="Renewal", entity_id=renewal_id, description=f"Changed renewal status from {old_status} to {status_enum.value}", old_value={"status": old_status}, new_value={"status": status_enum.value})
