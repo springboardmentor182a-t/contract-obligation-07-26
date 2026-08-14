@@ -10,30 +10,21 @@ __pycache__/
 *.pyc
 *.pyo
 *.py[cod]
-.venv/
-venv/
-
-# Environment
-.env
-environment.ts
-environment.prod.ts
-
-<<<<<<< HEAD
-# Python
-__pycache__/
-*.pyc
-*.pyo
 *.pyd
 
 # Python virtual environments
 server/venv/
 venv/
 .venv/
-=======
+
+# Environment
+.env
+environment.ts
+environment.prod.ts
+
 # Editors
 .vscode/
 .idea/
->>>>>>> origin/main-group-D
 
 # Logs
 logs/
