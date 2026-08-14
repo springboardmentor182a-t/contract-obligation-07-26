@@ -1,88 +1,69 @@
-from src.database.core import SessionLocal
-from src.contracts.models import ContractModel
+from sqlalchemy.orm import Session
+
 from src.entities.contract import Contract
+from src.contracts.models import ContractCreate
 
 
-def get_all_contracts():
-    db = SessionLocal()
-
-    try:
-        return db.query(ContractModel).all()
-    finally:
-        db.close()
+def get_contracts(db: Session):
+    return db.query(Contract).all()
 
 
-def get_contract_by_id(contract_id: str):
-    db = SessionLocal()
-    try:
-        return (
-            db.query(ContractModel)
-            .filter(ContractModel.id == contract_id)
-            .first()
-        )
-    finally:
-        db.close()
+def create_contract(db: Session, data: ContractCreate):
+    contract = Contract(
+        title=data.title,
+        owner=data.owner,
+        status=data.status,
+        expiry=data.expiry,
+    )
+
+    db.add(contract)
+    db.commit()
+    db.refresh(contract)
+
+    return {
+        "success": True,
+        "message": "Contract created successfully",
+        "contract": contract,
+    }
 
 
-def create_contract(contract: Contract):
-    db = SessionLocal()
+def update_contract(db: Session, contract_id: int, data: ContractCreate):
+    contract = db.query(Contract).filter(Contract.id == contract_id).first()
 
-    try:
-        db_contract = ContractModel(**contract.model_dump())
+    if not contract:
+        return {
+            "success": False,
+            "message": "Contract not found",
+        }
 
-        db.add(db_contract)
-        db.commit()
-        db.refresh(db_contract)
+    contract.title = data.title
+    contract.owner = data.owner
+    contract.status = data.status
+    contract.expiry = data.expiry
 
-        return db_contract
-    finally:
-        db.close()
+    db.commit()
+    db.refresh(contract)
 
-
-def update_contract(contract_id: str, updated_contract: Contract):
-    db = SessionLocal()
-
-    try:
-        contract = (
-            db.query(ContractModel)
-            .filter(ContractModel.id == contract_id)
-            .first()
-        )
-
-        if not contract:
-            return None
-
-        data = updated_contract.model_dump()
-
-        for key, value in data.items():
-            setattr(contract, key, value)
-
-        db.commit()
-        db.refresh(contract)
-
-        return contract
-
-    finally:
-        db.close()
+    return {
+        "success": True,
+        "message": "Contract updated successfully",
+        "contract": contract,
+    }
 
 
-def delete_contract(contract_id: str):
-    db = SessionLocal()
+def delete_contract(db: Session, contract_id: int):
+    contract = db.query(Contract).filter(Contract.id == contract_id).first()
 
-    try:
-        contract = (
-            db.query(ContractModel)
-            .filter(ContractModel.id == contract_id)
-            .first()
-        )
+    if not contract:
+        return {
+            "success": False,
+            "message": "Contract not found",
+        }
 
-        if not contract:
-            return None
+    db.delete(contract)
+    db.commit()
 
-        db.delete(contract)
-        db.commit()
-
-        return {"message": "Contract deleted successfully"}
-
-    finally:
-        db.close()
+    return {
+        "success": True,
+        "message": "Contract deleted successfully",
+    }

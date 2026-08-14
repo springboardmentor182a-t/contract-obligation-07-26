@@ -10,8 +10,12 @@ __pycache__/
 *.pyc
 *.pyo
 *.py[cod]
-.venv/
+*.pyd
+
+# Python virtual environments
+server/venv/
 venv/
+.venv/
 
 # Environment
 .env
