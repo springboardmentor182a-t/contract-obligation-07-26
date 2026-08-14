@@ -14,6 +14,8 @@ def test_get_contracts():
     mock_contract.contract_value = 50000
 
     mock_db.query.return_value = mock_query
+    mock_query.filter.return_value = mock_query
+    mock_query.order_by.return_value = mock_query
     mock_query.all.return_value = [mock_contract]
 
     # Act: Call the service function

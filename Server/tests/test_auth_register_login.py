@@ -19,10 +19,14 @@ app.include_router(router)
 # -----------------------------
 def override_get_db():
     db = MagicMock()
+    db.query.return_value.filter.return_value.first.return_value = None
     yield db
 
 
+from src.users.service import admin_required
+
 app.dependency_overrides[get_db] = override_get_db
+app.dependency_overrides[admin_required] = lambda: MagicMock(role="Admin")
 
 client = TestClient(app)
 
@@ -65,6 +69,7 @@ def test_register_user_db_error(mock_hash):
     mock_hash.return_value = "hashed"
 
     db = MagicMock()
+    db.query.return_value.filter.return_value.first.return_value = None
 
     db.commit.side_effect = Exception("Database Error")
 

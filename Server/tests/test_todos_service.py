@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from renewals.service import send_reminder_action
-from entities.renewal import RenewalReminder
+from src.entities.renewal import RenewalReminder
 
 
 def test_send_reminder_action_marks_reminders_as_sent():

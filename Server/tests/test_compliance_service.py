@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
 from compliance.service import get_dashboard_summary, get_risk_distribution, get_anomalies
-from entities.compliance import Compliance
+from src.entities.compliance import Compliance
 
 def test_get_dashboard_summary_empty():
     """

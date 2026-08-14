@@ -37,6 +37,7 @@ class Contract(Base):
     type = Column(String(100), nullable=False)
     value = Column(Float, nullable=False)
     owner = Column(String(200), nullable=False)
+    department = Column(String(100), default="Legal", nullable=True)
     status = Column(String(100), default=ContractStatus.ACTIVE.value, nullable=False)
     compliance = Column(String(100), default="Compliant", nullable=False)
     archived = Column(Boolean, default=False, nullable=False)
