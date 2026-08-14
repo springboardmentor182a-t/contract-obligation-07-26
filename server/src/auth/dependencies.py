@@ -95,7 +95,7 @@ def get_current_user(
     except (JWTError, TypeError, ValueError):
         raise credentials_error
 
-    if user_id <= 0 or not token_role:
+    if user_id <= 0 or token_role is None:
         raise credentials_error
 
     user = db.query(User).filter(User.id == user_id).first()
@@ -103,7 +103,7 @@ def get_current_user(
         raise credentials_error
 
     database_role = user.role or ""
-    if not database_role or token_role != database_role:
+    if token_role != database_role:
         raise credentials_error
 
     return user

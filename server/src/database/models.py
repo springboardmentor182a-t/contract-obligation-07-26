@@ -24,7 +24,7 @@ class User(Base):
     full_name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password = Column(String, nullable=False)
-    role = Column(String(100), nullable=False, default="User")
+    role = Column(String(100), nullable=True, default=None)
     organization = Column(String, nullable=True)
     department = Column(String(255), nullable=True)
     job_title = Column(String(255), nullable=True)
