@@ -13,6 +13,7 @@ import { useAuth } from '../../context/AuthContext';
 import Modal from '../../components/Modals/Modal';
 import '../contracts/Contracts.css';
 import './Compliance.css'; 
+import '../dashboards/Dashboard.css';
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
@@ -74,22 +75,29 @@ const Compliance = () => {
         setAnomalies(await anomaliesRes.json());
       }
 
-      let url = `${API_URL}/compliance/contracts?limit=100`;
-      
-      if (activeTab === 'High Risk') {
-        url += '&risk=High';
-      } else if (activeTab === 'Pending Review') {
-        url += '&status=Under%20Review';
-      }
-      
-      if (searchTerm) {
-        url += `&search=${encodeURIComponent(searchTerm)}`;
-      }
+      if (activeTab === 'AI Anomalies') {
+        const anomaliesRes = await fetch(`${API_URL}/compliance/anomalies`, { headers: { 'X-User-Role': currentRole } });
+        if (anomaliesRes.ok) {
+          setAnomalies(await anomaliesRes.json());
+        }
+      } else {
+        let url = `${API_URL}/compliance/contracts?limit=100`;
+        
+        if (activeTab === 'High Risk') {
+          url += '&risk=High';
+        } else if (activeTab === 'Pending Review') {
+          url += '&status=Under%20Review';
+        }
+        
+        if (searchTerm) {
+          url += `&search=${encodeURIComponent(searchTerm)}`;
+        }
 
-      const tableRes = await fetch(url, { headers: { 'X-User-Role': currentRole } });
-      if (tableRes.ok) {
-        const data = await tableRes.json();
-        setComplianceItems(data.records || []);
+        const tableRes = await fetch(url, { headers: { 'X-User-Role': currentRole } });
+        if (tableRes.ok) {
+          const data = await tableRes.json();
+          setComplianceItems(data.records || []);
+        }
       }
     } catch (err) {
       console.error("Failed to refresh dashboard data:", err);
@@ -141,24 +149,33 @@ const Compliance = () => {
     if (!isAuthorized) return;
     const fetchTableData = async () => {
       try {
-        let url = `${API_URL}/compliance/contracts?limit=100`;
-        
-        if (activeTab === 'High Risk') {
-          url += '&risk=High';
-        } else if (activeTab === 'Pending Review') {
-          url += '&status=Under%20Review';
-        }
-        
-        if (searchTerm) {
-          url += `&search=${encodeURIComponent(searchTerm)}`;
-        }
+        if (activeTab === 'AI Anomalies') {
+          const res = await fetch(`${API_URL}/compliance/anomalies`, { headers: { 'X-User-Role': currentRole } });
+          if (!res.ok) {
+            throw new Error("Failed to fetch compliance anomalies");
+          }
+          const data = await res.json();
+          setAnomalies(data || []);
+        } else {
+          let url = `${API_URL}/compliance/contracts?limit=100`;
+          
+          if (activeTab === 'High Risk') {
+            url += '&risk=High';
+          } else if (activeTab === 'Pending Review') {
+            url += '&status=Under%20Review';
+          }
+          
+          if (searchTerm) {
+            url += `&search=${encodeURIComponent(searchTerm)}`;
+          }
 
-        const res = await fetch(url, { headers: { 'X-User-Role': currentRole } });
-        if (!res.ok) {
-          throw new Error("Failed to fetch compliance table records");
+          const res = await fetch(url, { headers: { 'X-User-Role': currentRole } });
+          if (!res.ok) {
+            throw new Error("Failed to fetch compliance table records");
+          }
+          const data = await res.json();
+          setComplianceItems(data.records || []);
         }
-        const data = await res.json();
-        setComplianceItems(data.records || []);
       } catch (err) {
         console.error("Error fetching filtered table data:", err);
       }
@@ -342,89 +359,111 @@ const Compliance = () => {
   const scoreAssessment = complianceScoreVal >= 80 ? 'Healthy' : complianceScoreVal >= 60 ? 'Cautionary' : 'Critical';
 
   return (
-    <div className="compliance-dashboard fade-in">
+    <div className="dashboard-container fade-in">
       {/* Header Section */}
-      <div className="comp-header-section">
-        <div className="comp-header-content">
-          <h1 className="comp-title">Compliance Intelligence</h1>
-          <p className="comp-subtitle">Real-time monitoring of contractual and regulatory requirements across all vendors.</p>
+      <div className="dashboard-header mb-2 stagger-1">
+        <div>
+          <h1 className="text-2xl font-bold">Compliance Intelligence</h1>
+          <p className="text-muted mt-1">Real-time monitoring of contractual and regulatory requirements across all vendors.</p>
         </div>
-        <div className="comp-header-actions">
+        <div className="dashboard-header-actions">
           <Button variant="outline" icon={FileText} onClick={handleExportReport}>Export Report</Button>
           <Button variant="primary" icon={ShieldAlert} onClick={() => setIsAuditModalOpen(true)}>Initiate Audit</Button>
         </div>
       </div>
 
       {/* Top Analytics Cards */}
-      <div className="comp-analytics-grid">
-        <div className="comp-card score-card">
-          <div className="score-card-header">
-            <h3>Overall Compliance</h3>
-            <div className={`trend-badge ${scoreTrendVal >= 0 ? 'positive' : 'negative'}`}>
-              {scoreTrendVal >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />} 
-              {Math.abs(scoreTrendVal)}%
+      <div className="stats-grid stagger-1">
+        <div className="stat-card">
+          <div className="stat-card-header">
+            <p className="stat-label">Overall Compliance</p>
+            <div className="stat-icon" style={{ color: 'var(--color-primary)', backgroundColor: 'rgba(107, 142, 177, 0.15)' }}>
+              <ShieldCheck size={20} />
             </div>
           </div>
-          <div className="score-content">
-            <div className="circular-progress">
-              <svg viewBox="0 0 36 36" className="circular-chart">
-                <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <path className="circle-path" strokeDasharray={`${complianceScoreVal}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <text x="18" y="20.5" className="percentage">{complianceScoreVal}%</text>
-              </svg>
-            </div>
-            <div className="score-details">
-              <p>Your organization is currently operating at a <strong>{scoreAssessment}</strong> compliance level.</p>
+          <div className="stat-content">
+            <h3>{complianceScoreVal}%</h3>
+            <div className="stat-footer">
+              <span className={`stat-trend ${scoreTrendVal >= 0 ? 'positive' : 'danger'}`}>
+                {scoreTrendVal >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />} 
+                {Math.abs(scoreTrendVal)}%
+              </span>
+              <span className="stat-subtext">Assessment: {scoreAssessment}</span>
             </div>
           </div>
         </div>
 
-        <div className="comp-card stat-card gradient-blue">
-          <div className="stat-icon-wrapper"><ShieldCheck size={28} /></div>
-          <div className="stat-info">
-            <span className="stat-label">Compliant Contracts</span>
-            <h2 className="stat-value">{compliantContractsCount}</h2>
-            <span className="stat-trend">{compliantContractsTrend}</span>
+        <div className="stat-card">
+          <div className="stat-card-header">
+            <p className="stat-label">Compliant Contracts</p>
+            <div className="stat-icon" style={{ color: 'var(--color-success)', backgroundColor: 'rgba(16, 185, 129, 0.15)' }}>
+              <ShieldCheck size={20} />
+            </div>
+          </div>
+          <div className="stat-content">
+            <h3>{compliantContractsCount}</h3>
+            <div className="stat-footer">
+              <span className="stat-trend positive">{compliantContractsTrend}</span>
+              <span className="stat-subtext">compliant</span>
+            </div>
           </div>
         </div>
 
-        <div className="comp-card stat-card gradient-red">
-          <div className="stat-icon-wrapper"><AlertOctagon size={28} /></div>
-          <div className="stat-info">
-            <span className="stat-label">Critical Violations</span>
-            <h2 className="stat-value">{criticalViolationsCount}</h2>
-            <span className="stat-trend negative">{criticalViolationsTrend}</span>
+        <div className="stat-card">
+          <div className="stat-card-header">
+            <p className="stat-label">Critical Violations</p>
+            <div className="stat-icon" style={{ color: 'var(--color-danger)', backgroundColor: 'rgba(239, 68, 68, 0.15)' }}>
+              <AlertOctagon size={20} />
+            </div>
+          </div>
+          <div className="stat-content">
+            <h3>{criticalViolationsCount}</h3>
+            <div className="stat-footer">
+              <span className="stat-trend danger">{criticalViolationsTrend}</span>
+              <span className="stat-subtext">non-compliant</span>
+            </div>
           </div>
         </div>
 
-        <div className="comp-card stat-card gradient-purple">
-          <div className="stat-icon-wrapper"><Activity size={28} /></div>
-          <div className="stat-info">
-            <span className="stat-label">Pending Audits</span>
-            <h2 className="stat-value">{pendingAuditsCount}</h2>
-            <span className="stat-trend">{pendingAuditsTrend}</span>
+        <div className="stat-card">
+          <div className="stat-card-header">
+            <p className="stat-label">Pending Audits</p>
+            <div className="stat-icon" style={{ color: 'var(--color-warning)', backgroundColor: 'rgba(245, 158, 11, 0.15)' }}>
+              <Clock size={20} />
+            </div>
+          </div>
+          <div className="stat-content">
+            <h3>{pendingAuditsCount}</h3>
+            <div className="stat-footer">
+              <span className="stat-trend warning">{pendingAuditsTrend}</span>
+              <span className="stat-subtext">under review</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Charts Section */}
-      <div className="comp-charts-section animate-slide-up" style={{ animationDelay: '0.05s' }}>
-        <div className="comp-chart-card">
-          <div className="comp-chart-header">
-            <h3>Compliance Score Trend</h3>
-            <p className="text-muted" style={{fontSize: '0.85rem', marginTop: '0.2rem'}}>6-month organizational average</p>
+      <div className="dashboard-middle-grid stagger-2">
+        <div className="dashboard-card main-chart-card">
+          <div className="dashboard-card-header">
+            <div>
+              <h3>Compliance Score Trend</h3>
+              <p>6-month organizational average</p>
+            </div>
           </div>
-          <div className="comp-chart-container" style={{ height: '280px' }}>
+          <div className="chart-wrapper">
             <Line data={lineChartData} options={lineChartOptions} />
           </div>
         </div>
 
-        <div className="comp-chart-card">
-          <div className="comp-chart-header">
-            <h3>Risk Distribution</h3>
-            <p className="text-muted" style={{fontSize: '0.85rem', marginTop: '0.2rem'}}>Based on current compliance items</p>
+        <div className="dashboard-card">
+          <div className="dashboard-card-header">
+            <div>
+              <h3>Risk Distribution</h3>
+              <p>Based on current compliance items</p>
+            </div>
           </div>
-          <div className="comp-chart-container" style={{ height: '280px', display: 'flex', alignItems: 'center', justifyItems: 'center' }}>
+          <div className="chart-wrapper doughnut-wrapper">
             <Doughnut data={doughnutData} options={doughnutOptions} />
           </div>
         </div>
@@ -523,7 +562,7 @@ const Compliance = () => {
                       </td>
                       <td>
                         <div className="health-score-cell">
-                          <span className={`score-text ${item.score < 50 ? 'text-danger' : item.score < 80 ? 'text-warning' : 'text-success'}`}>{item.score}/100</span>
+                           <span className={`score-text ${item.score < 50 ? 'text-danger' : item.score < 80 ? 'text-warning' : 'text-success'}`}>{item.score}/100</span>
                           <div className="mini-progress-bg">
                             <div className={`mini-progress-fill ${item.score < 50 ? 'bg-danger' : item.score < 80 ? 'bg-warning' : 'bg-success'}`} style={{ width: `${item.score}%` }}></div>
                           </div>

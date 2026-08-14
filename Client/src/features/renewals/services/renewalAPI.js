@@ -160,3 +160,18 @@ export const generateRenewals = async () => {
   }
   return data;
 };
+
+/**
+ * Fetch AI recommendation for a specific renewal.
+ */
+export const getRenewalAIRecommendation = async (renewalId) => {
+  const response = await fetch(`${BASE_URL}/renewals/${renewalId}/ai-recommendation`, {
+    method: "GET",
+    headers: getHeaders()
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.detail || data.message || "Failed to fetch AI recommendation");
+  }
+  return await response.json();
+};

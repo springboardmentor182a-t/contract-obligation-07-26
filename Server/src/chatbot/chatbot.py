@@ -23,7 +23,7 @@ CONTRACT_KEYWORDS = [
 
 def ask_with_contract(question, context):
 
-    if model is None:
+    if model is None or tokenizer is None:
         return "AI model is not available."
 
     messages = [
@@ -60,7 +60,7 @@ def ask_with_contract(question, context):
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=64,
+            max_new_tokens=32,
             do_sample=False,
             temperature=0.0,
             repetition_penalty=1.2,
@@ -91,6 +91,8 @@ def is_contract_question(question: str):
 
 
 def general_chat(question: str):
+    if model is None or tokenizer is None:
+        return "AI model is not available."
 
     messages = [
         {
@@ -117,7 +119,7 @@ def general_chat(question: str):
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=64,
+            max_new_tokens=32,
             do_sample=False,
             temperature=0.0,
             repetition_penalty=1.2,

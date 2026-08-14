@@ -85,7 +85,8 @@ const ContractRepository = () => {
     expiry_date: '',
     owner: '',
     status: 'Active',
-    compliance: 90
+    compliance: 90,
+    contract_file: null
   });
 
   const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api') + '/contracts';
@@ -122,6 +123,10 @@ const ContractRepository = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e) => {
+    setFormData((prev) => ({ ...prev, contract_file: e.target.files[0] }));
+  };
+
   // --- CREATE & UPDATE: Combined submit handler ---
   const handleSubmitContract = async (e) => {
     e.preventDefault();
@@ -148,11 +153,26 @@ const ContractRepository = () => {
     };
 
     try {
+      let response;
       if (isEditing) {
-        await axios.put(`${API_BASE_URL}/${currentContractId}`, payload);
+        response = await axios.put(`${API_BASE_URL}/${currentContractId}`, payload);
       } else {
-        await axios.post(API_BASE_URL, payload);
+        response = await axios.post(API_BASE_URL, payload);
       }
+      
+      const contractId = response.data.id || response.data.contract_id || currentContractId;
+      
+      if (formData.contract_file) {
+        const fileData = new FormData();
+        fileData.append('file', formData.contract_file);
+        
+        await axios.post(`${API_BASE_URL}/${contractId}/upload`, fileData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
+
       closeModal();
       fetchContracts(); 
     } catch (error) {
@@ -197,7 +217,8 @@ const ContractRepository = () => {
       expiry_date: contract.expiry_date || '',
       owner: contract.owner || '',
       status: contract.status,
-      compliance: isNaN(cleanCompliance) ? 90 : cleanCompliance
+      compliance: isNaN(cleanCompliance) ? 90 : cleanCompliance,
+      contract_file: null
     });
     setIsModalOpen(true);
   };
@@ -208,7 +229,7 @@ const ContractRepository = () => {
     setIsEditing(false);
     setCurrentContractId(null);
     setFormData({
-      title: '', vendor: '', type: 'SaaS License', value: '', effective_date: '', end_date: '', expiry_date: '', owner: '', status: 'Active', compliance: 90
+      title: '', vendor: '', type: 'SaaS License', value: '', effective_date: '', end_date: '', expiry_date: '', owner: '', status: 'Active', compliance: 90, contract_file: null
     });
   };
 
@@ -258,7 +279,8 @@ const ContractRepository = () => {
                 expiry_date: '',
                 owner: '',
                 status: 'Active',
-                compliance: 90
+                compliance: 90,
+                contract_file: null
               });
               setIsModalOpen(true);
             }}
@@ -325,7 +347,7 @@ const ContractRepository = () => {
                     onClick={() => setSelectedContract(item)} 
                     style={{ cursor: 'pointer' }}
                   >
-                    <div className="contract-title" style={{ color: '#1e3a8a', fontWeight: '600' }}>
+                    <div className="contract-title">
                       {item.title}
                     </div>
                     <div className="contract-vendor">{item.vendor}</div>
@@ -458,6 +480,11 @@ const ContractRepository = () => {
                     <label className="form-label">Compliance Score (%)</label>
                     <input type="number" name="compliance" min="0" max="100" className="form-input" value={formData.compliance} onChange={handleInputChange} />
                   </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Upload Contract (PDF)</label>
+                  <input type="file" name="contract_file" accept=".pdf" className="form-input" onChange={handleFileChange} />
                 </div>
 
               </div>

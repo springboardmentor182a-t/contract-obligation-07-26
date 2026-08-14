@@ -24,17 +24,11 @@ def admin_required(
 
     return user
 
-def admin_required(
+def get_current_user(
     payload: dict = Depends(verify_token),
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.email == payload["sub"]).first()
     if not user:
-        raise HTTPException(404, "User not exist!!")
-
-    if user.role not in [
-        UserRole.ADMIN,
-        UserRole.LEGAL_MANAGER,
-    ]:
-        raise HTTPException(403, "Access denied!!")
+        raise HTTPException(404, "User not found!!")
     return user

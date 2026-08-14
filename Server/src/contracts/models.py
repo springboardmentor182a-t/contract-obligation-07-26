@@ -48,6 +48,7 @@ class ContractResponse(BaseModel):
     compliance: str
     effective_date: Optional[date] = None
     expiry_date: Optional[date] = None
+    file_path: Optional[str] = None
     approved_date: Optional[datetime] = None
     review_date: Optional[datetime] = None
     created_at: Optional[datetime] = None

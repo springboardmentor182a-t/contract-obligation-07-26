@@ -47,7 +47,7 @@ class Contract(Base):
     expiry_date = Column(Date, nullable=True)           # Explicit expiry date (if different from end_date)
     approved_date = Column(DateTime(timezone=True), nullable=True)   # When the contract was approved
     review_date = Column(DateTime(timezone=True), nullable=True)     # Next scheduled review date
-
+    file_path = Column(String(500), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

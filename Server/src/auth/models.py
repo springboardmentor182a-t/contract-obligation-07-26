@@ -28,7 +28,7 @@ class UserCreate(BaseModel):
     password: str
 
     employee_id: str
-    organization_id: int
+    organization_id: Optional[int] = None
     company_name: str
     department: str
     designation: str
@@ -62,7 +62,7 @@ class UserUpdate(BaseModel):
     phone: str
 
     employee_id: str
-    organization_id: int
+    organization_id: Optional[int] = None
     company_name: str
     department: str
     designation: str
@@ -83,7 +83,7 @@ class UserResponse(BaseModel):
 
     employee_id: str
     company_name: str
-    organization_id: int
+    organization_id: Optional[int] = None
     department: str
     designation: str
     location: str
