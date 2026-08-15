@@ -1,0 +1,8 @@
+{
+  "tools": [
+    { "key": "newContract", "label": "New Contract", "route": "/repository" },
+    { "key": "addObligation", "label": "Add Obligation", "route": "/obligations" },
+    { "key": "inviteUser", "label": "Invite User", "route": "/users" },
+    { "key": "generateReport", "label": "Generate Report", "route": "/reports" }
+  ]
+}

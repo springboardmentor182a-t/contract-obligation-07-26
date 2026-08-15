@@ -1,0 +1,10 @@
+.page-surface{background:var(--color-surface);padding:20px;border-radius:12px}
+.page-surface h2{margin:0;font-size:18px}
+.page-surface .muted{color:var(--text-secondary);margin-top:8px}
+
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;}
+.user-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--color-border);}
+.user-row:last-child{border-bottom:0;}
+.user-avatar{width:36px;height:36px;font-size:13px;}
+.badge-active{background:rgba(16,185,129,0.12);color:#0d9668;}
+.badge-invited{background:rgba(245,158,11,0.13);color:#B45309;}

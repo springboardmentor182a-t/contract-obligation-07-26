@@ -1,0 +1,149 @@
+.page-surface {
+  background: var(--surface);
+  padding: 20px;
+  border-radius: 12px;
+}
+.page-surface h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.page-surface .muted {
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+
+.cal-month-label {
+  font-weight: 700;
+  font-size: 15px;
+  min-width: 150px;
+  text-align: center;
+}
+
+.cal-dow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.cal-dow span {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cal-day {
+  min-height: 70px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 6px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.cal-day:hover {
+  border-color: var(--info);
+}
+
+.cal-day.other-month {
+  opacity: 0.35;
+  background: var(--bg);
+}
+
+.cal-day.today {
+  border-color: var(--info);
+  box-shadow: 0 0 0 1px var(--info) inset;
+}
+
+.cal-day.selected {
+  border-color: var(--info);
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.cal-daynum {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cal-daynum em {
+  font-size: 10px;
+  font-style: normal;
+  color: var(--info);
+}
+
+.cal-day-dots {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.cal-add-task {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* ==========================================
+   CALENDAR DARK THEME OVERRIDES
+   ========================================== */
+[data-theme="dark"] .cal-day {
+  background: #162032 !important;
+  border-color: #26354A !important;
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .cal-day.other-month {
+  background: #0F172A !important;
+  color: #475569 !important;
+  border-color: #1E293B !important;
+}
+
+[data-theme="dark"] .cal-day.today {
+  border-color: #3B82F6 !important;
+  box-shadow: 0 0 0 1px #3B82F6 inset !important;
+}
+
+[data-theme="dark"] .cal-day.selected {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-color: #3B82F6 !important;
+}
+
+[data-theme="dark"] .cal-daynum {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .cal-dow span {
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .cal-month-label {
+  color: #F8FAFC !important;
+}
+
+[data-theme="dark"] .cal-stats .cal-stat {
+  background: #0F172A !important;
+  border-color: #1E293B !important;
+}
