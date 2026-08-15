@@ -14,7 +14,17 @@ DROP TABLE IF EXISTS user_settings CASCADE;
 DROP TABLE IF EXISTS api_keys CASCADE;
 DROP TABLE IF EXISTS user_invitations CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS organizations CASCADE;
 
+
+-- Organizations Table
+CREATE TABLE organizations (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Users Table
 CREATE TABLE users (
@@ -22,6 +32,7 @@ CREATE TABLE users (
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     role VARCHAR(100) NOT NULL DEFAULT 'User',
+    organization_id INTEGER REFERENCES organizations(id) ON DELETE SET NULL,
     department VARCHAR(255),
     job_title VARCHAR(255),
     phone VARCHAR(50),

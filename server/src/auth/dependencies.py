@@ -40,13 +40,7 @@ COMPLIANCE_ROLES = (
     DEPARTMENT_HEAD,
     EMPLOYEE,
 )
-DASHBOARD_ROLES = (
-    LEGAL_MANAGER,
-    COMPLIANCE_OFFICER,
-    CONTRACT_MANAGER,
-    DEPARTMENT_HEAD,
-    EMPLOYEE,
-)
+DASHBOARD_ROLES = ALL_ROLES
 NOTIFICATION_ROLES = ALL_ROLES
 QUICK_ACTION_ROLES = (
     LEGAL_MANAGER,
@@ -107,6 +101,37 @@ def get_current_user(
         raise credentials_error
 
     return user
+
+
+def get_current_user_optional(
+    token: str | None = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> User | None:
+    if not token:
+        return None
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "access":
+            return None
+        user_id = int(payload.get("sub", 0))
+        token_role = str(payload.get("role", ""))
+    except (JWTError, TypeError, ValueError):
+        return None
+
+    if user_id <= 0 or token_role is None:
+        return None
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None or not user.is_active:
+        return None
+
+    database_role = user.role or ""
+    if token_role != database_role:
+        return None
+
+    return user
+
 
 
 def require_roles(*allowed_roles: str) -> Callable:

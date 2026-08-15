@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useUI } from "../context/UIContext";
+import { canAccessSidebarItem } from "../utils/sidebarPermissions";
 import {
   LayoutDashboard,
   FileText,
@@ -17,23 +19,32 @@ import {
   ChevronLeft,
   ChevronRight,
   GripVertical,
+  Building2,
 } from "lucide-react";
 
 function Sidebar({ isCollapsed, width, onToggle, onResizeStart }) {
   const [isSystemOpen, setIsSystemOpen] = useState(true);
 
+  const { user } = useUI();
+  const location = useLocation();
+
   const menuItems = [
-  { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-  { name: "Contract Repository", icon: FileText, path: "/contracts" },
-  { name: "Obligation Tracker", icon: ClipboardList, path: "/obligations" },
-  { name: "Renewal Dashboard", icon: RefreshCcw, path: "/renewal-dashboard", active: true },
-  { name: "Compliance", icon: Shield, path: "/compliance" },
-  { name: "Reports & Analytics", icon: BarChart3, path: "/reports" },
-  { name: "Notifications", icon: Bell, path: "/notifications", badge: "2" },
-  { name: "Audit Logs", icon: BookOpen, path: "/audit" },
-  { name: "User Management", icon: Users, path: "/users" },
-  { name: "Settings", icon: Settings, path: "/settings" },
- ];
+    { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+    { name: "Contract Repository", icon: FileText, path: "/repository" },
+    { name: "Obligation Tracker", icon: ClipboardList, path: "/obligations" },
+    { name: "Renewal Dashboard", icon: RefreshCcw, path: "/renewal-dashboard" },
+    { name: "Compliance", icon: Shield, path: "/compliance" },
+    { name: "Reports & Analytics", icon: BarChart3, path: "/reports" },
+    { name: "Notifications", icon: Bell, path: "/notifications", badge: "2" },
+    { name: "Audit Logs", icon: BookOpen, path: "/audit" },
+    { name: "User Management", icon: Users, path: "/user-management" },
+    { name: "Organization Management", icon: Building2, path: "/organizations" },
+    { name: "Settings", icon: Settings, path: "/settings" },
+  ];
+
+  const visibleMenuItems = menuItems.filter(item => 
+    canAccessSidebarItem(user?.role || "", item.name)
+  );
 
   const systemServices = [
     { name: "API Server", status: "OK" },
@@ -93,22 +104,24 @@ function Sidebar({ isCollapsed, width, onToggle, onResizeStart }) {
         <p className={`mb-4 px-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-600 ${isCollapsed ? "sr-only" : ""}`}>
           Main Menu
         </p>
-        {menuItems.map((item) => {
+        {visibleMenuItems.map((item) => {
           const Icon = item.icon;
+          const isActive = location.pathname.startsWith(item.path);
 
           return (
-            <div
+            <Link
+              to={item.path}
               key={item.name}
               title={isCollapsed ? item.name : undefined}
               className={`relative mb-2 flex min-h-12 cursor-pointer items-center gap-4 rounded-2xl px-4 py-3 text-sm font-semibold transition ${isCollapsed ? "mx-auto w-14 justify-center px-0" : ""} ${
-                item.active
+                isActive
                   ? "border border-blue-800 bg-[#132A4D] text-white shadow-inner shadow-blue-950/30"
                   : "text-slate-500 hover:bg-[#111B2A] hover:text-slate-200"
               }`}
             >
-              {item.active && <span className="absolute left-0 h-7 w-1 rounded-r bg-blue-500" />}
+              {isActive && <span className="absolute left-0 h-7 w-1 rounded-r bg-blue-500" />}
 
-              <Icon size={isCollapsed ? 21 : 18} className={item.active ? "text-blue-400" : ""} />
+              <Icon size={isCollapsed ? 21 : 18} className={isActive ? "text-blue-400" : ""} />
 
               <span className={isCollapsed ? "hidden" : ""}>{item.name}</span>
 
@@ -121,7 +134,7 @@ function Sidebar({ isCollapsed, width, onToggle, onResizeStart }) {
               {item.badge && isCollapsed && (
                 <span className="absolute right-2 top-1.5 h-2.5 w-2.5 rounded-full bg-red-500" />
               )}
-            </div>
+            </Link>
           );
         })}
       </nav>

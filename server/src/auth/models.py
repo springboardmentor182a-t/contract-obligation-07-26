@@ -9,7 +9,7 @@ class LoginRequest(BaseModel):
 
 class RegisterRequest(BaseModel):
     name: str
-    organization: str
+    organization_id: int
     department: str
     phone: str
     email: EmailStr

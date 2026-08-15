@@ -6,7 +6,9 @@ import {
   Download,
   Trash2,
   FileText,
+  Bot,
 } from "lucide-react";
+import ChatbotPanel from "../Chatbot/ChatbotPanel";
 
 import {
   uploadDocument,
@@ -22,6 +24,7 @@ export default function ViewContractModal({
 }) {
   const [documents, setDocuments] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [chatbotOpen, setChatbotOpen] = useState(false);
 
   const loadDocuments = useCallback(async () => {
     if (!contract?.id) return;
@@ -281,16 +284,30 @@ export default function ViewContractModal({
 
         </div>
 
-        <div className="modal-footer">
+        <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between' }}>
           <button
             className="primary-btn"
+            style={{ backgroundColor: '#7c3aed', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}
+            onClick={() => setChatbotOpen(true)}
+          >
+            <Bot size={18} />
+            Ask AI Assistant
+          </button>
+          <button
+            className="secondary-btn"
             onClick={onClose}
+            style={{ padding: '8px 16px', border: '1px solid #d1d5db', borderRadius: '6px', background: 'white', cursor: 'pointer' }}
           >
             Close
           </button>
         </div>
 
       </div>
+      <ChatbotPanel 
+        contractId={contract.id} 
+        isOpen={chatbotOpen} 
+        onClose={() => setChatbotOpen(false)} 
+      />
     </div>
   );
 }

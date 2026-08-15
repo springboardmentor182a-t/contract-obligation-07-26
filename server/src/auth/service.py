@@ -22,7 +22,7 @@ from src.auth.reset import (
     send_password_reset_email,
 )
 from src.auth.security import hash_password, verify_password
-from src.database.models import UserModel
+from src.database.models import UserModel, OrganizationModel
 
 
 logger = logging.getLogger(__name__)
@@ -44,12 +44,6 @@ class AuthService:
     ):
         email = str(request.email).strip().lower()
 
-        if request.role != "Employee":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Public registration is limited to Employee accounts.",
-            )
-
         existing_user = (
             db.query(UserModel)
             .filter(UserModel.email == email)
@@ -68,7 +62,7 @@ class AuthService:
             email=email,
             password=hash_password(request.password),
             role=request.role,
-            organization=request.organization.strip(),
+            organization_id=request.organization_id,
             department=request.department.strip(),
             phone=request.phone.strip(),
             is_active=True,

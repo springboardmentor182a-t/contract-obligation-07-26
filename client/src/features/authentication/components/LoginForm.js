@@ -30,7 +30,7 @@ export default function LoginForm() {
   return (
     <form className="auth-form" onSubmit={handleSubmit}>
       <FormInput label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@contractiq.com" />
-      <FormInput label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" />
+      <FormInput label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="password" />
       {error && <div className="auth-error">{error}</div>}
       <button type="submit" className="quick-action auth-submit" disabled={loading}>
         {loading ? "Signing in..." : "Sign In"}

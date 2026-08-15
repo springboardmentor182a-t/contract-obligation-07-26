@@ -41,11 +41,13 @@ import Audit from "./pages/Audit";
 import UserManagement from "./pages/UserManagement";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import OrganizationManagement from "./pages/Organizations/OrganizationManagement";
 import Help from "./pages/Help";
 import {
   PrivacyPolicy,
   TermsOfService,
 } from "./pages/LegalPages";
+import FloatingChatWidget from "./components/Chatbot/FloatingChatWidget";
 
 function ProtectedRoute({ children }) {
   const { authReady, authenticated, user } = useUI();
@@ -137,12 +139,19 @@ function AppShell() {
         <Route path="/calendar" element={<AuthorizedRoute path="/calendar"><Calendar /></AuthorizedRoute>} />
         <Route path="/audit" element={<AuthorizedRoute path="/audit"><Audit /></AuthorizedRoute>} />
         <Route path="/user-management" element={<AuthorizedRoute path="/user-management"><UserManagement /></AuthorizedRoute>} />
+        <Route path="/organizations" element={<AuthorizedRoute path="/organizations"><OrganizationManagement /></AuthorizedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/settings" element={<AuthorizedRoute path="/settings"><Settings /></AuthorizedRoute>} />
         <Route path="*" element={<DefaultRoleRoute />} />
       </Routes>
     </PageContainer>
   );
+}
+
+function PublicChatbotWidget() {
+  const { authReady, authenticated } = useUI();
+  if (!authReady || authenticated) return null;
+  return <FloatingChatWidget />;
 }
 
 function App() {
@@ -170,6 +179,7 @@ function App() {
             }
           />
         </Routes>
+        <PublicChatbotWidget />
       </UIProvider>
     </BrowserRouter>
   );

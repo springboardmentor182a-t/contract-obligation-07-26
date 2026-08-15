@@ -25,7 +25,7 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     password = Column(String, nullable=False)
     role = Column(String(100), nullable=True, default=None)
-    organization = Column(String, nullable=True)
+    organization_id = Column(Integer, ForeignKey("public.organization.organization_id", ondelete="SET NULL"), nullable=True)
     department = Column(String(255), nullable=True)
     job_title = Column(String(255), nullable=True)
     phone = Column(String(50), nullable=True)
@@ -56,6 +56,11 @@ class User(Base):
         "Notification",
         back_populates="user",
         cascade="all, delete-orphan",
+    )
+
+    organization = relationship(
+        "OrganizationModel",
+        back_populates="users",
     )
 
 
@@ -446,4 +451,39 @@ class ComplianceLog(Base):
     message = Column(Text, nullable=False)
 
     control = relationship("ComplianceControl", back_populates="logs")
+
+
+from enum import Enum
+class OrganizationType(str, Enum):
+    PRIVATE_LIMITED = "Private Limited"
+    PUBLIC_LIMITED = "Public Limited"
+    PARTNERSHIP = "Partnership"
+    GOVERNMENT = "Government"
+    LLP = "LLP"
+    NGO = "NGO"
+
+class OrganizationModel(Base):
+    __tablename__ = "organization"
+    __table_args__ = {"schema": "public"}
+
+    organization_id = Column(Integer, primary_key=True, index=True)
+    organization_type = Column(String(50), nullable=False)
+    company_name = Column(String(255), nullable=True)
+    registration_number = Column(String(25), nullable=False)
+    gst_number = Column(String(25), nullable=False)
+    contact_number = Column(String(12), nullable=False)
+    offical_email = Column(String(255), unique=True, index=True)
+
+    country = Column(String(25), nullable=False)
+    state = Column(String(25), nullable=False)
+    city = Column(String(25), nullable=False)
+
+    join_date = Column(DateTime(timezone=True), server_default=func.now())
+    is_active = Column(Boolean, default=True)
+
+    users = relationship(
+        "User",
+        back_populates="organization",
+    )
+
 

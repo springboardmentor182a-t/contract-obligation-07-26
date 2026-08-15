@@ -9,7 +9,7 @@ class User:
         email: str,
         password: str,
         role: str,
-        organization: str,
+        organization_id: int,
         department: str,
         phone: str,
         is_active: bool,
@@ -20,7 +20,7 @@ class User:
         self.email = email
         self.password = password
         self.role = role
-        self.organization = organization
+        self.organization_id = organization_id
         self.department = department
         self.phone = phone
         self.is_active = is_active

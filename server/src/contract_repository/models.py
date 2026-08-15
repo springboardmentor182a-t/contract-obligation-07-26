@@ -22,6 +22,13 @@ class Contract(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
+    organization_id = Column(
+        Integer,
+        ForeignKey("public.organization.organization_id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+
     contract_name = Column(String, nullable=False)
     contract_number = Column(String, unique=True, nullable=False)
 

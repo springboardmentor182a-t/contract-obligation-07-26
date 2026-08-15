@@ -10,6 +10,7 @@ export const sidebarRoutes = {
   Calendar: "/calendar",
   "Audit Logs": "/audit",
   "User Management": "/user-management",
+  "Organization Management": "/organizations",
   Settings: "/settings",
 };
 
@@ -17,10 +18,11 @@ export const allSidebarModules = Object.keys(sidebarRoutes);
 
 export const sidebarPermissions = {
   Administrator: [
+    "Dashboard",
     "Notifications",
-    "Calendar",
     "Audit Logs",
     "User Management",
+    "Organization Management",
     "Settings",
   ],
 
@@ -32,8 +34,6 @@ export const sidebarPermissions = {
     "Compliance",
     "Reports & Analytics",
     "Notifications",
-    "Quick Actions",
-    "Calendar",
     "User Management",
     "Settings",
   ],
@@ -45,8 +45,6 @@ export const sidebarPermissions = {
     "Renewal Dashboard",
     "Compliance",
     "Notifications",
-    "Quick Actions",
-    "Calendar",
     "Settings",
   ],
 
@@ -56,8 +54,6 @@ export const sidebarPermissions = {
     "Obligation Tracker",
     "Renewal Dashboard",
     "Notifications",
-    "Quick Actions",
-    "Calendar",
     "Settings",
   ],
 

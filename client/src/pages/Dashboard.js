@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useUI } from "../context/UIContext";
+import { Link } from "react-router-dom";
+import { Building2 } from "lucide-react";
 import { FileIcon, AlertTriIcon, InfoIcon, RepeatIcon } from "../components/Icons";
 
 function Kpi({ Icon, color, val, label, loading }) {
@@ -78,6 +80,18 @@ export default function Dashboard() {
         <Kpi Icon={InfoIcon}     color="#EF4444" val={kpis.overdue}     label="Overdue Obligations"   loading={loading} />
         <Kpi Icon={RepeatIcon}   color="#10B981" val={kpis.renewals}    label="Active Renewals"       loading={loading} />
       </div>
+
+      {user?.role === "Administrator" && (
+        <div className="card" style={{ padding: 22, marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div className="section-title" style={{ marginBottom: 4 }}>Organization Management</div>
+            <p style={{ color: "var(--text-secondary)", fontSize: 13, margin: 0 }}>View, edit, and manage all organizations in ContractIQ.</p>
+          </div>
+          <Link to="/organizations" className="quick-action" style={{ background: "#3B82F6", color: "white", padding: "10px 16px", borderRadius: 8, textDecoration: "none", fontWeight: 600, fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
+            <Building2 size={18} /> Manage Organizations
+          </Link>
+        </div>
+      )}
 
       <div className="card" style={{ padding: 22 }}>
         <div className="section-title">Upcoming Obligations</div>
