@@ -1,35 +1,51 @@
+from datetime import date, datetime
+from typing import Optional
+
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from src.database.core import get_db
 from src.database.models import Contract, Activity, Deadline, ComplianceItem, ReportHistory, Document, AppNotification, User, SupportTicket
+
+from src.database.core import Base, engine, get_db
+from src.database.models import (
+    Contract, Activity, Deadline, ComplianceItem, ReportHistory,
+    Document, AppNotification, User, SupportTicket
+)
+
 # Routers
+from src.auth.controller import router as auth_router
 from src.users.controller import router as users_router
 from src.contracts.controller import router as contracts_router
+from src.documents.controller import router as documents_router
 from src.calendar.controller import router as calendar_router
 from src.renewals.controller import router as renewals_router
 from src.tasks.controller import router as tasks_router
 
-from pydantic import BaseModel
-from datetime import date, datetime, timedelta 
-from typing import Optional 
 
-app = FastAPI()
+# Create all database tables
+Base.metadata.create_all(bind=engine)
 
+app = FastAPI(title="ContractIQ API")
+
+
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],  # Temporary for testing
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# --- Merged Routers ---
+
+
+# Register Routers
+app.include_router(auth_router)
 app.include_router(users_router, prefix="/api/v1", tags=["Users"])
-app.include_router(contracts_router, prefix="/api/v1", tags=["Contracts"])
+app.include_router(contracts_router)
+app.include_router(documents_router)
 app.include_router(calendar_router, prefix="/api/v1", tags=["Calendar"])
 app.include_router(renewals_router, prefix="/api/v1", tags=["Renewals"])
 app.include_router(tasks_router, prefix="/api/v1", tags=["Tasks"])
@@ -129,6 +145,13 @@ def delete_compliance_item(item_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Compliance item deleted successfully"}
 
+@app.delete("/api/v1/contracts/{contract_id}")
+def delete_contract(contract_id: int, db: Session = Depends(get_db)):
+    contract = db.query(Contract).filter(Contract.id == contract_id).first()
+    if not contract: raise HTTPException(status_code=404, detail="Contract not found")
+    db.delete(contract)
+    db.commit()
+    return {"message": "Contract deleted successfully"}
 
 class ReportCreate(BaseModel):
     name: str

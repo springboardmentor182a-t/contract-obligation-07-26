@@ -1,4 +1,7 @@
 from sqlalchemy import Column, Integer, String, Date, Float
+from sqlalchemy import Column, Integer, Text
+from pydantic import BaseModel
+
 from src.database.core import Base
 
 
@@ -79,3 +82,35 @@ class ContractUpdate(BaseModel):
     documents: Optional[int] = None
     obligations: Optional[int] = None
     tasks: Optional[int] = None
+    company = Column(Text)
+    contract = Column(Text)
+    category = Column(Text)
+    value = Column(Text)
+    owner = Column(Text)
+    status = Column(Text)
+    compliance = Column(Integer)
+    renewal = Column(Text)
+
+    start_date = Column(Text)
+    end_date = Column(Text)
+    days_remaining = Column(Integer)
+    priority = Column(Text)
+    description = Column(Text)
+
+    paid_amount = Column(Text)
+    outstanding = Column(Text)
+    currency = Column(Text)
+
+
+class ContractCreate(BaseModel):
+    title: str
+    owner: str
+    status: str
+    expiry: str
+
+
+class ContractResponse(ContractCreate):
+    id: int
+
+    class Config:
+        from_attributes = True
