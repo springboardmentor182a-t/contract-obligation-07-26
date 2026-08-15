@@ -1,3 +1,6 @@
+
+from fastapi import APIRouter, HTTPException
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -11,18 +14,21 @@ from src.contracts.service import (
     delete_contract,
 )
 
+
+from src.contracts.models import ContractUpdate
+
+
+router = APIRouter()
+
 router = APIRouter(
     prefix="/contracts",
     tags=["Contracts"],
 )
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+@router.get("/contracts/{contract_id}")
+def get_contract(contract_id: int):
+    contract = get_contract_by_id(contract_id)
 
 
 @router.get("/")
@@ -38,16 +44,9 @@ def add_contract(
     return create_contract(db, data)
 
 
-@router.get("/{contract_id}")
-def fetch_contract(
-    contract_id: int,
-    db: Session = Depends(get_db),
-):
-    contract = (
-        db.query(Contract)
-        .filter(Contract.id == contract_id)
-        .first()
-    )
+@router.put("/contracts/{contract_id}")
+def edit_contract(contract_id: int, contract: ContractUpdate):
+    updated = update_contract(contract_id, contract)
 
     if not contract:
         return {
@@ -58,6 +57,9 @@ def fetch_contract(
     return contract
 
 
+@router.delete("/contracts/{contract_id}")
+def remove_contract(contract_id: int):
+    deleted = delete_contract(contract_id)
 @router.put("/{contract_id}")
 def edit_contract(
     contract_id: int,
@@ -66,6 +68,8 @@ def edit_contract(
 ):
     return update_contract(db, contract_id, data)
 
+
+    return deleted
 
 @router.delete("/{contract_id}")
 def remove_contract(
