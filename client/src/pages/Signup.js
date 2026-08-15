@@ -16,7 +16,14 @@ import {
 import AuthLeftPanel from "../components/AuthLeftPanel";
 import "../styles/Auth.css";
 import { API_BASE } from "../config/api";
-const ROLES = ["Employee"];
+const ROLES = [
+  "Administrator",
+  "Legal Manager",
+  "Compliance Officer",
+  "Contract Manager",
+  "Department Head",
+  "Employee",
+];
 
 function Signup() {
   const navigate = useNavigate();

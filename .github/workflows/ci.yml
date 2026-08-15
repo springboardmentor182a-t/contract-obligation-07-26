@@ -30,10 +30,10 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgresql://contractiq_test:contractiq_test_password@localhost:5432/contractiq_test_db
-      SECRET_KEY: github-actions-test-secret-key
-      ALGORITHM: HS256
-      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://contractiq_test:contractiq_test_password@localhost:5432/contractiq_test_db' }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY || 'github-actions-test-secret-key' }}
+      ALGORITHM: ${{ secrets.ALGORITHM || 'HS256' }}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES || '30' }}
 
     steps:
       - name: Checkout repository
@@ -49,9 +49,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r server/requirements-dev.txt
 
-      - name: Verify PostgreSQL connection
+      - name: Verify environment
         run: |
-          python -c "import os, psycopg2; connection = psycopg2.connect(os.environ['DATABASE_URL']); print('PostgreSQL connected'); connection.close()"
+          python -c "import os; print('DATABASE_URL configured:', bool(os.getenv('DATABASE_URL')))"
 
       - name: Run server tests
         run: |

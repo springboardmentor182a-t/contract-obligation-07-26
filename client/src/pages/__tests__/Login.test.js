@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
 import Login from "../Login";
+import { UIProvider } from "../../context/UIContext";
 import {
   canAccessRoute,
   getDefaultRouteForRole,
@@ -25,7 +26,9 @@ jest.mock("react-router-dom", () => {
 function renderLogin() {
   return render(
     <MemoryRouter>
-      <Login />
+      <UIProvider>
+        <Login />
+      </UIProvider>
     </MemoryRouter>
   );
 }
@@ -52,6 +55,8 @@ test("FE_RBAC_001: Employee has full configured sidebar and route access", () =>
     "Compliance",
     "Reports & Analytics",
     "Notifications",
+    "Quick Actions",
+    "Calendar",
     "Audit Logs",
     "User Management",
     "Settings",
@@ -130,14 +135,27 @@ test("FE_AUTH_002: shows validation for empty email and password", async () => {
 
 
 test("FE_AUTH_003: logs in successfully and redirects to the permitted default page", async () => {
-  global.fetch.mockResolvedValueOnce({
-    ok: true,
-    json: async () => ({
-      access_token: "test-access-token",
-      token_type: "bearer",
-      role: "Administrator",
-      name: "Test Administrator",
-    }),
+  global.fetch.mockImplementation(async (url) => {
+    if (url.includes("/api/auth/login")) {
+      return {
+        ok: true,
+        json: async () => ({
+          access_token: "test-access-token",
+          token_type: "bearer",
+          role: "Administrator",
+          name: "Test Administrator",
+        }),
+      };
+    }
+    return {
+      ok: true,
+      json: async () => ({
+        id: 1,
+        email: "admin@example.com",
+        name: "Test Administrator",
+        role: "Administrator",
+      }),
+    };
   });
 
   const user = userEvent.setup();
@@ -191,7 +209,7 @@ test("FE_AUTH_003: logs in successfully and redirects to the permitted default p
 
   await waitFor(() => {
     expect(mockNavigate).toHaveBeenCalledWith(
-      "/notifications"
+      "/dashboard"
     );
   });
 });

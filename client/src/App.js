@@ -1,5 +1,4 @@
-import "./assets/global.css";
-
+import React from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -38,6 +37,7 @@ import UserManagement from "./pages/UserManagement";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
+import "./assets/global.css";
 import {
   PrivacyPolicy,
   TermsOfService,
