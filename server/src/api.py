@@ -15,7 +15,7 @@ from src.health.controller import router as health_router
 from src.audit.controller import router as audit_router
 from src.compliance.controller import router as compliance_router
 from src.forecast.controller import router as forecast_router
-
+from src.public.controller import router as public_router
 api_router = APIRouter(prefix="/api")
 
 api_router.include_router(auth_router)
@@ -33,5 +33,5 @@ api_router.include_router(audit_router)
 api_router.include_router(obligations_router)
 api_router.include_router(compliance_router)
 api_router.include_router(forecast_router)
-
+api_router.include_router(public_router)
 

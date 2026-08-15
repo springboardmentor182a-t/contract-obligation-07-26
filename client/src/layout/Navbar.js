@@ -148,7 +148,7 @@ export default function Navbar({ onToggleSidebar }) {
     setOpen(false);
     setBellOpen(false);
     setQaOpen(false);
-    navigate("/login", { replace: true });
+    navigate("/", { replace: true });
   }
 
   return (

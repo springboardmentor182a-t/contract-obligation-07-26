@@ -22,7 +22,8 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Logout from "./pages/Logout";
-
+import Landing from "./pages/Landing";
+import GoogleCallback from "./features/authentication/GoogleCallback";
 // Application pages
 import Home from "./pages/Home";
 import RenewalDashboard from "./pages/RenewalDashboard";
@@ -50,7 +51,7 @@ function ProtectedRoute({ children }) {
   if (!authReady) return null;
 
   if (!authenticated || !isKnownRole(role)) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
   return children;
 }
@@ -76,7 +77,7 @@ function AuthorizedRoute({ path, children }) {
   const defaultRoute = getDefaultRouteForRole(role);
 
   if (!defaultRoute) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (!canAccessRoute(role, path)) {
@@ -91,7 +92,7 @@ function DefaultRoleRoute() {
   const role = getCurrentUserRole(user?.role);
   const defaultRoute = getDefaultRouteForRole(role);
 
-  return <Navigate to={defaultRoute || "/login"} replace />;
+  return <Navigate to={defaultRoute || "/"} replace />;
 }
 
 function HelpRoute() {
@@ -146,7 +147,9 @@ function App() {
     <BrowserRouter>
       <UIProvider>
         <Routes>
+          <Route path="/" element={<PublicOnlyRoute><Landing /></PublicOnlyRoute>} />
           <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+          <Route path="/auth/callback" element={<GoogleCallback />} />
           <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />

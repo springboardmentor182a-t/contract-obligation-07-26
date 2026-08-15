@@ -155,6 +155,18 @@ function Login() {
               onSubmit={handleLogin}
               className="premium-login-form"
             >
+              <button 
+                type="button" 
+                onClick={() => { window.location.href = 'http://localhost:8000/api/auth/google/login'; }}
+                className="w-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 mb-2"
+              >
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" /> 
+                Continue with Google
+              </button>
+              <div className="relative flex items-center justify-center mb-4">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200"></div></div>
+                <span className="relative bg-white px-4 text-xs text-slate-400 font-semibold uppercase tracking-wider">Or sign in with email</span>
+              </div>
               <div className="premium-field">
                 <label htmlFor="login-email">
                   Email Address

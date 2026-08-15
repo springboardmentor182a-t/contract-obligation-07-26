@@ -924,3 +924,99 @@ body {
 .password-requirements li {
   margin: 2px 0;
 }
+
+/* =========================
+   DARK MODE OVERRIDES
+========================= */
+html.dark .premium-login-page {
+  background: #020617;
+}
+
+html.dark .premium-login-right {
+  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 30%), #020617;
+}
+
+html.dark .premium-login-card,
+html.dark .signup-card {
+  background: #0f172a;
+  border-color: #1e293b;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+
+html.dark .premium-mobile-brand,
+html.dark .premium-form-header h2,
+html.dark .forgot-success-content h2 {
+  color: #f8fafc;
+}
+
+html.dark .premium-form-header p,
+html.dark .premium-field label,
+html.dark .remember-option,
+html.dark .premium-divider span,
+html.dark .premium-form-footer a,
+html.dark .premium-form-footer span,
+html.dark .signup-terms,
+html.dark .signup-login-text,
+html.dark .back-to-login-link,
+html.dark .forgot-success-content p,
+html.dark .password-requirements {
+  color: #94a3b8;
+}
+
+html.dark .premium-input-wrapper input,
+html.dark .premium-input-wrapper select {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+html.dark .premium-input-wrapper input:focus,
+html.dark .premium-input-wrapper select:focus {
+  background: #0f172a;
+  border-color: #3b82f6;
+}
+
+html.dark .premium-divider::before {
+  background: #334155;
+}
+
+html.dark .premium-divider span {
+  background: #0f172a;
+}
+
+html.dark .premium-create-account-button {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+html.dark .premium-create-account-button:hover {
+  background: #0f172a;
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+
+html.dark .password-toggle:hover {
+  background: #1e293b;
+  color: #cbd5e1;
+}
+
+html.dark .password-requirements {
+  background: #0f172a;
+  border-color: #1e293b;
+}
+
+html.dark .password-requirements p {
+  color: #e2e8f0;
+}
+
+html.dark .auth-page-icon {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html.dark .forgot-success-icon {
+  background: #064e3b;
+  border-color: #047857;
+  color: #34d399;
+}
