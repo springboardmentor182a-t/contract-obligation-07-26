@@ -1,16 +1,18 @@
 import React from 'react';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const API_BASE =
+  process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
 
-const GoogleAuthButton = ({ 
+const GoogleAuthButton = ({
   text = 'Continue with Google',
   disabled = false,
   className = ''
 }) => {
   const handleGoogleLogin = () => {
     if (disabled) return;
-    // Direct browser redirect to backend Google OAuth initiation URL (avoid CORS errors)
-    window.location.href = 'http://localhost:8000/api/auth/google/login';
+
+    // Direct browser redirect to backend Google OAuth initiation URL
+    window.location.href = `${API_BASE}/api/auth/google/login`;
   };
 
   return (
@@ -21,7 +23,10 @@ const GoogleAuthButton = ({
       className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-slate-700 border border-gray-300 shadow-sm hover:shadow active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed ${className}`}
     >
       {/* Standard Google Multicolored Vector Logo */}
-      <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
+      <svg
+        className="w-4 h-4 flex-shrink-0"
+        viewBox="0 0 24 24"
+      >
         <path
           fill="#4285F4"
           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -39,7 +44,10 @@ const GoogleAuthButton = ({
           d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
         />
       </svg>
-      <span className="font-medium tracking-tight text-slate-800">{text}</span>
+
+      <span className="font-medium tracking-tight text-slate-800">
+        {text}
+      </span>
     </button>
   );
 };
