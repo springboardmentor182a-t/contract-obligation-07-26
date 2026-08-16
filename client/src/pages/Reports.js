@@ -48,25 +48,42 @@ export default function Reports() {
       let filename = `${templateId}_report_${new Date().toISOString().slice(0, 10)}.csv`;
 
       if (templateId === "obligations") {
-        const res = await fetch("/api/obligations/", { headers });
+        const res = await fetch(`${API_BASE}/obligations/`, { headers });
+        if (!res.ok) throw new Error(`Obligations API error: ${res.status}`);
         const data = await res.json();
+        const rows = Array.isArray(data) ? data : [];
         csvContent = "ID,Title,Priority,Status,Due Date\n" + 
-          (Array.isArray(data) ? data.map(o => `"${o.id}","${o.title}","${o.priority}","${o.status}","${o.due_date}"`).join("\n") : "");
+          rows.map(o => `"${o.id}","${o.title || ''}","${o.priority || ''}","${o.status || ''}","${o.due_date || ''}"`).join("\n");
+
       } else if (templateId === "contracts") {
-        const res = await fetch("/api/contracts/", { headers });
+        const res = await fetch(`${API_BASE}/contracts`, { headers });
+        if (!res.ok) throw new Error(`Contracts API error: ${res.status}`);
         const data = await res.json();
-        csvContent = "ID,Contract Name,Vendor,Value,Status,End Date\n" + 
-          (Array.isArray(data) ? data.map(c => `"${c.id}","${c.contract_name || c.name}","${c.vendor || ''}","${c.contract_value || c.value || ''}","${c.status}","${c.end_date || ''}"`).join("\n") : "");
+        const rows = Array.isArray(data) ? data : [];
+        csvContent = "ID,Contract Name,Vendor,Department,Value,Status,Risk Level,Start Date,End Date\n" + 
+          rows.map(c => `"${c.id}","${c.contract_name || ''}","${c.vendor || ''}","${c.department || ''}","${c.contract_value || ''}","${c.status || ''}","${c.risk_level || ''}","${c.start_date || ''}","${c.end_date || ''}"` ).join("\n");
+
       } else if (templateId === "audit") {
-        const res = await fetch("/api/audit/logs", { headers });
+        const res = await fetch(`${API_BASE}/audit-logs`, { headers });
+        if (!res.ok) throw new Error(`Audit API error: ${res.status}`);
         const data = await res.json();
-        csvContent = "ID,Action,Module,Event Type,Description,Timestamp\n" + 
-          (Array.isArray(data) ? data.map(a => `"${a.id}","${a.action}","${a.module}","${a.event_type || ''}","${a.description || ''}","${a.created_at || a.timestamp || ''}"`).join("\n") : "");
+        const rows = Array.isArray(data) ? data : [];
+        csvContent = "ID,User,Action,Module,Event Type,Description,Timestamp\n" + 
+          rows.map(a => `"${a.id}","${a.user_name || ''}","${a.action || ''}","${a.module || ''}","${a.event_type || ''}","${a.description || ''}","${a.created_at || ''}"` ).join("\n");
+
       } else {
-        const res = await fetch("/api/compliance/controls", { headers });
+        // compliance
+        const res = await fetch(`${API_BASE}/compliance/controls`, { headers });
+        if (!res.ok) throw new Error(`Compliance API error: ${res.status}`);
         const data = await res.json();
+        const rows = Array.isArray(data) ? data : [];
         csvContent = "ID,Control Title,Status,Weight,Last Verified\n" + 
-          (Array.isArray(data) ? data.map(c => `"${c.id}","${c.title}","${c.status}","${c.weight}","${c.lastVerified || ''}"`).join("\n") : "");
+          rows.map(c => `"${c.id}","${c.title || ''}","${c.status || ''}","${c.weight || ''}","${c.lastVerified || ''}"` ).join("\n");
+      }
+
+      if (!csvContent || csvContent.split("\n").length <= 1) {
+        alert(`No data found for "${templateTitle}" report. Please add data first.`);
+        return;
       }
 
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -77,10 +94,12 @@ export default function Reports() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (err) {
       alert(`Could not generate report: ${err.message}`);
     }
   };
+
 
   const maxVolumeVal = Math.max(...monthlyVolume.map((m) => m.value), 1);
 

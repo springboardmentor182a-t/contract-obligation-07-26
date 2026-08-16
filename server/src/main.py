@@ -12,6 +12,11 @@ from src.database.core import initialize_database
 from src.logging import configure_logging
 from src.rate_limiter import init_rate_limiter
 
+from src.logging import configure_logging
+from src.rate_limiter import init_rate_limiter
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
 configure_logging()
 
 app = FastAPI(title="ContractIQ")
@@ -76,3 +81,29 @@ def root():
     return {
         "status": "ok"
     }
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    with open("validation_error.log", "w") as f:
+        f.write(f"Validation Error: {exc.errors()}\n")
+        f.write(f"Body: {exc.body}\n")
+    return JSONResponse(status_code=422, content={"detail": exc.errors(), "body": exc.body})
+
+from sqlalchemy.exc import IntegrityError
+
+@app.exception_handler(IntegrityError)
+async def integrity_exception_handler(request, exc):
+    import traceback
+    with open("integrity_error.log", "w") as f:
+        f.write(traceback.format_exc())
+    return JSONResponse(
+        status_code=400,
+        content={"detail": "A record with this unique identifier already exists. Please check contract number or other unique fields."}
+    )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    import traceback
+    with open("global_error.log", "w") as f:
+        f.write(traceback.format_exc())
+    return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})

@@ -88,21 +88,23 @@ export default function NewContractModal({
     try {
       setSaving(true);
 
+      const payload = { ...formData };
+      payload.contract_value = Number(payload.contract_value) || 0;
+
       if (contract) {
-        await updateContract(contract.id, formData);
+        await updateContract(contract.id, payload);
       } else {
-        await createContract(formData);
+        await createContract(payload);
       }
 
       onSuccess();
     } catch (err) {
       console.error(err);
-
-      alert(
-        contract
-          ? "Failed to update contract."
-          : "Failed to create contract."
-      );
+      const backendError = err.response?.data?.detail;
+      const errorMessage = backendError 
+        ? (typeof backendError === 'string' ? backendError : JSON.stringify(backendError))
+        : (contract ? "Failed to update contract." : "Failed to create contract.");
+      alert(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -175,21 +177,27 @@ export default function NewContractModal({
               onChange={handleChange}
             />
 
-            <input
-              type="date"
-              name="start_date"
-              value={formData.start_date}
-              onChange={handleChange}
-              required
-            />
+            <div className="input-group" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <label style={{ fontSize: "0.85rem", opacity: 0.8 }}>Start Date</label>
+              <input
+                type="date"
+                name="start_date"
+                value={formData.start_date}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-            <input
-              type="date"
-              name="end_date"
-              value={formData.end_date}
-              onChange={handleChange}
-              required
-            />
+            <div className="input-group" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <label style={{ fontSize: "0.85rem", opacity: 0.8 }}>End Date</label>
+              <input
+                type="date"
+                name="end_date"
+                value={formData.end_date}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
             <input
               name="owner"

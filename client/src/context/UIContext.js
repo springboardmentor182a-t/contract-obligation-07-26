@@ -96,6 +96,7 @@ export function UIProvider({ children }) {
         name: data.full_name || data.name || stored.name || data.email,
         role: data.role,
         email: data.email || stored.email || "",
+        orgName: data.org_name || "Acme Corp",
       };
 
       setUser(refreshed);

@@ -94,86 +94,72 @@ def get_predictions(db: Session = Depends(get_db)):
                     )
                 )
 
-    # Standard fallback predictions if DB is sparse
-    if len(predictions) < 3:
-        predictions.extend([
-            PredictionItem(
-                id="pred-1",
-                category="Renewal Delay",
-                title="Predicted Renewal Delay: Acme Cloud SLA",
-                risk_level="High",
-                probability=84,
-                affected_item="Acme Cloud Solutions",
-                impact_days=21,
-                predicted_delay_reason="Historical 3-week legal review turnaround in Q3.",
-                preventive_action="Initiate pre-approval workflow 30 days ahead of cutoff.",
-            ),
-            PredictionItem(
-                id="pred-2",
-                category="Overdue Obligation",
-                title="Forecasted Overdue: ISO 27001 Security Audit",
-                risk_level="Critical",
-                probability=91,
-                affected_item="InfoSec Department",
-                impact_days=12,
-                predicted_delay_reason="Unassigned owner and missing vendor SOC 2 documentation.",
-                preventive_action="Assign compliance lead and auto-request SOC 2 report via vendor portal.",
-            ),
-            PredictionItem(
-                id="pred-3",
-                category="Compliance Risk",
-                title="GDPR Data Processing Addendum Gap",
-                risk_level="Medium",
-                probability=68,
-                affected_item="European Operations",
-                impact_days=15,
-                predicted_delay_reason="Sub-processor clause updates pending regulatory enforcement.",
-                preventive_action="Dispatch standard DPA amendment template to affected vendors.",
-            ),
-            PredictionItem(
-                id="pred-4",
-                category="Renewal Delay",
-                title="SaaS License Volume Escalation Risk",
-                risk_level="High",
-                probability=76,
-                affected_item="Salesforce Enterprise Suite",
-                impact_days=14,
-                predicted_delay_reason="Seat utilization exceeded threshold by 18%; true-up negotiation expected.",
-                preventive_action="Conduct seat audit prior to contract renewal window.",
-            ),
-        ])
+    # Only return predictions from DB, no hardcoded fallbacks
 
     return predictions
 
 
 @router.get("/alerts", response_model=List[EarlyWarningAlert])
 def get_early_warning_alerts(db: Session = Depends(get_db)):
-    return [
-        EarlyWarningAlert(
-            id="warn-1",
-            severity="Critical",
-            title="High Probability of Overdue Deliverable in 7 Days",
-            description="AI trend analysis detected 3 obligations under 'Data Migration Contract' lagging schedule.",
-            metric="88% Breach Probability",
-            timeframe="Next 7 Days",
-            recommended_action="Reassign primary milestone owner and escalate to Legal Manager.",
-        ),
-        EarlyWarningAlert(
-            id="warn-2",
-            severity="Warning",
-            title="Renewal Window Closing: 4 Key Subscriptions",
-            description="Notice period expiring soon for contracts without auto-renewal confirmation.",
-            metric="4 Contracts ($142,000 total value)",
-            timeframe="Within 14 Days",
-            recommended_action="Execute notice of intent to renew or terminate before auto-extension.",
-        ),
-        EarlyWarningAlert(
-            id="warn-3",
-            severity="Info",
-            title="Vendor Compliance Score Drop Detected",
-            description="Vendor 'DataSync Corp' compliance checks dropped below 80% threshold.",
-            metric="74% Score (-12%)",
-            timeframe="Immediate Action Recommended",
-            recommended_action="Request updated liability insurance certificate.",
-        ),
-    ]
+    alerts = []
+    
+    # 1. Overdue Obligations Alert
+    overdue_obs = db.execute(
+        select(ObligationModel).where(ObligationModel.status == "overdue").limit(3)
+    ).scalars().all()
+    
+    if overdue_obs:
+        alerts.append(
+            EarlyWarningAlert(
+                id="warn-overdue-obs",
+                severity="Critical",
+                title=f"High Probability of Overdue Deliverable",
+                description=f"AI trend analysis detected {len(overdue_obs)} obligations lagging schedule.",
+                metric=f"{len(overdue_obs)} Items Overdue",
+                timeframe="Immediate Action Required",
+                recommended_action="Reassign primary milestone owner and escalate.",
+            )
+        )
+        
+    # 2. Expiring Contracts Alert
+    from datetime import date, timedelta
+    today = date.today()
+    target_date = today + timedelta(days=14)
+    
+    expiring_contracts = db.execute(
+        select(Contract).where(Contract.end_date <= target_date, Contract.end_date >= today)
+    ).scalars().all()
+    
+    if expiring_contracts:
+        total_value = sum(c.contract_value for c in expiring_contracts if c.contract_value)
+        alerts.append(
+            EarlyWarningAlert(
+                id="warn-expiring-contracts",
+                severity="Warning",
+                title=f"Renewal Window Closing: {len(expiring_contracts)} Contracts",
+                description="Notice period expiring soon for contracts.",
+                metric=f"{len(expiring_contracts)} Contracts (${total_value:,.2f})",
+                timeframe="Within 14 Days",
+                recommended_action="Execute notice of intent to renew or terminate.",
+            )
+        )
+        
+    # 3. Compliance Risk Alert
+    failed_controls = db.execute(
+        select(ComplianceControl).where(ComplianceControl.status == "FAILED").limit(1)
+    ).scalars().first()
+    
+    if failed_controls:
+        alerts.append(
+            EarlyWarningAlert(
+                id=f"warn-comp-{failed_controls.id}",
+                severity="Info",
+                title="Vendor Compliance Drop Detected",
+                description=f"Compliance check failed for {failed_controls.control_id}.",
+                metric="Control Failed",
+                timeframe="Immediate Action Recommended",
+                recommended_action="Request updated compliance certificate or audit.",
+            )
+        )
+        
+    return alerts

@@ -10,7 +10,7 @@ from sqlalchemy import (
     func,
     Date,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from src.database.core import Base
 
@@ -33,6 +33,8 @@ class User(Base):
     status = Column(String, default="Active")
     avatar_url = Column(String(1024), nullable=True)
     is_active = Column(Boolean, default=True)
+    reset_otp = Column(String(6), nullable=True)
+    reset_otp_expires_at = Column(DateTime(timezone=True), nullable=True)
 
     created_at = Column(
         DateTime(timezone=True),
@@ -135,6 +137,73 @@ class Notification(Base):
     )
 
 
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+    __table_args__ = {"schema": "public"}
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(
+        Integer,
+        ForeignKey("public.users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+    )
+    plan_name = Column(String(100), nullable=False, default="Free Plan")
+    plan_desc = Column(String(255), nullable=True, default="Basic access")
+    price = Column(String(50), nullable=False, default="$0")
+    status = Column(String(50), nullable=False, default="Active")
+    seats_used = Column(Integer, default=1)
+    seats_total = Column(Integer, default=5)
+    storage_used = Column(Integer, default=0) # in GB
+    storage_total = Column(Integer, default=10) # in GB
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User", backref="subscription")
+
+
+class PaymentMethod(Base):
+    __tablename__ = "payment_methods"
+    __table_args__ = {"schema": "public"}
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(
+        Integer,
+        ForeignKey("public.users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+    )
+    card_type = Column(String(50), nullable=False, default="VISA")
+    last_four = Column(String(4), nullable=False, default="0000")
+    expiry_date = Column(String(7), nullable=False, default="12/2099")
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User", backref="payment_method")
+
+
+class Invoice(Base):
+    __tablename__ = "invoices"
+    __table_args__ = {"schema": "public"}
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(
+        Integer,
+        ForeignKey("public.users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    invoice_id = Column(String(100), nullable=False, unique=True)
+    date = Column(String(50), nullable=False)
+    amount = Column(String(50), nullable=False)
+    status = Column(String(50), nullable=False, default="Paid")
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", backref="invoices")
+
+
 class ObligationModel(Base):
     __tablename__ = "obligations"
     __table_args__ = {"schema": "public"}
@@ -204,7 +273,7 @@ class ObligationModel(Base):
 
     contract = relationship(
         "Contract",
-        backref="obligations",
+        backref=backref("obligations", cascade="all, delete-orphan"),
     )
 
     owner = relationship(

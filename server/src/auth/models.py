@@ -4,7 +4,6 @@ from pydantic import BaseModel, EmailStr
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
-    role: str
 
 
 class RegisterRequest(BaseModel):
@@ -21,13 +20,15 @@ class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
+class VerifyOTPRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
+
 class ResetPasswordRequest(BaseModel):
-    token: str
+    email: EmailStr
+    otp: str
     new_password: str
-
-
-class ResetTokenRequest(BaseModel):
-    token: str
 
 
 class TokenResponse(BaseModel):

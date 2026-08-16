@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Sparkles, AlertTriangle, AlertCircle, Clock, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getAuthHeaders } from "../utils/auth";
+import { API_BASE } from "../config/api";
 
 export default function AIRecommendations() {
   const [renewals, setRenewals] = useState([]);
@@ -10,7 +11,7 @@ export default function AIRecommendations() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/renewals/", {
+        const res = await fetch(`${API_BASE}/renewals/`, {
           headers: getAuthHeaders(),
         });
         if (res.ok) {

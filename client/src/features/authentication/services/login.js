@@ -1,30 +1,30 @@
 import { API_BASE } from "../../../config/api";
 
-export async function login(email, password, role = "Administrator") {
+export async function login(email, password) {
   if (!email || !password) throw new Error("Enter an email and password.");
-  
+
   const res = await fetch(`${API_BASE}/auth/login`, {
-    method: "POST", 
+    method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, role }),
+    body: JSON.stringify({ email, password }),
   });
-  
+
   const data = await res.json();
-  
+
   if (!res.ok) {
     throw new Error(data.detail || "Login failed");
   }
-  
+
   // Store auth data
   localStorage.setItem("token", data.access_token);
   localStorage.setItem("role", data.role);
   localStorage.setItem("name", data.name || email.split("@")[0]);
-  
-  return { 
-    name: data.name || email.split("@")[0], 
-    email, 
+
+  return {
+    name: data.name || email.split("@")[0],
+    email,
     role: data.role,
-    token: data.access_token 
+    token: data.access_token
   };
 }
 

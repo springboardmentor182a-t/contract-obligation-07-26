@@ -34,7 +34,6 @@ export const sidebarPermissions = {
     "Compliance",
     "Reports & Analytics",
     "Notifications",
-    "User Management",
     "Settings",
   ],
 
@@ -57,9 +56,9 @@ export const sidebarPermissions = {
     "Settings",
   ],
 
-  "Department Head": [...allSidebarModules],
+  "Department Head": allSidebarModules.filter(m => m !== "User Management"),
 
-  Employee: [...allSidebarModules],
+  Employee: allSidebarModules.filter(m => m !== "User Management"),
 };
 
 // Routes that are always accessible to any authenticated user (not sidebar-gated)

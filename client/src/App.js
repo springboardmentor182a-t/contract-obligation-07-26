@@ -156,7 +156,12 @@ function PublicChatbotWidget() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <UIProvider>
         <Routes>
           <Route path="/" element={<PublicOnlyRoute><Landing /></PublicOnlyRoute>} />

@@ -113,4 +113,7 @@ class ChatbotService:
                 response=response.text
             )
         except Exception as e:
+            import traceback
+            with open("chatbot_error_log.txt", "w") as f:
+                traceback.print_exc(file=f)
             raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="AI Service failed to generate a response.") from e

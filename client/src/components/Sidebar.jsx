@@ -89,10 +89,10 @@ function Sidebar({ isCollapsed, width, onToggle, onResizeStart }) {
         <div className="mx-4 mt-10 flex items-center justify-between rounded-2xl border border-slate-800 bg-[#111B2A] px-4 py-4 shadow-inner shadow-slate-950/20">
           <div className="flex items-center gap-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm font-bold">
-              A
+              {(user?.orgName || "Acme Corp").charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="text-sm font-bold leading-5">Acme Corp</p>
+              <p className="text-sm font-bold leading-5 truncate max-w-[120px]">{user?.orgName || "Acme Corp"}</p>
               <p className="text-xs text-slate-500">Enterprise Plan</p>
             </div>
           </div>

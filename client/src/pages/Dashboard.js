@@ -38,12 +38,17 @@ export default function Dashboard() {
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
+    const API_BASE =
+      (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
+      process.env.REACT_APP_API_BASE_URL ||
+      "https://contract-obligation-demo-group-c.onrender.com/api";
+
     async function load() {
       try {
         const [cRes, oRes, rRes] = await Promise.allSettled([
-          fetch("/api/contracts", { headers }),
-          fetch("/api/obligations/", { headers }),
-          fetch("/api/renewals/", { headers }),
+          fetch(`${API_BASE}/contracts`, { headers }),
+          fetch(`${API_BASE}/obligations/`, { headers }),
+          fetch(`${API_BASE}/renewals/`, { headers }),
         ]);
 
         let contracts = [], obls = [], renewals = [];

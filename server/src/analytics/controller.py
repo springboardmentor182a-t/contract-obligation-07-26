@@ -9,6 +9,8 @@ from src.database.core import get_db
 from src.database.models import (
     AnalyticsSnapshot, MonthlyVolume, User, Notification
 )
+from src.contract_repository.models import Contract
+from src.renewals.models import Renewal
 
 router = APIRouter(
     prefix="/analytics",
@@ -57,9 +59,28 @@ def get_metrics(db: Session = Depends(get_db)):
 
 @router.get("/monthly-volume", response_model=List[MonthlyVolumeResponse])
 def get_monthly_volume(db: Session = Depends(get_db)):
-    result = db.execute(select(MonthlyVolume).order_by(MonthlyVolume.sort_order.asc()))
-    items = result.scalars().all()
-    return [MonthlyVolumeResponse(month=item.month, value=item.value) for item in items]
+    import datetime
+    
+    today = datetime.date.today()
+    months = []
+    for i in range(6, -1, -1):
+        m = today.month - i
+        y = today.year
+        if m <= 0:
+            m += 12
+            y -= 1
+        months.append(datetime.date(y, m, 1).strftime("%b"))
+        
+    counts = {m: 0 for m in months}
+    
+    contracts = db.execute(select(Contract.created_at)).scalars().all()
+    for dt in contracts:
+        if dt:
+            m_str = dt.strftime("%b")
+            if m_str in counts:
+                counts[m_str] += 1
+                
+    return [MonthlyVolumeResponse(month=m, value=counts[m]) for m in months]
 
 
 @router.get("/dashboard-summary", response_model=DashboardSummaryResponse)
@@ -94,18 +115,28 @@ def get_dashboard_summary(
     for snap in db.execute(select(AnalyticsSnapshot)).scalars().all():
         snapshots[snap.label.lower().replace(" ", "_")] = snap.value
 
-    # Monthly volume → contract counts
-    volumes = db.execute(
-        select(MonthlyVolume).order_by(MonthlyVolume.sort_order.asc())
-    ).scalars().all()
-    total_contracts = sum(v.value for v in volumes) if volumes else 0
+    # Fetch actual contract metrics
+    total_contracts = db.execute(select(func.count()).select_from(Contract)).scalar() or 0
 
-    # Derive sub-counts from the total (real data would come from a contracts table)
-    active_contracts  = int(total_contracts * 0.78)
-    expired_contracts = int(total_contracts * 0.13)
-    pending_approvals = int(total_contracts * 0.09)
-    high_risk         = int(total_contracts * 0.13)
-    renewals_due      = int(total_contracts * 0.05)
+    active_contracts = db.execute(
+        select(func.count()).select_from(Contract).where(func.lower(Contract.status) == "active")
+    ).scalar() or 0
+
+    expired_contracts = db.execute(
+        select(func.count()).select_from(Contract).where(func.lower(Contract.status) == "expired")
+    ).scalar() or 0
+
+    pending_approvals = db.execute(
+        select(func.count()).select_from(Contract).where(func.lower(Contract.status) == "pending")
+    ).scalar() or 0
+
+    high_risk = db.execute(
+        select(func.count()).select_from(Contract).where(func.lower(Contract.risk_level) == "high")
+    ).scalar() or 0
+
+    renewals_due = db.execute(
+        select(func.count()).select_from(Renewal).where(func.lower(Renewal.status) != "completed")
+    ).scalar() or 0
 
     # Compliance score from snapshot
     compliance_score = snapshots.get("compliance_score", "84%")

@@ -32,6 +32,9 @@ export default function Notifications() {
         const token = localStorage.getItem("token") || sessionStorage.getItem("token");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
+        // Auto-generate notifications from DB data first
+        await fetch(`${API_BASE}/notifications/generate`, { method: "POST", headers });
+
         const [resNotifs, resRenewals] = await Promise.all([
           fetch(`${API_BASE}/notifications`, { headers }),
           fetch(`${API_BASE}/renewals/upcoming`, { headers })
@@ -53,6 +56,7 @@ export default function Notifications() {
     loadNotifications();
   }, [setNotificationCount]);
 
+
   // Sync count on changes
   useEffect(() => {
     const unread = notifs.filter(n => !n.isRead && !n.is_read).length;
@@ -65,7 +69,7 @@ export default function Notifications() {
 
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, isRead: true, is_read: true } : n));
     try {
-      await fetch(`/api/notifications/${id}/read`, { method: "PATCH", headers });
+      await fetch(`${API_BASE}/notifications/${id}/read`, { method: "PATCH", headers });
     } catch (e) {
       console.warn("Could not sync read status with backend");
     }
@@ -81,7 +85,7 @@ export default function Notifications() {
       setNotifs(prev => prev.filter(n => n.id !== id));
       setDismissingIds(prev => prev.filter(dId => dId !== id));
       try {
-        await fetch(`/api/notifications/${id}`, { method: "DELETE", headers });
+        await fetch(`${API_BASE}/notifications/${id}`, { method: "DELETE", headers });
       } catch (e) {
         console.warn("Could not delete from backend");
       }

@@ -60,7 +60,8 @@ function OrganizationManagement() {
             });
         } catch (error) {
             console.error("Failed to create organization:", error);
-            alert("Failed to create organization.");
+            const detail = error.response?.data?.detail || "Failed to create organization.";
+            alert(detail);
         }
     };
 

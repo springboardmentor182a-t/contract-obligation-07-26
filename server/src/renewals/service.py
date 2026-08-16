@@ -43,8 +43,10 @@ class RenewalService:
         return (target_date - date.today()).days
 
     def dashboard(self, db):
-        renewals = self.repo.get_all(db)
-        total_contracts = len(renewals)
+        from src.contract_repository.models import Contract
+        
+        contracts = db.query(Contract).all()
+        total_contracts = len(contracts)
 
         expiring30 = 0
         expiring60 = 0
@@ -52,11 +54,12 @@ class RenewalService:
         reminders = 0
         contracts_payload = []
 
-        for renewal in renewals:
-            days_left = self._days_until(getattr(renewal, "expiry_date", None))
+        for contract in contracts:
+            days_left = self._days_until(getattr(contract, "end_date", None))
             if days_left is None:
                 continue
 
+            # Identify expiring contracts
             if 0 <= days_left <= 30:
                 expiring30 += 1
             elif 31 <= days_left <= 60:
@@ -67,19 +70,28 @@ class RenewalService:
             if days_left <= 60:
                 reminders += 1
 
+            # Determine confidence based on risk_level
+            confidence = 50
+            if contract.risk_level == "High":
+                confidence = 88
+            elif contract.risk_level == "Medium":
+                confidence = 72
+            elif contract.risk_level == "Low":
+                confidence = 35
+
             contracts_payload.append(
                 {
-                    "id": renewal.id,
-                    "contract_name": renewal.contract_name,
-                    "vendor": renewal.vendor,
-                    "status": renewal.status or "Upcoming",
-                    "approval_status": renewal.approval_status,
-                    "contract_value": renewal.contract_value,
-                    "confidence": renewal.confidence,
-                    "recommendation": renewal.recommendation,
-                    "expiry_date": renewal.expiry_date.isoformat() if renewal.expiry_date else None,
-                    "renewal_date": renewal.renewal_date.isoformat() if renewal.renewal_date else None,
-                    "department": renewal.department,
+                    "id": contract.id,
+                    "contract_name": contract.contract_name,
+                    "vendor": contract.vendor,
+                    "status": contract.status or "Upcoming",
+                    "approval_status": "Pending" if contract.status == "Action Needed" else "Approved",
+                    "contract_value": contract.contract_value,
+                    "confidence": confidence,
+                    "recommendation": "Review renewal strategy based on risk",
+                    "expiry_date": contract.end_date.isoformat() if contract.end_date else None,
+                    "renewal_date": None,
+                    "department": contract.department,
                 }
             )
 
@@ -98,42 +110,39 @@ class RenewalService:
             {"month": "Dec", "contracts": 0},
         ]
 
-        for renewal in renewals:
-            if renewal.expiry_date:
-                month_name = renewal.expiry_date.strftime("%b")
+        for contract in contracts:
+            if contract.end_date:
+                month_name = contract.end_date.strftime("%b")
                 for entry in pipeline:
                     if entry["month"] == month_name:
                         entry["contracts"] += 1
                         break
 
         predictions = []
-        for renewal in renewals:
-            confidence = renewal.confidence or 0
-            if confidence >= 85:
-                badge = "High Confidence"
-            elif confidence >= 70:
-                badge = "Recommended"
-            else:
-                badge = "Moderate"
+        for contract in contracts:
+            if not contract.end_date:
+                continue
+            
+            days_left = self._days_until(contract.end_date)
+            # Generate predictions for contracts expiring within 180 days with high/medium risk
+            if 0 <= days_left <= 180 and contract.risk_level in ["High", "Medium"]:
+                confidence = 88 if contract.risk_level == "High" else 72
+                
+                if confidence >= 85:
+                    badge = "High Confidence"
+                elif confidence >= 70:
+                    badge = "Recommended"
+                else:
+                    badge = "Moderate"
 
-            predictions.append(
-                {
-                    "id": f"CTR-{renewal.id:03d}",
-                    "title": renewal.recommendation or "Review renewal strategy",
-                    "confidence": confidence,
-                    "badge": badge,
-                }
-            )
-
-        if not predictions:
-            predictions.append(
-                {
-                    "id": "AUTO-001",
-                    "title": "Add a renewal record to start insights",
-                    "confidence": 0,
-                    "badge": "Pending",
-                }
-            )
+                predictions.append(
+                    {
+                        "id": f"CTR-{contract.id:03d}",
+                        "title": f"Review {contract.contract_name} renewal strategy",
+                        "confidence": confidence,
+                        "badge": badge,
+                    }
+                )
 
         return {
             "summary": {

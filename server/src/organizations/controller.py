@@ -19,8 +19,9 @@ def list_organizations(
 def create_organization(
     data: OrganizationCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    return OrganizationService.create_organization(db, data)
+    return OrganizationService.create_organization(db, data, current_user)
 
 @router.get("/{org_id}", response_model=OrganizationResponse)
 def get_organization(

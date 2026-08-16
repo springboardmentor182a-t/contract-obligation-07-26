@@ -8,7 +8,8 @@ export default function ContractActivityChart() {
   useEffect(() => {
     async function loadData() {
       try {
-        const res = await fetch("/api/analytics/monthly-volume", {
+        const API_BASE = (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) || process.env.REACT_APP_API_BASE_URL || "https://contract-obligation-demo-group-c.onrender.com/api";
+        const res = await fetch(`${API_BASE}/analytics/monthly-volume`, {
           headers: getAuthHeaders(),
         });
         if (res.ok) {

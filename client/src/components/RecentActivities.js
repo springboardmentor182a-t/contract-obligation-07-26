@@ -12,12 +12,12 @@ const ICON_MAP = {
 };
 
 function getIconInfo(item) {
-  const t = (item.category || item.cat || "").toLowerCase();
+  const t = (item.category || item.cat || item.event_type || item.module || item.action || "").toLowerCase();
   if (t.includes("contract")) return ICON_MAP.contract;
   if (t.includes("notification")) return ICON_MAP.notification;
-  if (t.includes("compliance")) return ICON_MAP.compliance;
-  if (t.includes("complete") || t.includes("done")) return ICON_MAP.complete;
-  if (t.includes("overdue") || t.includes("expir")) return ICON_MAP.overdue;
+  if (t.includes("compliance") || t.includes("security") || t.includes("audit")) return ICON_MAP.compliance;
+  if (t.includes("complete") || t.includes("done") || t.includes("approve") || t.includes("register") || t.includes("create")) return ICON_MAP.complete;
+  if (t.includes("overdue") || t.includes("expir") || t.includes("delete") || t.includes("reject")) return ICON_MAP.overdue;
   return ICON_MAP.default;
 }
 
@@ -43,12 +43,14 @@ export default function RecentActivities() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/notifications", {
+        const API_BASE = (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) || process.env.REACT_APP_API_BASE_URL || "https://contract-obligation-demo-group-c.onrender.com/api";
+        const res = await fetch(`${API_BASE}/audit-logs`, {
           headers: getAuthHeaders(),
         });
         if (res.ok) {
           const data = await res.json();
-          setActivities(data.slice(0, 6));
+          const list = Array.isArray(data) ? data : (data.logs || []);
+          setActivities(list.slice(0, 6));
         }
       } catch (err) {
         console.warn("Failed to load recent activities", err);
@@ -65,7 +67,7 @@ export default function RecentActivities() {
         <h3 className="chart-card-title">Recent Activity</h3>
         <button
           className="chart-header-link"
-          onClick={() => (window.location.href = "/notifications")}
+          onClick={() => (window.location.href = "/audit")}
         >
           View all
         </button>
@@ -89,9 +91,12 @@ export default function RecentActivities() {
                 <Icon className="activity-row-icon" size={16} />
               </div>
               <div className="activity-info-wrapper">
-                <p className="activity-description">{item.title}</p>
+                <p className="activity-description">
+                  {item.action || item.title || item.description}
+                  {item.user_name && item.user_name !== "System" ? ` by ${item.user_name}` : ""}
+                </p>
                 <span className="activity-timestamp">
-                  {formatTime(item.time || item.created_at)}
+                  {formatTime(item.created_at || item.time)}
                 </span>
               </div>
             </div>

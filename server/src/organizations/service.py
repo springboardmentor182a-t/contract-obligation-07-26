@@ -36,7 +36,7 @@ class OrganizationService:
         return org
 
     @staticmethod
-    def create_organization(db: Session, data: OrganizationCreate):
+    def create_organization(db: Session, data: OrganizationCreate, current_user: User):
         existing_org = db.query(OrganizationModel).filter(OrganizationModel.offical_email == data.offical_email).first()
         if existing_org:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="An organization with this official email already exists.")
@@ -58,7 +58,7 @@ class OrganizationService:
         db.refresh(new_org)
         
         OrganizationService.log_audit(
-            db, "Administrator", "Create Organization", "Organizations", f"Created organization: {new_org.company_name or 'N/A'}"
+            db, current_user.id, "Create Organization", "Organizations", f"Created organization: {new_org.company_name or 'N/A'}"
         )
         return new_org
 

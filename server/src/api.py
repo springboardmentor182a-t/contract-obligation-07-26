@@ -18,6 +18,7 @@ from src.forecast.controller import router as forecast_router
 from src.public.controller import router as public_router
 from src.organizations.controller import router as organizations_router
 from src.chatbot.controller import router as chatbot_router
+from src.billing.controller import router as billing_router
 
 api_router = APIRouter(prefix="/api")
 
@@ -39,5 +40,5 @@ api_router.include_router(obligations_router)
 api_router.include_router(compliance_router)
 api_router.include_router(forecast_router)
 api_router.include_router(public_router)
-
+api_router.include_router(billing_router)
 

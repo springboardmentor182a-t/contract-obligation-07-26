@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.future import select
 
 from src.audit.service import create_audit_log
-from src.auth.dependencies import USER_MANAGEMENT_ROLES, require_roles
+from src.auth.dependencies import USER_MANAGEMENT_ROLES, ALL_ROLES, require_roles
 from src.auth.security import hash_password
 from src.database.core import get_db
 from src.database.models import User, UserInvitation
@@ -20,13 +20,15 @@ from .schemas import (
 router = APIRouter(
     prefix="/users",
     tags=["Users"],
-    dependencies=[Depends(require_roles(*USER_MANAGEMENT_ROLES))],
 )
 logger = logging.getLogger(__name__)
 
 
 @router.get("", response_model=List[UserResponse])
-def list_users(db=Depends(get_db)):
+def list_users(
+    db=Depends(get_db),
+    current_user=Depends(require_roles(*ALL_ROLES)),
+):
     result = db.execute(select(User))
     users = result.scalars().all()
 
@@ -48,6 +50,7 @@ def list_users(db=Depends(get_db)):
 def invite_user(
     payload: UserInviteRequest,
     db=Depends(get_db),
+    admin=Depends(require_roles(*USER_MANAGEMENT_ROLES)),
 ):
     # Check if user already exists
     result = db.execute(
@@ -156,13 +159,16 @@ ContractIQ Legal Operations Team
         role=new_invitation.role,
         department=new_invitation.department or "",
         status=new_invitation.status,
-        invitedAt=new_invitation.created_at.isoformat(),
+        invitedAt=new_invitation.created_at.isoformat() if new_invitation.created_at else "",
     )
 
 
 
 @router.get("/invitations", response_model=List[UserInviteResponse])
-def list_invitations(db=Depends(get_db)):
+def list_invitations(
+    db=Depends(get_db),
+    admin=Depends(require_roles(*USER_MANAGEMENT_ROLES)),
+):
     result = db.execute(
         select(UserInvitation).order_by(UserInvitation.created_at.desc())
     )
@@ -175,10 +181,59 @@ def list_invitations(db=Depends(get_db)):
             role=inv.role,
             department=inv.department or "",
             status=inv.status,
-            invitedAt=inv.created_at.isoformat(),
+            invitedAt=inv.created_at.isoformat() if inv.created_at else "",
         )
         for inv in invitations
     ]
+
+
+@router.delete("/invitations/{invitation_id}")
+def revoke_invitation(
+    invitation_id: int,
+    db=Depends(get_db),
+    admin=Depends(require_roles(*USER_MANAGEMENT_ROLES)),
+):
+    result = db.execute(
+        select(UserInvitation).where(UserInvitation.id == invitation_id)
+    )
+    invitation = result.scalar_one_or_none()
+
+    if not invitation:
+        raise HTTPException(
+            status_code=404,
+            detail="Invitation not found",
+        )
+
+    if invitation.status == "Accepted":
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot revoke an accepted invitation",
+        )
+
+    # Delete the user associated with this invitation
+    user_result = db.execute(
+        select(User).where(User.email == invitation.email)
+    )
+    user = user_result.scalar_one_or_none()
+
+    deleted_email = invitation.email
+
+    if user:
+        db.delete(user)
+    
+    db.delete(invitation)
+    db.commit()
+
+    create_audit_log(
+        db=db,
+        user_id=None,
+        event_type="DELETE",
+        action="Invitation Revoked",
+        module="User Management",
+        description=f"Revoked invitation for email: {deleted_email}",
+    )
+
+    return {"message": "Invitation revoked successfully"}
 
 
 @router.put("/{user_id}", response_model=UserResponse)
@@ -186,6 +241,7 @@ def update_user(
     user_id: int,
     payload: UserUpdateRequest,
     db=Depends(get_db),
+    admin=Depends(require_roles(*USER_MANAGEMENT_ROLES)),
 ):
     result = db.execute(
         select(User).where(User.id == user_id)
@@ -239,6 +295,7 @@ def update_user(
 def delete_user(
     user_id: int,
     db=Depends(get_db),
+    admin=Depends(require_roles(*USER_MANAGEMENT_ROLES)),
 ):
     result = db.execute(
         select(User).where(User.id == user_id)

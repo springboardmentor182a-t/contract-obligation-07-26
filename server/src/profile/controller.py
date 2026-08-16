@@ -23,6 +23,11 @@ class ProfileUpdate(BaseModel):
     avatar_url: Optional[str] = None
 
 
+class PasswordUpdate(BaseModel):
+    current: str
+    new: str
+
+
 class ProfileResponse(BaseModel):
     id: int
     full_name: str
@@ -34,6 +39,7 @@ class ProfileResponse(BaseModel):
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
     updated_at: Optional[datetime] = None
+    org_name: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -50,6 +56,7 @@ def _build_response(user: User) -> ProfileResponse:
         bio=user.bio,
         avatar_url=user.avatar_url,
         updated_at=user.updated_at,
+        org_name=user.settings.org_name if user.settings else "Acme Corp",
     )
 
 
@@ -94,3 +101,36 @@ def update_profile(
     )
 
     return _build_response(current_user)
+
+
+# ── POST /api/profile/security/password ──────────────────────────────────────
+@router.post("/security/password")
+def update_password(
+    payload: PasswordUpdate,
+    current_user: User = Depends(require_roles(*ALL_ROLES)),
+    db: Session = Depends(get_db),
+):
+    from src.auth.security import verify_password, hash_password
+    
+    if not verify_password(payload.current, current_user.password):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+    
+    current_user.password = hash_password(payload.new)
+    
+    try:
+        db.add(current_user)
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to update password") from exc
+
+    create_audit_log(
+        db=db,
+        user_id=current_user.id,
+        event_type="UPDATE",
+        action="Password Changed",
+        module="Security",
+        description=f"User {current_user.email} changed their password."
+    )
+
+    return {"detail": "Password updated successfully"}

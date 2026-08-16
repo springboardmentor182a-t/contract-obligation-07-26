@@ -38,7 +38,8 @@ export default function Home() {
     async function loadSummary() {
       try {
         const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
-        const res = await fetch("/api/analytics/dashboard-summary", {
+        const API_BASE = (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) || process.env.REACT_APP_API_BASE_URL || "https://contract-obligation-demo-group-c.onrender.com/api";
+        const res = await fetch(`${API_BASE}/analytics/dashboard-summary`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (res.ok) {

@@ -6,7 +6,7 @@ from sqlalchemy import (
     Integer,
     String,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from src.database.core import Base
 
@@ -46,5 +46,5 @@ class Renewal(Base):
 
     contract = relationship(
         "Contract",
-        backref="renewals",
+        backref=backref("renewals", cascade="all, delete-orphan"),
     )

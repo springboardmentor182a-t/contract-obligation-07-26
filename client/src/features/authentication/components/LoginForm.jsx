@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, Briefcase, ChevronDown, AlertCircle, X } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, AlertCircle, X } from "lucide-react";
 import { API_BASE } from "../../../config/api";
 import { useUI } from "../../../context/UIContext";
 import { clearStoredAuth } from "../../../utils/auth";
 import { getDefaultRouteForRole } from "../../../utils/sidebarPermissions";
 
-const ROLES = ["Administrator", "Legal Manager", "Compliance Officer", "Contract Manager", "Department Head", "Employee"];
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginForm() {
@@ -15,7 +15,7 @@ export default function LoginForm() {
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState(ROLES[0]);
+
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   
@@ -41,7 +41,7 @@ export default function LoginForm() {
     try {
       const response = await fetch(`${API_BASE}/auth/login`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password, role }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || "Login failed");
@@ -102,16 +102,7 @@ export default function LoginForm() {
         {errors.password && <span className="text-red-500 text-xs mt-1">{errors.password}</span>}
       </div>
 
-      <div className="flex flex-col gap-1 relative">
-        <label className="text-xs font-bold text-slate-500 uppercase">Role</label>
-        <div className="relative">
-          <Briefcase size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          <select value={role} onChange={e => setRole(e.target.value)} className="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:border-blue-500 focus:bg-white appearance-none transition-colors" disabled={loading}>
-            {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
-          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-        </div>
-      </div>
+
 
       <div className="flex justify-between items-center text-sm">
         <label className="flex items-center gap-2 cursor-pointer text-slate-600"><input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} className="accent-blue-600" /> Remember me</label>
@@ -131,9 +122,7 @@ export default function LoginForm() {
         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" /> Continue with Google
       </button>
 
-      <Link to="/signup" className="w-full text-center py-3 border border-slate-200 rounded-xl text-slate-700 font-semibold hover:bg-slate-50 transition-colors mt-2">
-        Create New Account
-      </Link>
+
     </form>
   );
 }

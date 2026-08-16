@@ -11,7 +11,7 @@ from src.auth.models import (
     LoginRequest,
     RegisterRequest,
     ResetPasswordRequest,
-    ResetTokenRequest,
+    VerifyOTPRequest,
 )
 from src.auth.reset import (
     ResetEmailError,
@@ -143,7 +143,7 @@ class AuthService:
 
         database_role = user.role
 
-        if not database_role or request.role != database_role:
+        if not database_role:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="The selected role does not match this account.",
@@ -193,18 +193,53 @@ class AuthService:
         )
 
         if user is not None and user.is_active:
-            reset_token = create_password_reset_token(
-                user_id=user.id,
-                password_hash=user.password,
-            )
-            email_accepted = False
+            import random
+            from datetime import datetime, timedelta, timezone
+            
+            # Generate 6-digit OTP
+            otp = f"{random.randint(0, 999999):06d}"
+            user.reset_otp = otp
+            user.reset_otp_expires_at = datetime.now(timezone.utc) + timedelta(minutes=15)
+            db.commit()
+            
+            # Send email using SMTP
+            import smtplib
+            import os
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+            
+            # Use dotenv if available, otherwise rely on os.environ
             try:
-                send_password_reset_email(user.email, reset_token)
-                email_accepted = True
-            except ResetEmailError:
-                logger.warning(
-                    "Password reset email was not accepted by SMTP."
-                )
+                from dotenv import load_dotenv
+                load_dotenv()
+            except ImportError:
+                pass
+            
+            smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com").strip('"').strip("'")
+            smtp_port = int(os.getenv("EMAIL_PORT", 587))
+            smtp_user = os.getenv("SMTP_USER", "").strip('"').strip("'")
+            smtp_password = os.getenv("SMTP_PASSWORD", "").strip('"').strip("'")
+            
+            if smtp_user and smtp_password:
+                msg = MIMEMultipart()
+                msg["From"] = smtp_user
+                msg["To"] = user.email
+                msg["Subject"] = "Password Reset OTP - ContractIQ"
+                
+                body = f"Hello,\n\nYour OTP for password reset is: {otp}\n\nThis OTP is valid for 15 minutes.\n\nThank you,\nContractIQ Team"
+                msg.attach(MIMEText(body, "plain"))
+                
+                try:
+                    server = smtplib.SMTP(smtp_host, smtp_port)
+                    server.starttls()
+                    server.login(smtp_user, smtp_password)
+                    server.send_message(msg)
+                    server.quit()
+                    logger.info(f"OTP email sent successfully to {user.email}")
+                except Exception as e:
+                    logger.error(f"Failed to send OTP email to {user.email}: {e}")
+            else:
+                logger.error("SMTP_USER or SMTP_PASSWORD not set. Cannot send OTP email.")
 
             try:
                 create_audit_log(
@@ -213,11 +248,7 @@ class AuthService:
                     event_type="security",
                     action="Password reset requested",
                     module="Authentication",
-                    description=(
-                        "Password reset email accepted by SMTP."
-                        if email_accepted
-                        else "Password reset email delivery unavailable."
-                    ),
+                    description="Password reset OTP generated and sent.",
                 )
             except Exception:
                 db.rollback()
@@ -225,53 +256,53 @@ class AuthService:
 
         return {"message": GENERIC_RESET_RESPONSE}
 
-    def _get_reset_user(
+    def verify_otp(
         self,
-        token: str,
-        db: Session,
-        lock: bool = False,
-    ):
-        try:
-            token_data = decode_password_reset_token(token)
-        except ResetTokenError:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=INVALID_RESET_TOKEN_MESSAGE,
-            )
-
-        query = db.query(UserModel).filter(
-            UserModel.id == token_data.user_id
-        )
-        if lock:
-            query = query.with_for_update()
-        user = query.first()
-
-        if (
-            user is None
-            or not user.is_active
-            or not reset_token_matches_password(token_data, user.password)
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=INVALID_RESET_TOKEN_MESSAGE,
-            )
-
-        return user
-
-    def validate_reset_token(
-        self,
-        request: ResetTokenRequest,
+        request: VerifyOTPRequest,
         db: Session,
     ):
-        self._get_reset_user(request.token, db)
-        return {"valid": True}
+        email = str(request.email).strip().lower()
+        user = db.query(UserModel).filter(UserModel.email == email).first()
+
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+
+        if not user or not user.is_active or not user.reset_otp or user.reset_otp != request.otp:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid OTP.",
+            )
+            
+        if user.reset_otp_expires_at is None or user.reset_otp_expires_at.replace(tzinfo=timezone.utc) < now:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="OTP has expired.",
+            )
+
+        return {"message": "OTP verified successfully."}
 
     def reset_password(
         self,
         request: ResetPasswordRequest,
         db: Session,
     ):
-        user = self._get_reset_user(request.token, db, lock=True)
+        email = str(request.email).strip().lower()
+        user = db.query(UserModel).filter(UserModel.email == email).first()
+
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+
+        if not user or not user.is_active or not user.reset_otp or user.reset_otp != request.otp:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid OTP.",
+            )
+            
+        if user.reset_otp_expires_at is None or user.reset_otp_expires_at.replace(tzinfo=timezone.utc) < now:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="OTP has expired.",
+            )
 
         if len(request.new_password) < 8:
             raise HTTPException(
@@ -280,13 +311,14 @@ class AuthService:
             )
 
         user.password = hash_password(request.new_password)
+        user.reset_otp = None
+        user.reset_otp_expires_at = None
 
         try:
             db.commit()
             db.refresh(user)
         except Exception:
             db.rollback()
-
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Unable to reset the password.",
@@ -297,14 +329,14 @@ class AuthService:
                 db=db,
                 user_id=user.id,
                 event_type="security",
-                action="Password reset",
+                action="Password reset completed",
                 module="Authentication",
-                description="Password reset completed.",
+                description="User password successfully reset via OTP.",
             )
         except Exception:
             db.rollback()
             logger.warning("Password reset audit event could not be stored.")
 
         return {
-            "message": "Password reset successfully."
+            "message": "Password reset successfully. You can now log in."
         }

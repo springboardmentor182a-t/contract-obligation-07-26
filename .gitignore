@@ -9,7 +9,8 @@ __pycache__/
 venv/
 
 # Env
-.env
+server/.env
+server/.env.example
 
 # Editors
 .vscode/

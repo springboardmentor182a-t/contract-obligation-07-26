@@ -1,199 +1,188 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import {
-  ArrowLeft,
-  CheckCircle,
-  Mail,
-  ShieldCheck,
-} from "lucide-react";
-
+import { Link, useNavigate } from "react-router-dom";
+import { ShieldCheck, ArrowLeft, CheckCircle2 } from "lucide-react";
 import AuthLeftPanel from "../components/AuthLeftPanel";
-import "../styles/Auth.css";
+import FormInput from "../components/Form/FormInput";
 import { API_BASE } from "../config/api";
+import "../styles/Auth.css";
+
 function ForgotPassword() {
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("");
+  const [error, setError] = useState(null);
+  const [successMsg, setSuccessMsg] = useState("");
+  
+  const navigate = useNavigate();
 
-  const handleForgotPassword = async (event) => {
-    event.preventDefault();
-
-    setMessage("");
-    setMessageType("");
-
-    if (!email.trim()) {
-      setMessage("Please enter your registered email address.");
-      setMessageType("error");
+  async function handleRequestOtp(e) {
+    e.preventDefault();
+    if (!email) {
+      setError("Please enter your email address");
       return;
     }
-
     setLoading(true);
-
+    setError(null);
     try {
-      const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+      const res = await fetch(`${API_BASE}/auth/forgot-password`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email.trim(),
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
       });
-
-      let data = {};
-
-      try {
-        data = await response.json();
-      } catch {
-        data = {};
-      }
-
-      if (!response.ok) {
-        setMessage(
-          data.detail || "Unable to verify this email address."
-        );
-        setMessageType("error");
-        return;
-      }
-
-      setSent(true);
-      setMessage(
-        data.message ||
-          "If an account exists for this email, a password reset link has been sent."
-      );
-      setMessageType("success");
-    } catch (error) {
-      console.error("Forgot password error:", error);
-
-      setMessage(
-        "Unable to connect to the server. Please start the backend and try again."
-      );
-      setMessageType("error");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Failed to request OTP");
+      setSuccessMsg("An OTP has been sent to your email.");
+      setTimeout(() => setSuccessMsg(""), 3000);
+      setStep(2);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  async function handleVerifyOtp(e) {
+    e.preventDefault();
+    if (!otp) {
+      setError("Please enter the 6-digit OTP");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Invalid or expired OTP");
+      setSuccessMsg("OTP verified successfully!");
+      setTimeout(() => setSuccessMsg(""), 3000);
+      setStep(3);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResetPassword(e) {
+    e.preventDefault();
+    if (!newPassword || newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp, new_password: newPassword })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Failed to reset password");
+      setSuccessMsg("Password reset successfully! Redirecting...");
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <main className="premium-login-page">
       <AuthLeftPanel />
-
       <section className="premium-login-right">
         <div className="premium-login-wrapper">
+          <Link to="/login" className="back-to-login" style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--text-secondary)", textDecoration: "none", marginBottom: "20px", fontSize: "13px", fontWeight: "600" }}>
+            <ArrowLeft size={16} /> Back to Login
+          </Link>
+          
           <div className="premium-login-card">
             <div className="premium-mobile-brand">
               <div className="premium-brand-icon">
                 <ShieldCheck size={19} />
               </div>
-
               <span>ContractIQ</span>
             </div>
 
-            {!sent ? (
-              <>
-                <div className="auth-page-icon">
-                  <Mail size={24} />
-                </div>
+            <header className="premium-form-header">
+              <h2>{step === 1 ? "Forgot Password" : step === 2 ? "Verify OTP" : "Reset Password"}</h2>
+              <p style={{ color: "var(--text-secondary)", fontSize: "13px", marginTop: "8px" }}>
+                {step === 1 && "Enter your email to receive a secure reset code"}
+                {step === 2 && `Enter the 6-digit code sent to ${email}`}
+                {step === 3 && "Create a new strong password for your account"}
+              </p>
+            </header>
 
-                <header className="premium-form-header">
-                  <h2>Forgot Password?</h2>
-                  <p>
-                    Enter your registered email address to request a secure
-                    password reset link.
-                  </p>
-                </header>
-
-                <form
-                  onSubmit={handleForgotPassword}
-                  className="premium-login-form"
-                >
-                  <div className="premium-field">
-                    <label htmlFor="forgot-email">
-                      Email Address
-                    </label>
-
-                    <div className="premium-input-wrapper">
-                      <Mail
-                        size={15}
-                        className="premium-input-icon"
-                      />
-
-                      <input
-                        id="forgot-email"
-                        type="email"
-                        value={email}
-                        onChange={(event) =>
-                          setEmail(event.target.value)
-                        }
-                        placeholder="you@company.com"
-                        autoComplete="email"
-                        disabled={loading}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {message && (
-                    <div
-                      className={`auth-message ${
-                        messageType === "success"
-                          ? "auth-message-success"
-                          : "auth-message-error"
-                      }`}
-                      role="alert"
-                    >
-                      {message}
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    className="premium-sign-in-button"
-                    disabled={loading}
-                  >
-                    {loading
-                      ? "Sending Reset Link..."
-                      : "Send Reset Link"}
-                  </button>
-                </form>
-              </>
-            ) : (
-              <div className="forgot-success-content">
-                <div className="forgot-success-icon">
-                  <CheckCircle size={30} />
-                </div>
-
-                <h2>Check Your Email</h2>
-
-                <p>
-                  If an active account matches that address, ContractIQ has
-                  sent a secure password reset link.
-                </p>
-
-                {message && (
-                  <div className="auth-message auth-message-success">
-                    {message}
-                  </div>
-                )}
-
+            {successMsg && (
+              <div className="auth-success" style={{ padding: "12px", background: "var(--emerald-10)", color: "var(--emerald)", borderRadius: "8px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", fontWeight: "500" }}>
+                <CheckCircle2 size={16} /> {successMsg}
               </div>
             )}
 
-            <Link to="/login" className="back-to-login-link">
-              <ArrowLeft size={14} />
-              Back to Sign In
-            </Link>
-          </div>
+            {step === 1 && (
+              <form className="auth-form" onSubmit={handleRequestOtp}>
+                <FormInput 
+                  label="Email Address" 
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  placeholder="you@contractiq.com" 
+                />
+                {error && <div className="auth-error">{error}</div>}
+                <button type="submit" className="quick-action auth-submit" disabled={loading}>
+                  {loading ? "Sending..." : "Send Reset Code"}
+                </button>
+              </form>
+            )}
 
-          <footer className="premium-form-footer">
-            <Link to="/privacy-policy">Privacy Policy</Link>
-            <span>•</span>
-            <Link to="/terms-of-service">Terms of Service</Link>
-            <span>•</span>
-            <Link to="/help">Help Center</Link>
-          </footer>
+            {step === 2 && (
+              <form className="auth-form" onSubmit={handleVerifyOtp}>
+                <FormInput 
+                  label="6-Digit OTP" 
+                  type="text" 
+                  value={otp} 
+                  onChange={(e) => setOtp(e.target.value)} 
+                  placeholder="123456" 
+                  maxLength={6}
+                />
+                {error && <div className="auth-error">{error}</div>}
+                <button type="submit" className="quick-action auth-submit" disabled={loading}>
+                  {loading ? "Verifying..." : "Verify Code"}
+                </button>
+              </form>
+            )}
+
+            {step === 3 && (
+              <form className="auth-form" onSubmit={handleResetPassword}>
+                <FormInput 
+                  label="New Password" 
+                  type="password" 
+                  value={newPassword} 
+                  onChange={(e) => setNewPassword(e.target.value)} 
+                  placeholder="Enter new password" 
+                />
+                <FormInput 
+                  label="Confirm New Password" 
+                  type="password" 
+                  value={confirmPassword} 
+                  onChange={(e) => setConfirmPassword(e.target.value)} 
+                  placeholder="Confirm new password" 
+                />
+                {error && <div className="auth-error">{error}</div>}
+                <button type="submit" className="quick-action auth-submit" disabled={loading}>
+                  {loading ? "Resetting..." : "Reset Password"}
+                </button>
+              </form>
+            )}
+          </div>
         </div>
       </section>
     </main>

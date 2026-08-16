@@ -3,14 +3,112 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, update
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, timedelta
 
 from src.audit.service import create_audit_log
 from src.auth.dependencies import NOTIFICATION_ROLES, require_roles
 from src.database.core import get_db
-from src.database.models import Notification, User
+from src.database.models import Notification, User, ObligationModel
+from src.contract_repository.models import Contract
 
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
+
+
+@router.post("/generate")
+def generate_notifications(
+    current_user: User = Depends(require_roles(*NOTIFICATION_ROLES)),
+    db: Session = Depends(get_db),
+):
+    """Auto-generate notifications from real DB data: expiring contracts, overdue obligations."""
+    user_id = current_user.id
+    created_count = 0
+    today = date.today()
+
+    # 1. Contracts expiring within 30 days
+    soon = today + timedelta(days=30)
+    expiring = db.execute(
+        select(Contract).where(Contract.end_date >= today, Contract.end_date <= soon)
+    ).scalars().all()
+
+    for contract in expiring:
+        days_left = (contract.end_date - today).days
+        title = f"Contract Expiring: {contract.contract_name}"
+        description = f"{contract.contract_name} (Vendor: {contract.vendor}) expires in {days_left} days on {contract.end_date}. Please initiate renewal."
+        urgency = "critical" if days_left <= 7 else "warning"
+        # Check not duplicate
+        existing = db.execute(
+            select(Notification).where(
+                Notification.user_id == user_id,
+                Notification.title == title,
+            )
+        ).scalars().first()
+        if not existing:
+            db.add(Notification(
+                user_id=user_id,
+                category="Renewals",
+                urgency=urgency,
+                title=title,
+                description=description,
+                is_read=False,
+            ))
+            created_count += 1
+
+    # 2. Overdue obligations
+    overdue_obs = db.execute(
+        select(ObligationModel).where(
+            ObligationModel.status == "overdue",
+            ObligationModel.owner_id == user_id,
+        ).limit(10)
+    ).scalars().all()
+
+    for ob in overdue_obs:
+        title = f"Overdue Obligation: {ob.title}"
+        description = f"The obligation '{ob.title}' was due on {ob.due_date} and is now overdue. Priority: {ob.priority}."
+        existing = db.execute(
+            select(Notification).where(
+                Notification.user_id == user_id,
+                Notification.title == title,
+            )
+        ).scalars().first()
+        if not existing:
+            db.add(Notification(
+                user_id=user_id,
+                category="Workflow",
+                urgency="critical",
+                title=title,
+                description=description,
+                is_read=False,
+            ))
+            created_count += 1
+
+    # 3. High risk contracts
+    high_risk = db.execute(
+        select(Contract).where(Contract.risk_level == "High").limit(5)
+    ).scalars().all()
+
+    for contract in high_risk:
+        title = f"High Risk Contract: {contract.contract_name}"
+        description = f"Contract '{contract.contract_name}' with {contract.vendor} is flagged as High Risk. Review required."
+        existing = db.execute(
+            select(Notification).where(
+                Notification.user_id == user_id,
+                Notification.title == title,
+            )
+        ).scalars().first()
+        if not existing:
+            db.add(Notification(
+                user_id=user_id,
+                category="Risk Alerts",
+                urgency="warning",
+                title=title,
+                description=description,
+                is_read=False,
+            ))
+            created_count += 1
+
+    db.commit()
+    return {"generated": created_count, "message": f"{created_count} new notifications created."}
+
 def _fmt_time(dt: datetime) -> str:
     if dt is None:
         return ""

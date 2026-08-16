@@ -19,8 +19,6 @@ const TABS = [
   { key: "general", label: "General", Icon: GearIcon },
   { key: "notifications", label: "Notifications", Icon: BellSmIcon },
   { key: "security", label: "Security & API", Icon: LockIcon },
-  { key: "integrations", label: "Integrations", Icon: PlugIcon },
-  { key: "people", label: "People / Invite", Icon: UsersIcon },
   { key: "billing", label: "Billing", Icon: CreditCardIcon },
   { key: "darkmode", label: "Dark Mode", Icon: MoonIcon },
 ];
@@ -33,14 +31,14 @@ const INTEGRATION_ICONS = {
 };
 
 export default function Settings() {
-  const { theme, toggleTheme, showToast } = useUI();
+  const { theme, toggleTheme, showToast, refreshUser } = useUI();
   const [tab, setTab] = useState("general");
-  
+
   // General State
   const [orgName, setOrgName] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [dateFormat, setDateFormat] = useState("YYYY-MM-DD");
-  
+
   // Notifications State
   const [toggles, setToggles] = useState({
     emailNotif: true,
@@ -55,6 +53,23 @@ export default function Settings() {
   const [apiKeys, setApiKeys] = useState([]);
   const [newKeyName, setNewKeyName] = useState("");
   const [passwords, setPasswords] = useState({ current: "", newPass: "", confirm: "" });
+
+  // Billing States
+  const [subscription, setSubscription] = useState({
+    plan_name: "Loading...",
+    plan_desc: "",
+    price: "",
+    status: "",
+    seats_used: 0,
+    seats_total: 0,
+    storage_used: 0,
+    storage_total: 0
+  });
+  const [paymentMethod, setPaymentMethod] = useState({
+    card_type: "",
+    last_four: "",
+    expiry_date: ""
+  });
 
   // Invoices State
   const [invoices, setInvoices] = useState([]);
@@ -82,11 +97,11 @@ export default function Settings() {
         const token = localStorage.getItem("token") || sessionStorage.getItem("token");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        const [resSettings, resInvites, resApiKeys, resInvoices] = await Promise.all([
+        const [resSettings, resInvites, resApiKeys, resBilling] = await Promise.all([
           fetch(`${API_BASE}/settings`, { headers }),
           fetch(`${API_BASE}/users/invitations`, { headers }),
           fetch(`${API_BASE}/settings/security/apikeys`, { headers }),
-          fetch(`${API_BASE}/billing/invoices`, { headers })
+          fetch(`${API_BASE}/billing`, { headers })
         ]);
         if (resSettings.ok) {
           const data = await resSettings.json();
@@ -110,9 +125,11 @@ export default function Settings() {
           const keys = await resApiKeys.json();
           setApiKeys(keys);
         }
-        if (resInvoices.ok) {
-          const inv = await resInvoices.json();
-          setInvoices(inv);
+        if (resBilling.ok) {
+          const billingData = await resBilling.json();
+          if (billingData.subscription) setSubscription(billingData.subscription);
+          if (billingData.payment_method) setPaymentMethod(billingData.payment_method);
+          if (billingData.invoices) setInvoices(billingData.invoices);
         }
       } catch (err) {
         console.warn('Settings API unavailable:', err);
@@ -147,6 +164,7 @@ export default function Settings() {
         body: JSON.stringify(payload),
       });
       showToast("General Settings updated!");
+      refreshUser();
     } catch (err) {
       console.warn("Could not sync configurations with server, saved locally", err);
     }
@@ -215,12 +233,17 @@ export default function Settings() {
         body: JSON.stringify(payload),
       });
       if (!response.ok) {
-        throw new Error("Password update is unavailable.");
+        const errData = await response.json().catch(() => ({}));
+        let errMsg = "Password update is unavailable.";
+        if (errData.detail) {
+          errMsg = typeof errData.detail === "string" ? errData.detail : JSON.stringify(errData.detail);
+        }
+        throw new Error(errMsg);
       }
       showToast("Password updated successfully!");
     } catch (err) {
       console.warn("Could not update password through the backend.");
-      showToast("Password was not changed. Please try again later.");
+      showToast(err.message || "Password was not changed. Please try again later.");
     }
     setPasswords({ current: "", newPass: "", confirm: "" });
     setTimeout(() => setSaved(false), 2000);
@@ -305,12 +328,17 @@ export default function Settings() {
       if (res.ok) {
         const newInvite = await res.json();
         setInvitedUsers(prev => [newInvite, ...prev]);
+        showToast(`Invitation sent to ${inviteForm.email}`);
       } else {
-        throw new Error("Invitation could not be created.");
+        const errData = await res.json().catch(() => ({}));
+        let errMsg = "Invitation could not be created.";
+        if (errData.detail) {
+          errMsg = typeof errData.detail === "string" ? errData.detail : JSON.stringify(errData.detail);
+        }
+        throw new Error(errMsg);
       }
-      showToast(`Invitation sent to ${inviteForm.email}`);
     } catch (err) {
-      showToast("Invitation was not created. Please try again.");
+      showToast(err.message || "Invitation was not created. Please try again.");
     }
 
     setInviteForm({ email: "", role: "Viewer", department: "", message: "" });
@@ -344,7 +372,7 @@ export default function Settings() {
       </div>
 
       <div className="settings-panel-redesigned">
-        
+
         {/* ── GENERAL SETTINGS ── */}
         {tab === "general" && (
           <div className="fade-in-el">
@@ -360,8 +388,8 @@ export default function Settings() {
             <div className="field-row">
               <div className="modern-input-wrap">
                 <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 5, display: "block" }}>Default Currency</label>
-                <select 
-                  className="modern-input" 
+                <select
+                  className="modern-input"
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
                 >
@@ -372,8 +400,8 @@ export default function Settings() {
               </div>
               <div className="modern-input-wrap">
                 <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 5, display: "block" }}>Date Format</label>
-                <select 
-                  className="modern-input" 
+                <select
+                  className="modern-input"
                   value={dateFormat}
                   onChange={(e) => setDateFormat(e.target.value)}
                 >
@@ -408,7 +436,7 @@ export default function Settings() {
               </div>
               <button className={`toggle ${toggles.smsNotif ? "on" : ""}`} onClick={() => handleToggle("smsNotif")} />
             </div>
-            
+
             <div className="pill-toggle-container">
               <div>
                 <strong>Slack Channel Alerts</strong>
@@ -478,7 +506,7 @@ export default function Settings() {
 
             <div className="section-title" style={{ marginTop: 14 }}><KeyIcon size={14} /> API Key Management</div>
             <p className="muted" style={{ marginBottom: 12 }}>Create secure, hashed API credentials for custom system integrations.</p>
-            
+
             <form onSubmit={handleGenerateApiKey} style={{ display: "flex", gap: 10, marginBottom: 14 }}>
               <input
                 type="text"
@@ -510,9 +538,9 @@ export default function Settings() {
                     <td style={{ fontFamily: "monospace", color: "var(--text-secondary)" }}>{k.key}</td>
                     <td>{k.created}</td>
                     <td style={{ textAlign: "right" }}>
-                      <button 
-                        type="button" 
-                        className="btn-ghost" 
+                      <button
+                        type="button"
+                        className="btn-ghost"
                         style={{ padding: "4px 8px", fontSize: 11, color: "var(--danger)" }}
                         onClick={() => {
                           setApiKeys(prev => prev.filter(item => item.id !== k.id));
@@ -529,169 +557,43 @@ export default function Settings() {
           </div>
         )}
 
-        {/* ── INTEGRATIONS ── */}
-        {tab === "integrations" && (
-          <div className="fade-in-el">
-            <div className="section-title"><PlugIcon size={14} /> Linked Integrations</div>
-            <div className="integrations-list">
-              {INTEGRATIONS_LIST.map((it) => {
-                const connected = integrations[it.key];
-                const isConnecting = connectingKey === it.key;
-                const Icon = INTEGRATION_ICONS[it.key] || PlugIcon;
-                
-                return (
-                  <div className="integration-row" key={it.key}>
-                    <div className="ico" style={{ background: `${it.color}15`, color: it.color }}>
-                      <Icon size={16} />
-                    </div>
-                    <div className="integration-info">
-                      <strong>{it.name}</strong>
-                      <span>{it.desc}</span>
-                    </div>
-                    {connected ? (
-                      <span className="badge emerald" style={{ fontSize: 10 }}><CheckIcon size={11} /> Connected</span>
-                    ) : (
-                      <button 
-                        className="btn-ghost" 
-                        disabled={isConnecting}
-                        style={{ padding: "5px 10px", fontSize: 11.5 }}
-                        onClick={() => connectIntegration(it.key)}
-                      >
-                        {isConnecting ? "Connecting..." : "Connect"}
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
-        {/* ── PEOPLE & INVITATIONS ── */}
-        {tab === "people" && (
-          <div className="fade-in-el">
-            <div className="section-title"><UsersIcon size={14} /> Invite People</div>
-            <p className="muted" style={{ marginBottom: 12 }}>Invite a teammate to join this corporate workspace. System will send an onboarding link.</p>
-            
-            <form onSubmit={handleSendInvitation} style={{ marginBottom: 20 }}>
-              <div className="field-row">
-                <div className="modern-input-wrap">
-                  <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 5, display: "block" }}>Teammate Corporate Email</label>
-                  <input
-                    type="email"
-                    className="modern-input"
-                    placeholder="name@company.com"
-                    value={inviteForm.email}
-                    onChange={e => setInviteForm(p => ({ ...p, email: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="modern-input-wrap">
-                  <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 5, display: "block" }}>Assign Role</label>
-                  <select
-                    className="modern-input"
-                    value={inviteForm.role}
-                    onChange={e => setInviteForm(p => ({ ...p, role: e.target.value }))}
-                  >
-                    <option value="Viewer">Viewer</option>
-                    <option value="Reviewer">Reviewer</option>
-                    <option value="Legal Lead">Legal Lead</option>
-                    <option value="Administrator">Administrator</option>
-                  </select>
-                </div>
-              </div>
-              <div className="field-row">
-                <div className="modern-input-wrap">
-                  <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 5, display: "block" }}>Department</label>
-                  <input
-                    type="text"
-                    className="modern-input"
-                    placeholder="e.g. Legal Operations"
-                    value={inviteForm.department}
-                    onChange={e => setInviteForm(p => ({ ...p, department: e.target.value }))}
-                  />
-                </div>
-                <div className="modern-input-wrap">
-                  <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 5, display: "block" }}>Custom Welcome Message (Optional)</label>
-                  <input
-                    type="text"
-                    className="modern-input"
-                    placeholder="Hey, join our workspace..."
-                    value={inviteForm.message}
-                    onChange={e => setInviteForm(p => ({ ...p, message: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <button type="submit" className="btn btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                <PlusIcon size={14} /> Send Invitation
-              </button>
-            </form>
-
-            <div className="sb-divider" style={{ margin: "14px 0", background: "var(--border)" }} />
-            
-            <div className="section-title"><CheckIcon size={14} /> Active Workspace Invitations</div>
-            <table className="data-table" style={{ width: "100%", fontSize: 12.5 }}>
-              <thead>
-                <tr>
-                  <th>Recipient Email</th>
-                  <th>Assigned Role</th>
-                  <th>Department</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: "right" }}>Revoke</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invitedUsers.map(inv => (
-                  <tr key={inv.id}>
-                    <td><strong>{inv.email}</strong></td>
-                    <td>{inv.role}</td>
-                    <td>{inv.department}</td>
-                    <td>
-                      <span className={`badge ${
-                        inv.status === "Accepted" ? "emerald" : inv.status === "Pending" ? "warn" : "danger"
-                      }`} style={{ fontSize: 10.5 }}>
-                        {inv.status}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      {inv.status !== "Accepted" && (
-                        <button
-                          type="button"
-                          className="btn-ghost"
-                          style={{ padding: "4px 8px", fontSize: 11, color: "var(--danger)" }}
-                          onClick={() => {
-                            setInvitedUsers(prev => prev.filter(item => item.id !== inv.id));
-                            showToast(`Revoked invitation for ${inv.email}`);
-                          }}
-                        >
-                          Revoke
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
 
         {/* ── BILLING & INVOICES ── */}
         {tab === "billing" && (
           <div className="fade-in-el">
             <div className="section-title"><BriefcaseIcon size={14} /> Subscription Details</div>
-            
+
             <div className="billing-plan-card-redesigned">
               <div className="billing-plan-card-top">
                 <div>
                   <strong className="plan-name">Enterprise Premium</strong>
                   <span className="plan-desc">Unlimited database rows • Premium priority ticket response</span>
                 </div>
-                <span className="badge emerald" style={{ fontSize: 10.5 }}>Active</span>
+                <span className={`badge ${subscription.status === "Active" ? "emerald" : "warn"}`} style={{ fontSize: 10.5 }}>{subscription.status}</span>
               </div>
-              <div className="plan-pricing">$4,800 <span className="period">/ month</span></div>
+              <div className="plan-pricing">{subscription.price} <span className="period">/ month</span></div>
               <div className="plan-actions">
-                <button className="btn btn-primary" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => flashBilling("Redirecting to stripe checkout...")}>Upgrade Plan</button>
-                <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => flashBilling("Please contact support to cancel.")}>Cancel Plan</button>
+                <button className="btn btn-primary" style={{ padding: "6px 12px", fontSize: 12 }} onClick={async () => {
+                  try {
+                    const res = await fetch(`${API_BASE}/billing/subscription/upgrade`, { method: "PUT", headers: getAuthHeaders() });
+                    if (res.ok) {
+                      flashBilling("Plan upgraded successfully!");
+                      const data = await fetch(`${API_BASE}/billing`, { headers: getAuthHeaders() }).then(r => r.json());
+                      setSubscription(data.subscription);
+                    } else throw new Error("Failed");
+                  } catch { flashBilling("Failed to upgrade plan."); }
+                }}>Upgrade Plan</button>
+                <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12 }} onClick={async () => {
+                  try {
+                    const res = await fetch(`${API_BASE}/billing/subscription/cancel`, { method: "PUT", headers: getAuthHeaders() });
+                    if (res.ok) {
+                      flashBilling("Plan canceled successfully.");
+                      const data = await fetch(`${API_BASE}/billing`, { headers: getAuthHeaders() }).then(r => r.json());
+                      setSubscription(data.subscription);
+                    } else throw new Error("Failed");
+                  } catch { flashBilling("Failed to cancel plan."); }
+                }}>Cancel Plan</button>
               </div>
             </div>
 
@@ -699,27 +601,36 @@ export default function Settings() {
               <div className="usage-meter-box">
                 <div className="usage-meter-desc">
                   <span>Authorized Seats</span>
-                  <strong>50 / 100 seats</strong>
+                  <strong>{subscription.seats_used} / {subscription.seats_total} seats</strong>
                 </div>
-                <div className="progress-track"><div className="progress-fill" style={{ width: "50%", background: "var(--info)" }} /></div>
+                <div className="progress-track"><div className="progress-fill" style={{ width: `${(subscription.seats_used / subscription.seats_total) * 100}%`, background: "var(--info)" }} /></div>
               </div>
               <div className="usage-meter-box">
                 <div className="usage-meter-desc">
                   <span>Storage Utilization</span>
-                  <strong>42 GB / 100 GB</strong>
+                  <strong>{subscription.storage_used} GB / {subscription.storage_total} GB</strong>
                 </div>
-                <div className="progress-track"><div className="progress-fill" style={{ width: "42%", background: "var(--emerald)" }} /></div>
+                <div className="progress-track"><div className="progress-fill" style={{ width: `${(subscription.storage_used / subscription.storage_total) * 100}%`, background: "var(--emerald)" }} /></div>
               </div>
             </div>
 
             <div className="section-title" style={{ marginTop: 18 }}>Payment Methods</div>
             <div className="billing-payment-row" style={{ marginBottom: 18 }}>
-              <div className="billing-card-chip">VISA</div>
+              <div className="billing-card-chip">{paymentMethod.card_type}</div>
               <div style={{ flex: 1 }}>
-                <strong style={{ display: "block", fontSize: 13 }}>Visa ending in 4242</strong>
-                <span className="muted" style={{ fontSize: 11 }}>Expires 08/2028</span>
+                <strong style={{ display: "block", fontSize: 13 }}>{paymentMethod.card_type} ending in {paymentMethod.last_four}</strong>
+                <span className="muted" style={{ fontSize: 11 }}>Expires {paymentMethod.expiry_date}</span>
               </div>
-              <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => flashBilling("Stripe modal opened.")}>Update</button>
+              <button className="btn-ghost" style={{ padding: "6px 12px", fontSize: 12 }} onClick={async () => {
+                try {
+                  const res = await fetch(`${API_BASE}/billing/payment-method`, { method: "PUT", headers: getAuthHeaders() });
+                  if (res.ok) {
+                    flashBilling("Payment method updated.");
+                    const data = await fetch(`${API_BASE}/billing`, { headers: getAuthHeaders() }).then(r => r.json());
+                    setPaymentMethod(data.payment_method);
+                  } else throw new Error("Failed");
+                } catch { flashBilling("Failed to update payment method."); }
+              }}>Update</button>
             </div>
 
             <div className="section-title">Billing Invoices</div>
@@ -738,12 +649,25 @@ export default function Settings() {
                   <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 16 }}>No invoices found. Connect to database to load billing history.</td></tr>
                 ) : invoices.map((inv) => (
                   <tr key={inv.id}>
-                    <td><strong>{inv.id}</strong></td>
+                    <td><strong>{inv.invoice_id || inv.id}</strong></td>
                     <td>{inv.date}</td>
                     <td>{inv.amount}</td>
-                    <td><span className="badge emerald" style={{ fontSize: 10.5 }}>{inv.status}</span></td>
+                    <td><span className={`badge ${inv.status === "Paid" ? "emerald" : "warn"}`} style={{ fontSize: 10.5 }}>{inv.status}</span></td>
                     <td style={{ textAlign: "right" }}>
-                      <button className="btn-ghost download-btn" style={{ padding: "4px 8px", fontSize: 11 }} onClick={() => flashBilling(`${inv.id} downloaded.`)}>
+                      <button className="btn-ghost download-btn" style={{ padding: "4px 8px", fontSize: 11 }} onClick={async () => {
+                        try {
+                          flashBilling(`Downloading invoice...`);
+                          const res = await fetch(`${API_BASE}/billing/invoices/${inv.invoice_id || inv.id}/download`, { headers: getAuthHeaders() });
+                          if (!res.ok) throw new Error("Failed");
+                          const blob = await res.blob();
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `invoice_${inv.invoice_id || inv.id}.pdf`;
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                        } catch { flashBilling("Failed to download invoice."); }
+                      }}>
                         <DownloadIcon size={11} /> PDF
                       </button>
                     </td>
@@ -760,19 +684,19 @@ export default function Settings() {
           <div className="fade-in-el">
             <div className="section-title"><MoonIcon size={14} /> UI Dark Mode</div>
             <p className="muted" style={{ marginBottom: 14 }}>Toggle between light and dark visual themes across the application dashboard.</p>
-            
+
             <div className="pill-toggle-container">
               <div>
                 <strong>Enable Dark Mode</strong>
                 <span className="muted" style={{ display: "block", fontSize: 11.5 }}>Adjust colors to reduce eye strain in low-light environments.</span>
               </div>
-              <button 
-                type="button" 
-                className={`toggle ${theme === "dark" ? "on" : ""}`} 
-                onClick={toggleTheme} 
+              <button
+                type="button"
+                className={`toggle ${theme === "dark" ? "on" : ""}`}
+                onClick={toggleTheme}
               />
             </div>
-            
+
             <div style={{ display: "flex", justifyContent: "center", gap: 14, marginTop: 24, padding: 14, background: "var(--bg)", borderRadius: 8 }}>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, opacity: theme === "light" ? 1 : 0.4 }}>
                 <SunIcon size={24} color="var(--warning)" />
