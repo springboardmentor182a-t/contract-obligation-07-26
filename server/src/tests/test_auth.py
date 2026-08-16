@@ -16,7 +16,6 @@ def test_login_with_valid_credentials(
     def mock_successful_login(request, db):
         assert str(request.email) == "admin@example.com"
         assert request.password == "ValidPassword@123"
-        assert request.role == "Administrator"
 
         return {
             "access_token": "mock-access-token",
@@ -36,7 +35,6 @@ def test_login_with_valid_credentials(
         json={
             "email": "admin@example.com",
             "password": "ValidPassword@123",
-            "role": "Administrator",
         },
     )
 
@@ -76,7 +74,6 @@ def test_login_with_invalid_password(
         json={
             "email": "admin@example.com",
             "password": "WrongPassword@123",
-            "role": "Administrator",
         },
     )
 
@@ -112,7 +109,6 @@ def test_login_with_unregistered_email(
         json={
             "email": "unknown@example.com",
             "password": "SomePassword@123",
-            "role": "Administrator",
         },
     )
 
