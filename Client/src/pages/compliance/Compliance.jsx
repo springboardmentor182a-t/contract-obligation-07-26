@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   ShieldAlert, ShieldCheck, Search, AlertOctagon, 
   Activity, ChevronRight, CheckCircle, Clock, 
-  FileText, ArrowUpRight, ArrowDownRight, Filter
+  FileText, ArrowUpRight, ArrowDownRight, Filter, X
 } from 'lucide-react';
 import Button from '../../components/Buttons/Button';
 import Badge from '../../components/DataDisplay/Badge';
@@ -595,7 +595,7 @@ const Compliance = () => {
             <div className="modal-header">
               <h2>Initiate New Compliance Audit</h2>
               <button className="modal-close-btn" onClick={() => setIsAuditModalOpen(false)}>
-                &times;
+                <X size={20} />
               </button>
             </div>
             <form className="modal-form" onSubmit={handleFormSubmit}>

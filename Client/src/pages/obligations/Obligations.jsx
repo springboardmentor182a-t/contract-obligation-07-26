@@ -32,6 +32,8 @@ import {
 const Obligations = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [viewObligation, setViewObligation] = useState(null);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
 
@@ -42,7 +44,19 @@ const Obligations = () => {
       try {
         const { getObligations } = await import('../../features/obligations/services/obligationAPI');
         const data = await getObligations();
-        setObligations(data);
+        const mappedData = data.map(o => ({
+          id: `OBL-${o.obligation_id}`,
+          obligation_id: o.obligation_id,
+          description: o.description || o.title,
+          contractId: `CON-${o.contract_id}`,
+          dueDate: o.due_date ? String(o.due_date).split('T')[0] : '',
+          status: o.status,
+          priority: o.priority,
+          assignedTo: o.assigned_to,
+          progress: o.completed ? '100%' : '0%',
+          obligationType: o.title
+        }));
+        setObligations(mappedData);
       } catch (err) {
         console.error("Failed to fetch obligations:", err);
       }
@@ -156,23 +170,73 @@ const Obligations = () => {
     e.preventDefault();
 
     const isEdit = !!selectedObligation;
-    const id = isEdit ? selectedObligation.id : `OBL-${Math.floor(Math.random() * 900) + 100}`;
+    let newId = isEdit ? selectedObligation.id : null;
 
-    if (isEdit) {
-      setObligations(obligations.map(o => o.id === id ? { ...newObligation, id } : o));
-    } else {
-      setObligations([{ id, ...newObligation }, ...obligations]);
+    try {
+      if (isEdit) {
+        const { updateObligation } = await import('../../features/obligations/services/obligationAPI');
+        const contractIdInt = parseInt(newObligation.contractId.replace(/\D/g, ''), 10) || 1;
+        
+        const formattedData = {
+          contract_id: contractIdInt,
+          title: newObligation.obligationType,
+          description: newObligation.description,
+          assigned_to: newObligation.assignedTo || "Unassigned",
+          due_date: newObligation.dueDate ? new Date(newObligation.dueDate).toISOString() : new Date().toISOString(),
+          priority: newObligation.priority,
+          status: newObligation.status
+        };
+        
+        const realId = newObligation.obligation_id || parseInt(newId.replace(/\D/g, ''), 10);
+        await updateObligation(realId, formattedData);
+        
+        setObligations(obligations.map(o => o.id === newId ? { ...newObligation, id: newId } : o));
+      } else {
+        const { createObligation } = await import('../../features/obligations/services/obligationAPI');
+        const contractIdInt = parseInt(newObligation.contractId.replace(/\D/g, ''), 10) || 1;
+        
+        const formattedData = {
+          contract_id: contractIdInt,
+          title: newObligation.obligationType,
+          description: newObligation.description,
+          assigned_to: newObligation.assignedTo || "Unassigned",
+          due_date: newObligation.dueDate ? new Date(newObligation.dueDate).toISOString() : new Date().toISOString(),
+          priority: newObligation.priority,
+          status: newObligation.status
+        };
+        
+        const created = await createObligation(formattedData);
+        newId = `OBL-${created.obligation_id}`;
+        
+        const newObj = {
+          id: newId,
+          obligation_id: created.obligation_id,
+          description: created.description,
+          contractId: `CON-${created.contract_id}`,
+          dueDate: created.due_date ? String(created.due_date).split('T')[0] : '',
+          status: created.status,
+          priority: created.priority,
+          assignedTo: created.assigned_to,
+          progress: '0%',
+          obligationType: created.title
+        };
+        setObligations([newObj, ...obligations]);
+      }
+
+      setIsAddModalOpen(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save obligation: " + err.message);
+      return;
     }
-
-    setIsAddModalOpen(false);
     
     try {
-      if (!isEdit) {
-        await createNotification({ title: 'Obligation Created', message: `Obligation ${id} has been added to ${newObligation.contractId}.` });
+      if (!isEdit && newId) {
+        await createNotification({ title: 'Obligation Created', message: `Obligation ${newId} has been added to ${newObligation.contractId}.` });
       }
       
       if (newObligation.assignedTo && (!isEdit || selectedObligation.assignedTo !== newObligation.assignedTo)) {
-        await createNotification({ title: 'Obligation Assigned', message: `Obligation ${id} has been assigned to ${newObligation.assignedTo}.` });
+        await createNotification({ title: 'Obligation Assigned', message: `Obligation ${newId || 'Updated'} has been assigned to ${newObligation.assignedTo}.` });
       }
       
       window.dispatchEvent(new Event('notification-created'));
@@ -458,6 +522,10 @@ const Obligations = () => {
                       <button
                         className="obl-icon-btn"
                         title="View"
+                        onClick={() => {
+                          setViewObligation(obligation);
+                          setIsViewModalOpen(true);
+                        }}
                       >
                         <Eye size={16} />
                       </button>
@@ -522,37 +590,47 @@ const Obligations = () => {
                   key={obligation.id}
                   id={obligation.id}
                 >
-                  <div className="obl-grid-card">
+                  {({ listeners }) => (
+                    <div 
+                      className="obl-grid-card"
+                      onClick={() => {
+                        setViewObligation(obligation);
+                        setIsViewModalOpen(true);
+                      }}
+                    >
 
-                    <div className="card-header">
-                      <h4>{obligation.description}</h4>
+                      <div className="card-header">
+                        <h4>{obligation.description}</h4>
 
-                      <GripVertical
-                        size={20}
-                        className="drag-handle"
-                      />
+                        <GripVertical
+                          size={20}
+                          className="drag-handle"
+                          {...listeners}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+
+                      <p>{obligation.contractId}</p>
+                      <div className="obl-card-footer">
+                        <small>
+                          Drag to reorder
+                        </small>
+                      </div>
+
+                      <div className="grid-badges">
+                        {getPriorityBadge(obligation.priority)}
+                        {getStatusBadge(obligation.status)}
+                      </div>
+
+                      <div className="progress-bar">
+                        <div
+                          className="progress-fill"
+                          style={{ width: obligation.progress }}
+                        ></div>
+                      </div>
+
                     </div>
-
-                    <p>{obligation.contractId}</p>
-                    <div className="obl-card-footer">
-                      <small>
-                        Drag to reorder
-                      </small>
-                    </div>
-
-                    <div className="grid-badges">
-                      {getPriorityBadge(obligation.priority)}
-                      {getStatusBadge(obligation.status)}
-                    </div>
-
-                    <div className="progress-bar">
-                      <div
-                        className="progress-fill"
-                        style={{ width: obligation.progress }}
-                      ></div>
-                    </div>
-
-                  </div>
+                  )}
                 </SortableCard>
 
               ))}
@@ -663,6 +741,72 @@ const Obligations = () => {
             ]}
           />
         </form>
+      </Modal>
+
+      {/* View Modal */}
+      <Modal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        title="Obligation Details"
+        footer={
+          <Button type="button" variant="primary" onClick={() => setIsViewModalOpen(false)}>Close</Button>
+        }
+      >
+        {viewObligation && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '0.5rem 0' }}>
+            <div>
+              <small style={{ color: 'var(--color-text-light)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>ID & Contract ID</small>
+              <p style={{ margin: '0.2rem 0 0 0', fontWeight: 500, color: 'var(--color-text-dark)', fontSize: '1.05rem' }}>{viewObligation.id} • {viewObligation.contractId}</p>
+            </div>
+            
+            <div>
+              <small style={{ color: 'var(--color-text-light)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Description</small>
+              <p style={{ margin: '0.2rem 0 0 0', color: 'var(--color-text-dark)', fontSize: '1rem', lineHeight: '1.5' }}>{viewObligation.description}</p>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <small style={{ color: 'var(--color-text-light)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Obligation Type</small>
+                <p style={{ margin: '0.2rem 0 0 0', color: 'var(--color-text-dark)', fontWeight: 500 }}>{viewObligation.obligationType}</p>
+              </div>
+              <div>
+                <small style={{ color: 'var(--color-text-light)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Assigned To</small>
+                <p style={{ margin: '0.2rem 0 0 0', color: 'var(--color-text-dark)', fontWeight: 500 }}>{viewObligation.assignedTo}</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <small style={{ color: 'var(--color-text-light)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Due Date</small>
+                <div style={{ margin: '0.3rem 0 0 0', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                  <span style={{ fontWeight: 500, color: 'var(--color-text-dark)' }}>{viewObligation.dueDate}</span>
+                  <span style={{ fontSize: '0.9rem' }}>{getDueDateStatus(viewObligation.dueDate)}</span>
+                </div>
+              </div>
+              
+              <div>
+                <small style={{ color: 'var(--color-text-light)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Status & Priority</small>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.4rem' }}>
+                  {getStatusBadge(viewObligation.status)}
+                  {getPriorityBadge(viewObligation.priority)}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <small style={{ color: 'var(--color-text-light)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em' }}>Progress Tracker</small>
+              <div className="progress-wrapper" style={{ marginTop: '0.6rem', background: 'var(--color-bg)', padding: '1.25rem', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: '0.6rem' }}>
+                  <span>Current Progress</span>
+                  <span style={{ color: 'var(--color-primary)' }}>{viewObligation.progress}</span>
+                </div>
+                <div className="progress-bar" style={{ height: '8px', background: 'rgba(0,0,0,0.05)' }}>
+                  <div className="progress-fill" style={{ width: viewObligation.progress, height: '100%', borderRadius: 'var(--radius-full)', background: 'var(--color-primary)' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

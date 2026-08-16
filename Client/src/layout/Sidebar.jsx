@@ -42,7 +42,6 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
         { path: '/renewals', label: 'Renewal Dashboard', icon: <CalendarClock size={20} /> },
         { path: '/compliance', label: 'Compliance', icon: <ShieldCheck size={20} /> },
         { path: '/reports', label: 'Reports & Analytics', icon: <BarChart3 size={20} /> },
-        { path: '/audit-logs', label: 'Audit Logs', icon: <Activity size={20} /> },
         { path: '/notifications', label: 'Notifications', icon: <Bell size={20} /> },
       ];
     } else if (normalizedRole === 'compliance officer') {

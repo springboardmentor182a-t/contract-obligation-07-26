@@ -13,7 +13,6 @@ const SortableCard = ({ id, children }) => {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    cursor: "grab",
   };
 
   return (
@@ -21,9 +20,8 @@ const SortableCard = ({ id, children }) => {
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
     >
-      {children}
+      {typeof children === "function" ? children({ listeners }) : children}
     </div>
   );
 };

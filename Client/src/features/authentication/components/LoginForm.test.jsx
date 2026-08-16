@@ -9,7 +9,6 @@ describe('LoginForm Component', () => {
 
   test('renders form inputs correctly', () => {
     renderWithRouter(<LoginForm onSubmit={jest.fn()} />);
-    expect(screen.getByText('Select Your Role')).toBeTruthy();
     expect(screen.getByPlaceholderText('admin@contractiq.com')).toBeTruthy();
     expect(screen.getByPlaceholderText('••••••••')).toBeTruthy();
     expect(screen.getByRole('button', { name: /Sign In/i })).toBeTruthy();
@@ -19,7 +18,6 @@ describe('LoginForm Component', () => {
     const mockOnSubmit = jest.fn();
     renderWithRouter(<LoginForm onSubmit={mockOnSubmit} />);
 
-    fireEvent.click(screen.getByText('Admin'));
     fireEvent.change(screen.getByPlaceholderText('admin@contractiq.com'), { target: { value: 'test@test.com' } });
     fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: 'password123' } });
     
@@ -28,7 +26,6 @@ describe('LoginForm Component', () => {
     expect(mockOnSubmit).toHaveBeenCalledWith({
       email: 'test@test.com',
       password: 'password123',
-      role: 'Admin',
       rememberMe: false
     });
   });
