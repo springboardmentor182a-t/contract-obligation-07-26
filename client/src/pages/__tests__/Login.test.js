@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
 import Login from "../Login";
+import { UIProvider } from "../../context/UIContext";
 import {
   canAccessRoute,
   getDefaultRouteForRole,
@@ -24,9 +25,11 @@ jest.mock("react-router-dom", () => {
 
 function renderLogin() {
   return render(
-    <MemoryRouter>
-      <Login />
-    </MemoryRouter>
+    <UIProvider>
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>
+    </UIProvider>
   );
 }
 
@@ -52,6 +55,8 @@ test("FE_RBAC_001: Employee has full configured sidebar and route access", () =>
     "Compliance",
     "Reports & Analytics",
     "Notifications",
+    "Quick Actions",
+    "Calendar",
     "Audit Logs",
     "User Management",
     "Settings",
@@ -65,6 +70,8 @@ test("FE_RBAC_001: Employee has full configured sidebar and route access", () =>
     "/compliance",
     "/reports",
     "/notifications",
+    "/quick-actions",
+    "/calendar",
     "/audit",
     "/user-management",
     "/settings",
@@ -130,15 +137,24 @@ test("FE_AUTH_002: shows validation for empty email and password", async () => {
 
 
 test("FE_AUTH_003: logs in successfully and redirects to the permitted default page", async () => {
-  global.fetch.mockResolvedValueOnce({
-    ok: true,
-    json: async () => ({
-      access_token: "test-access-token",
-      token_type: "bearer",
-      role: "Administrator",
-      name: "Test Administrator",
-    }),
-  });
+  global.fetch
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        access_token: "test-access-token",
+        token_type: "bearer",
+        role: "Administrator",
+        name: "Test Administrator",
+      }),
+    })
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        full_name: "Test Administrator",
+        role: "Administrator",
+        email: "admin@example.com",
+      }),
+    });
 
   const user = userEvent.setup();
 

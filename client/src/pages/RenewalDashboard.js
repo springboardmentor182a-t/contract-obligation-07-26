@@ -106,7 +106,7 @@ export default function RenewalDashboard() {
       {showForm && <RenewalForm onCreate={handleCreate} />}
 
       {!loading && !dashboard ? (
-        <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center text-slate-500">
+        <div className="renewal-empty-state card p-10 text-center">
           No renewal data is available yet.
         </div>
       ) : (

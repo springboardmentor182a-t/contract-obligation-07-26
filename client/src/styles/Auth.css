@@ -924,3 +924,80 @@ body {
 .password-requirements li {
   margin: 2px 0;
 }
+
+/* ==========================================
+   DARK MODE — AUTH PAGES
+========================================== */
+
+[data-theme="dark"] .premium-login-page {
+  background: #0B1320;
+}
+
+[data-theme="dark"] .premium-login-right {
+  background: #0B1320;
+}
+
+[data-theme="dark"] .premium-login-card {
+  background: #111B2A;
+  border-color: #1E2D40;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .premium-mobile-brand {
+  color: #F1F5F9;
+}
+
+[data-theme="dark"] .premium-form-header h2 {
+  color: #F1F5F9;
+}
+
+[data-theme="dark"] .premium-form-header p,
+[data-theme="dark"] .premium-field label,
+[data-theme="dark"] .remember-option,
+[data-theme="dark"] .signup-terms,
+[data-theme="dark"] .signup-login-text,
+[data-theme="dark"] .back-to-login-link {
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .premium-input-wrapper input,
+[data-theme="dark"] .premium-input-wrapper select {
+  background: #0D1828;
+  border-color: #1E2D40;
+  color: #F1F5F9;
+}
+
+[data-theme="dark"] .premium-input-wrapper input:focus,
+[data-theme="dark"] .premium-input-wrapper select:focus {
+  background: #111B2A;
+  border-color: #3B82F6;
+}
+
+[data-theme="dark"] .password-toggle {
+  color: #64748B;
+}
+[data-theme="dark"] .password-toggle:hover {
+  color: #F1F5F9;
+  background: #1E2D40;
+}
+
+[data-theme="dark"] .premium-divider::before {
+  background: #1E2D40;
+}
+
+[data-theme="dark"] .premium-divider span {
+  background: #111B2A;
+  color: #64748B;
+}
+
+[data-theme="dark"] .premium-create-account-button {
+  background: #1E293B;
+  border-color: #2A3A50;
+  color: #F1F5F9;
+}
+
+[data-theme="dark"] .premium-create-account-button:hover {
+  background: #243450;
+  border-color: #3B82F6;
+  color: #60A5FA;
+}
