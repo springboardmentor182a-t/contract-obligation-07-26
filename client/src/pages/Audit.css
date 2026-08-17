@@ -600,26 +600,53 @@
 }
 [data-theme="dark"] .audit-primary-button:hover { background: #1e40af; }
 
-/* Filter bar */
+/* Filter bar & Advanced Filters */
 [data-theme="dark"] .audit-filter-bar,
 [data-theme="dark"] .audit-filter-row,
-[data-theme="dark"] .audit-filter-panel {
+[data-theme="dark"] .audit-filter-panel,
+[data-theme="dark"] .audit-advanced-filters {
   background: #111B2A;
   border-color: #1E2D40;
 }
-[data-theme="dark"] .audit-filter-label { color: #94A3B8; }
+[data-theme="dark"] .audit-filter-label,
+[data-theme="dark"] .audit-filter-field label { color: #94A3B8; }
 [data-theme="dark"] .audit-filter-select,
 [data-theme="dark"] .audit-filter-input,
-[data-theme="dark"] .audit-search-input {
+[data-theme="dark"] .audit-search-input,
+[data-theme="dark"] .audit-filter-field input {
   background: #0D1828;
   border-color: #1E2D40;
   color: #F1F5F9;
 }
 [data-theme="dark"] .audit-filter-select:focus,
 [data-theme="dark"] .audit-filter-input:focus,
-[data-theme="dark"] .audit-search-input:focus {
+[data-theme="dark"] .audit-search-input:focus,
+[data-theme="dark"] .audit-filter-field input:focus {
   border-color: #3B82F6;
   box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+}
+[data-theme="dark"] .audit-clear-filter-button {
+  background: #1E293B;
+  border-color: #2A3A50;
+  color: #CBD5E1;
+}
+[data-theme="dark"] .audit-clear-filter-button:hover {
+  background: #243450;
+  color: #F1F5F9;
+}
+[data-theme="dark"] .audit-filter-tab {
+  background: #111B2A;
+  border-color: #1E2D40;
+  color: #94A3B8;
+}
+[data-theme="dark"] .audit-filter-tab:hover {
+  background: #162032;
+  color: #F1F5F9;
+}
+[data-theme="dark"] .audit-filter-tab.is-selected {
+  background: #1D4ED8;
+  border-color: #1D4ED8;
+  color: #ffffff;
 }
 
 /* Stats / KPI cards */
@@ -629,11 +656,13 @@
   border-color: #1E2D40;
 }
 [data-theme="dark"] .audit-stat-card h3,
+[data-theme="dark"] .audit-stat-card strong,
 [data-theme="dark"] .audit-stat-value { color: #F1F5F9; }
 [data-theme="dark"] .audit-stat-label  { color: #94A3B8; }
 
-/* Log list / table */
+/* Log list / panel */
 [data-theme="dark"] .audit-log-list,
+[data-theme="dark"] .audit-log-panel,
 [data-theme="dark"] .audit-table-container {
   background: #111B2A;
   border-color: #1E2D40;
@@ -643,8 +672,11 @@
 }
 [data-theme="dark"] .audit-log-row:hover { background: #162032; }
 [data-theme="dark"] .audit-log-title,
+[data-theme="dark"] .audit-log-main-line,
+[data-theme="dark"] .audit-log-main-line strong,
 [data-theme="dark"] .audit-log-content strong { color: #F1F5F9; }
 [data-theme="dark"] .audit-log-description,
+[data-theme="dark"] .audit-log-action,
 [data-theme="dark"] .audit-log-meta,
 [data-theme="dark"] .audit-relative-time,
 [data-theme="dark"] .audit-log-content span { color: #94A3B8; }

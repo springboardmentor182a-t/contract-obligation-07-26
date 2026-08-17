@@ -331,35 +331,55 @@
   color: #fff;
 }
 
-/* Notification cards */
+/* Notification cards & items */
 [data-theme="dark"] .notification-card,
 [data-theme="dark"] .notif-card,
+[data-theme="dark"] .notif-item,
 [data-theme="dark"] .notification-item {
   background: #111B2A;
   border-color: #1E2D40;
 }
 [data-theme="dark"] .notification-card:hover,
 [data-theme="dark"] .notif-card:hover,
+[data-theme="dark"] .notif-item:hover,
 [data-theme="dark"] .notification-item:hover { background: #162032; border-color: #2A3A50; }
+[data-theme="dark"] .notif-item.unread,
 [data-theme="dark"] .notification-card.unread,
 [data-theme="dark"] .notif-card.unread { background: #0f1e36; border-color: #1D4ED8; }
 [data-theme="dark"] .notif-title,
+[data-theme="dark"] .notif-title-row strong,
 [data-theme="dark"] .notification-title { color: #F1F5F9; }
 [data-theme="dark"] .notif-desc,
+[data-theme="dark"] .notif-item p,
 [data-theme="dark"] .notification-desc { color: #94A3B8; }
 [data-theme="dark"] .notif-time,
+[data-theme="dark"] .notif-item .time,
 [data-theme="dark"] .notification-time { color: #64748B; }
 [data-theme="dark"] .notif-dot { background: #3B82F6; }
 
-/* Action buttons */
+/* Buttons & Sidebar Cards */
 [data-theme="dark"] .text-action-btn { color: #60A5FA; }
 [data-theme="dark"] .text-action-btn:hover { background: rgba(59,130,246,0.12); }
+[data-theme="dark"] .btn-mark-read {
+  border-color: #2A3A50;
+  color: #CBD5E1;
+}
+[data-theme="dark"] .btn-mark-read:hover {
+  border-color: #3B82F6;
+  color: #60A5FA;
+}
+[data-theme="dark"] .renewal-preview-row {
+  background: #0D1828;
+  border-color: #1E2D40;
+}
+[data-theme="dark"] .renewal-desc .code { color: #F1F5F9; }
 
 /* Header */
 [data-theme="dark"] .notifications-header-wrapper h1 { color: #F1F5F9; }
 [data-theme="dark"] .notifications-header-wrapper p  { color: #94A3B8; }
 
 /* Empty state */
+[data-theme="dark"] .empty-feed-placeholder,
 [data-theme="dark"] .notif-empty-state,
 [data-theme="dark"] .notifications-empty { color: #64748B; }
 [data-theme="dark"] .notif-empty-state h3 { color: #CBD5E1; }

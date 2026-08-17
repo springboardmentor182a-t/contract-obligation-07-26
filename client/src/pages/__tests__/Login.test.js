@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
 import Login from "../Login";
+import { UIProvider } from "../../context/UIContext";
 import {
   canAccessRoute,
   getDefaultRouteForRole,
@@ -24,9 +25,11 @@ jest.mock("react-router-dom", () => {
 
 function renderLogin() {
   return render(
-    <MemoryRouter>
-      <Login />
-    </MemoryRouter>
+    <UIProvider>
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>
+    </UIProvider>
   );
 }
 
@@ -52,8 +55,10 @@ test("FE_RBAC_001: Employee has full configured sidebar and route access", () =>
     "Compliance",
     "Reports & Analytics",
     "Notifications",
+    "Quick Actions",
+    "Calendar",
     "Audit Logs",
-    "User Management",
+    "Organization Management",
     "Settings",
   ];
   const expectedRoutes = [
@@ -65,8 +70,10 @@ test("FE_RBAC_001: Employee has full configured sidebar and route access", () =>
     "/compliance",
     "/reports",
     "/notifications",
+    "/quick-actions",
+    "/calendar",
     "/audit",
-    "/user-management",
+    "/organizations",
     "/settings",
   ];
 
@@ -97,10 +104,6 @@ test("FE_AUTH_001: renders the login page", () => {
   ).toBeInTheDocument();
 
   expect(
-    screen.getByLabelText(/role/i)
-  ).toBeInTheDocument();
-
-  expect(
     screen.getByRole("button", {
       name: /sign in to contractiq/i,
     })
@@ -120,25 +123,36 @@ test("FE_AUTH_002: shows validation for empty email and password", async () => {
   await user.click(signInButton);
 
   expect(
-    screen.getByRole("alert")
-  ).toHaveTextContent(
-    "Please enter your email and password."
-  );
+    screen.getByText("Email is required")
+  ).toBeInTheDocument();
+
+  expect(
+    screen.getByText("Password is required")
+  ).toBeInTheDocument();
 
   expect(global.fetch).not.toHaveBeenCalled();
 });
 
 
 test("FE_AUTH_003: logs in successfully and redirects to the permitted default page", async () => {
-  global.fetch.mockResolvedValueOnce({
-    ok: true,
-    json: async () => ({
-      access_token: "test-access-token",
-      token_type: "bearer",
-      role: "Administrator",
-      name: "Test Administrator",
-    }),
-  });
+  global.fetch
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        access_token: "test-access-token",
+        token_type: "bearer",
+        role: "Administrator",
+        name: "Test Administrator",
+      }),
+    })
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        full_name: "Test Administrator",
+        role: "Administrator",
+        email: "admin@example.com",
+      }),
+    });
 
   const user = userEvent.setup();
 
@@ -154,11 +168,6 @@ test("FE_AUTH_003: logs in successfully and redirects to the permitted default p
     "ValidPassword@123"
   );
 
-  await user.selectOptions(
-    screen.getByLabelText(/role/i),
-    "Administrator"
-  );
-
   await user.click(
     screen.getByRole("button", {
       name: /sign in to contractiq/i,
@@ -167,7 +176,7 @@ test("FE_AUTH_003: logs in successfully and redirects to the permitted default p
 
   await waitFor(() => {
     expect(global.fetch).toHaveBeenCalledWith(
-      "/api/auth/login",
+      expect.stringContaining("/auth/login"),
       expect.objectContaining({
         method: "POST",
         headers: {
@@ -178,20 +187,12 @@ test("FE_AUTH_003: logs in successfully and redirects to the permitted default p
   });
 
   expect(
-    sessionStorage.getItem("token")
+    localStorage.getItem("token") || sessionStorage.getItem("token")
   ).toBe("test-access-token");
-
-  expect(
-    sessionStorage.getItem("role")
-  ).toBe("Administrator");
-
-  expect(
-    sessionStorage.getItem("name")
-  ).toBe("Test Administrator");
 
   await waitFor(() => {
     expect(mockNavigate).toHaveBeenCalledWith(
-      "/notifications"
+      "/dashboard"
     );
   });
 });

@@ -82,19 +82,19 @@ export default function LoginForm() {
       )}
 
       <div className="flex flex-col gap-1 relative">
-        <label className="text-xs font-bold text-slate-500 uppercase">Email Address</label>
+        <label htmlFor="email" className="text-xs font-bold text-slate-500 uppercase">Email Address</label>
         <div className="relative">
           <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:border-blue-500 focus:bg-white transition-colors" placeholder="you@company.com" disabled={loading} />
+          <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:border-blue-500 focus:bg-white transition-colors" placeholder="you@company.com" disabled={loading} />
         </div>
         {errors.email && <span className="text-red-500 text-xs mt-1">{errors.email}</span>}
       </div>
 
       <div className="flex flex-col gap-1 relative">
-        <label className="text-xs font-bold text-slate-500 uppercase">Password</label>
+        <label htmlFor="password" className="text-xs font-bold text-slate-500 uppercase">Password</label>
         <div className="relative">
           <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:border-blue-500 focus:bg-white transition-colors" placeholder="••••••••" disabled={loading} />
+          <input id="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:border-blue-500 focus:bg-white transition-colors" placeholder="••••••••" disabled={loading} />
           <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
