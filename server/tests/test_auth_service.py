@@ -7,3 +7,5 @@ def test_authenticate_user_success():
     assert token is not None
     assert token.access_token == "simulated_jwt_token_12345"
     assert token.token_type == "bearer"
+
+    

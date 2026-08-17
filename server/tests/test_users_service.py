@@ -27,6 +27,11 @@ def test_create_user():
     user = create_user(user_data)
 
     assert user is not None
+    assert user.email == "admin@contractiq.com"
+
+
+
+    
     assert user.id == 1
     assert user.email == "test@example.com"
     assert user.name == "Test User"
