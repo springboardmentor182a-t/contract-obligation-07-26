@@ -85,6 +85,25 @@ def google_login():
     auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?client_id={GOOGLE_CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=email%20profile&prompt=select_account"
     return RedirectResponse(url=auth_url)
 
+import os
+import requests
+from fastapi.responses import RedirectResponse
+import uuid
+from src.database.models import UserModel
+from src.auth.security import hash_password
+from src.auth.jwt import create_access_token
+
+# Load real credentials
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+REDIRECT_URI = "http://localhost:8000/api/auth/google/callback"
+
+@router.get("/google/login")
+def google_login():
+    # Uses the real Client ID and forces the account chooser
+    auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?client_id={GOOGLE_CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=email%20profile&prompt=select_account"
+    return RedirectResponse(url=auth_url)
+
 @router.get("/google/callback")
 def google_callback(code: str = None, db: Session = Depends(get_db)):
     if not code:
