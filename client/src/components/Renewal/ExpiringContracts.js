@@ -38,13 +38,14 @@ function ExpiringContracts({ data }) {
               contract.status || "Upcoming";
 
             return {
-              // AI endpoint requires the original contract ID.
-              id:
-                contract.contract_id ||
-                contract.id,
+              // Actual Contract ID used by the AI endpoint
+              contract_id: contract.contract_id,
 
-              // Renewal record ID is preserved separately.
+              // Renewal record ID
               renewalId: contract.id,
+
+              // Keep the contract ID as the main ID for AI state
+              id: contract.contract_id || contract.id,
 
               name:
                 contract.contract_name ||
@@ -124,75 +125,72 @@ function ExpiringContracts({ data }) {
     }, 4000);
   };
 
-  const handleAIStrategy = async (
-    contract
-  ) => {
-    if (!contract.id) {
-      setAiErrors((current) => ({
-        ...current,
-        [contract.renewalId]:
-          "This renewal is not connected to a contract.",
-      }));
+  const handleAIStrategy = async (contract) => {
+  if (!contract.contract_id) {
+    setAiErrors((current) => ({
+      ...current,
+      [contract.renewalId]:
+        "This renewal is not linked to a contract yet.",
+    }));
 
-      return;
+    return;
+  }
+
+  setAiLoadingId(contract.contract_id);
+
+  setAiErrors((current) => ({
+    ...current,
+    [contract.contract_id]: "",
+  }));
+
+  try {
+    const response = await fetch(
+      `/api/renewal-ai/${contract.contract_id}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    let responseData = {};
+
+    try {
+      responseData = await response.json();
+    } catch {
+      responseData = {};
     }
 
-    setAiLoadingId(contract.id);
+    if (!response.ok) {
+      throw new Error(
+        responseData.detail ||
+          "Unable to generate the AI renewal strategy."
+      );
+    }
+
+    setAiStrategies((current) => ({
+      ...current,
+      [contract.contract_id]: responseData,
+    }));
+
+    setSelectedId(contract.contract_id);
+  } catch (error) {
+    console.error(
+      "AI renewal strategy error:",
+      error
+    );
 
     setAiErrors((current) => ({
       ...current,
-      [contract.id]: "",
+      [contract.contract_id]:
+        error.message ||
+        "Unable to generate the AI renewal strategy.",
     }));
-
-    try {
-      const response = await fetch(
-        `/api/renewal-ai/${contract.id}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
-
-      let responseData = {};
-
-      try {
-        responseData =
-          await response.json();
-      } catch {
-        responseData = {};
-      }
-
-      if (!response.ok) {
-        throw new Error(
-          responseData.detail ||
-            "Unable to generate the AI renewal strategy."
-        );
-      }
-
-      setAiStrategies((current) => ({
-        ...current,
-        [contract.id]: responseData,
-      }));
-
-      setSelectedId(contract.id);
-    } catch (error) {
-      console.error(
-        "AI renewal strategy error:",
-        error
-      );
-
-      setAiErrors((current) => ({
-        ...current,
-        [contract.id]:
-          error.message ||
-          "Unable to generate the AI renewal strategy.",
-      }));
-    } finally {
-      setAiLoadingId(null);
-    }
-  };
+  } finally {
+    setAiLoadingId(null);
+  }
+};
 
   const formatDays = (days) => {
     if (days === null) {
@@ -253,19 +251,19 @@ function ExpiringContracts({ data }) {
           {visibleContracts.map(
             (contract) => {
               const strategy =
-                aiStrategies[contract.id];
+                aiStrategies[contract.contract_id];
 
               const aiError =
-                aiErrors[contract.id];
+                aiErrors[contract.contract_id];
 
               const isAnalyzing =
-                aiLoadingId === contract.id;
+                aiLoadingId === contract.contract_id;
 
               return (
                 <article
                   key={
                     contract.renewalId ||
-                    contract.id
+                    contract.contract_id
                   }
                   className="contract-row"
                 >

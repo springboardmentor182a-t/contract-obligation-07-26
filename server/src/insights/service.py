@@ -390,8 +390,52 @@ class InsightsService:
 
             result = GeminiInsightsResult.model_validate_json(response.text)
 
-        except Exception:
+        # except Exception:
+        #     return cls._unavailable_ai_content()
+        except Exception as error:
+            print(
+                f"[Contract AI ERROR]: {error}"
+            )
+
+            error_message = str(error)
+
+            if (
+                "429" in error_message
+                or "RESOURCE_EXHAUSTED" in error_message
+            ):
+                return AIInsights(
+                    overall_assessment=(
+                        "AI service quota is temporarily exhausted."
+                    ),
+                    key_findings=[],
+                    recommended_actions=[],
+                    available=False,
+                    error_message=(
+                        "Gemini API quota has been exceeded. "
+                        "Please try again after the quota resets."
+                    ),
+                )
+
+            if (
+                "503" in error_message
+                or "UNAVAILABLE" in error_message
+            ):
+                return AIInsights(
+                    overall_assessment=(
+                        "AI service is temporarily unavailable."
+                    ),
+                    key_findings=[],
+                    recommended_actions=[],
+                    available=False,
+                    error_message=(
+                        "Gemini is temporarily unavailable. "
+                        "Please try again shortly."
+                    ),
+                )
+
             return cls._unavailable_ai_content()
+
+            
 
         return AIInsights(
             **result.model_dump(),

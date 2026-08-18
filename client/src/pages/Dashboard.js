@@ -41,13 +41,22 @@ export default function Dashboard() {
         const [cRes, oRes, rRes] = await Promise.allSettled([
           fetch("/api/contracts", { headers }),
           fetch("/api/obligations/", { headers }),
-          fetch("/api/renewals/", { headers }),
+          fetch("/api/renewals/dashboard", { headers }),
         ]);
 
-        let contracts = [], obls = [], renewals = [];
-        if (cRes.status === "fulfilled" && cRes.value.ok) contracts = await cRes.value.json();
-        if (oRes.status === "fulfilled" && oRes.value.ok) obls = await oRes.value.json();
-        if (rRes.status === "fulfilled" && rRes.value.ok) renewals = await rRes.value.json();
+        let contracts = [], obls = [], renewalDashboard = {};
+
+        if (cRes.status === "fulfilled" && cRes.value.ok) {
+          contracts = await cRes.value.json();
+        }
+
+        if (oRes.status === "fulfilled" && oRes.value.ok) {
+          obls = await oRes.value.json();
+        }
+
+        if (rRes.status === "fulfilled" && rRes.value.ok) {
+          renewalDashboard = await rRes.value.json();
+        }
 
         const active = Array.isArray(contracts)
           ? contracts.filter((c) => (c.status || "").toLowerCase() === "active").length : 0;
@@ -55,8 +64,8 @@ export default function Dashboard() {
           ? obls.filter((o) => ["due", "due soon", "pending"].includes((o.status || "").toLowerCase())).length : 0;
         const overdue = Array.isArray(obls)
           ? obls.filter((o) => (o.status || "").toLowerCase() === "overdue").length : 0;
-
-        setKpis({ contracts: active, obligations: dueSoon, overdue, renewals: Array.isArray(renewals) ? renewals.length : 0 });
+        
+        setKpis({contracts: active,obligations: dueSoon,overdue,renewals: renewalDashboard?.summary?.totalContracts || 0});
         setObligations(Array.isArray(obls) ? obls.slice(0, 5) : []);
       } catch (err) {
         console.warn("Dashboard load error:", err);

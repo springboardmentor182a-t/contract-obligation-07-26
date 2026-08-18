@@ -1,6 +1,11 @@
 import json
 import os
 from datetime import date
+import time
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from typing import Literal
 
 from fastapi import HTTPException, status
@@ -200,38 +205,138 @@ class RenewalAIService:
             f"{json.dumps(contract_summary, indent=2)}"
         )
 
+        # try:
+        #     client = genai.Client(api_key=api_key)
+
+        #     response = client.models.generate_content(
+        #         model=RenewalAIService.MODEL_NAME,
+        #         contents=prompt,
+        #         config=types.GenerateContentConfig(
+        #             response_mime_type="application/json",
+        #             response_schema=GeminiStrategyResult,
+        #             temperature=0.2,
+        #         ),
+        #     )
+
+        #     if not response.text:
+        #         raise ValueError(
+        #             "Gemini returned an empty response."
+        #         )
+
+        #     ai_result = (
+        #         GeminiStrategyResult.model_validate_json(
+        #             response.text
+        #         )
+        #     )
+
+        # except Exception as error:
+        #     print(
+        #         f"[Renewal AI ERROR] Contract {contract_id}: "
+        #         f"{type(error).__name__}: {error}"
+        #     )
+
+        #     raise HTTPException(
+        #         status_code=status.HTTP_502_BAD_GATEWAY,
+        #         detail=(
+        #             f"Unable to generate the AI renewal strategy: {error}"
+        #         ),
+        #     ) from error
+
+
         try:
             client = genai.Client(api_key=api_key)
 
-            response = client.models.generate_content(
-                model=RenewalAIService.MODEL_NAME,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=GeminiStrategyResult,
-                    temperature=0.2,
-                ),
-            )
+            response = None
+            last_error = None
 
-            if not response.text:
-                raise ValueError(
+            for attempt in range(3):
+                try:
+                    response = client.models.generate_content(
+                        model=RenewalAIService.MODEL_NAME,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                            response_schema=GeminiStrategyResult,
+                            temperature=0.2,
+                        ),
+                    )
+
+                    if not response.text:
+                        raise ValueError(
+                            "Gemini returned an empty response."
+                        )
+
+                    break
+
+                except Exception as error:
+                    last_error = error
+
+                    error_text = str(error).lower()
+
+                    # Retry temporary Gemini availability/rate-limit errors.
+                    if (
+                        "503" in error_text
+                        or "unavailable" in error_text
+                        or "429" in error_text
+                        or "resource exhausted" in error_text
+                    ):
+                        if attempt < 2:
+                            time.sleep(2 * (attempt + 1))
+                            continue
+
+                    raise
+
+            if response is None or not response.text:
+                raise last_error or ValueError(
                     "Gemini returned an empty response."
                 )
 
-            ai_result = (
-                GeminiStrategyResult.model_validate_json(
-                    response.text
-                )
+            ai_result = GeminiStrategyResult.model_validate_json(
+                response.text
             )
 
+        # except Exception as error:
+        #     print(
+        #         f"[Renewal AI ERROR] Contract {contract_id}: "
+        #         f"{type(error).__name__}: {error}"
+        #     )
+
+        #     raise HTTPException(
+        #         status_code=status.HTTP_502_BAD_GATEWAY,
+        #         detail="Unable to generate the AI renewal strategy.",
+        #     ) from error
+
         except Exception as error:
+            error_message = str(error)
+
+            print(
+                f"[Renewal AI ERROR] Contract {contract_id}: "
+                f"{error_message}"
+            )
+
+            if "429" in error_message or "RESOURCE_EXHAUSTED" in error_message:
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail=(
+                        "AI service quota is temporarily exhausted. "
+                        "Please try again later."
+                    ),
+                ) from error
+
+            if "503" in error_message or "UNAVAILABLE" in error_message:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail=(
+                        "AI service is temporarily unavailable. "
+                        "Please try again shortly."
+                    ),
+                ) from error
+
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=(
-                    "Unable to generate the AI renewal strategy."
-                ),
+                detail="Unable to generate the AI renewal strategy.",
             ) from error
-
+        
         return RenewalStrategyResponse(
             contract_id=contract.id,
             renewal_id=renewal.id if renewal else None,

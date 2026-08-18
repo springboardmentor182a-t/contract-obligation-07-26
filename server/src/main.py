@@ -11,6 +11,7 @@ from src.insights.controller import router as insights_router
 from src.database.core import initialize_database
 from src.logging import configure_logging
 from src.rate_limiter import init_rate_limiter
+from src.debug_router import debug_router
 
 configure_logging()
 
@@ -47,6 +48,9 @@ def startup():
 
 # Main API
 app.include_router(api_router)
+
+# Debug routes
+app.include_router(debug_router)
 
 # Contract Repository
 app.include_router(

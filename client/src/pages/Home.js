@@ -185,7 +185,7 @@ export default function Home() {
       {/* ── Row 1: Charts ── */}
       <div className="split-grid charts-row">
         <ContractActivityChart />
-        <RiskDistributionChart />
+        <RiskDistributionChart riskDistribution={summary?.risk_distribution ?? []} />
       </div>
 
       {/* ── Row 2: Activities + Right Stack ── */}

@@ -1,14 +1,42 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
-export default function RiskDistributionChart() {
+const DEFAULT_RISK_LEVELS = [
+  { key: "Low", color: "#10B981" },
+  { key: "Medium", color: "#F59E0B" },
+  { key: "High", color: "#EF4444" },
+  { key: "Critical", color: "#8B5CF6" },
+];
+
+export default function RiskDistributionChart({ riskDistribution = [] }) {
   const [activeDonutSegment, setActiveDonutSegment] = useState(null);
 
-  const donutSegments = [
-    { key: "Low",      value: 34, percentage: 56.67, color: "#10B981", strokeDash: "249.25 439.82", offset: "0" },
-    { key: "Medium",   value: 18, percentage: 30.0,  color: "#F59E0B", strokeDash: "131.95 439.82", offset: "-249.25" },
-    { key: "High",     value: 6,  percentage: 10.0,  color: "#EF4444", strokeDash: "43.98 439.82",  offset: "-381.20" },
-    { key: "Critical", value: 2,  percentage: 3.33,  color: "#8B5CF6", strokeDash: "14.64 439.82",  offset: "-425.18" },
-  ];
+  const donutSegments = useMemo(() => {
+    const map = new Map((riskDistribution || []).map((entry) => [entry.key, entry]));
+    const segments = DEFAULT_RISK_LEVELS.map((level) => {
+      const entry = map.get(level.key) || { key: level.key, value: 0, percentage: 0, color: level.color };
+      return {
+        ...entry,
+        color: entry.color || level.color,
+      };
+    });
+
+    const total = segments.reduce((sum, item) => sum + Number(item.value || 0), 0);
+    let accumulated = 0;
+    return segments.map((segment) => {
+      const value = Number(segment.value || 0);
+      const fraction = total ? value / total : 0;
+      const strokeDash = `${fraction * 439.82} 439.82`;
+      const offset = `-${accumulated}`;
+      accumulated += fraction * 439.82;
+      return {
+        ...segment,
+        strokeDash,
+        offset,
+      };
+    });
+  }, [riskDistribution]);
+
+  const totalCases = donutSegments.reduce((sum, item) => sum + Number(item.value || 0), 0);
 
   return (
     <div className="card chart-card">
@@ -46,8 +74,8 @@ export default function RiskDistributionChart() {
           <div className="donut-inner-content">
             <span className="donut-inner-val">
               {activeDonutSegment
-                ? donutSegments.find((s) => s.key === activeDonutSegment).value
-                : donutSegments.reduce((a, b) => a + b.value, 0)}
+                ? donutSegments.find((s) => s.key === activeDonutSegment)?.value ?? 0
+                : totalCases}
             </span>
             <span className="donut-inner-label">
               {activeDonutSegment ? `${activeDonutSegment} Risk` : "Total Cases"}

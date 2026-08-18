@@ -44,12 +44,26 @@ class AuthService:
     ):
         email = str(request.email).strip().lower()
 
-        if request.role != "Employee":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Public registration is limited to Employee accounts.",
-            )
+        # if request.role != "Employee":
+        #     raise HTTPException(
+        #         status_code=status.HTTP_403_FORBIDDEN,
+        #         detail="Public registration is limited to Employee accounts.",
+        #     )
 
+        VALID_ROLES = {
+            "Administrator",
+            "Legal Manager",
+            "Compliance Officer",
+            "Contract Manager",
+            "Department Head",
+            "Employee",
+        }
+
+        if request.role not in VALID_ROLES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid role selected.",
+            )
         existing_user = (
             db.query(UserModel)
             .filter(UserModel.email == email)
@@ -170,6 +184,75 @@ class AuthService:
             action="User logged in",
             module="Authentication",
             description=f"{user.email} logged in successfully",
+        )
+
+        display_name = (
+            user.full_name
+            or user.name
+            or user.email
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "role": database_role,
+            "name": display_name,
+        }
+
+    def login_oauth(
+        self,
+        username: str,
+        password: str,
+        db: Session,
+    ):
+        email = username.strip().lower()
+
+        user = (
+            db.query(UserModel)
+            .filter(UserModel.email == email)
+            .first()
+        )
+
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password.",
+            )
+
+        try:
+            password_is_valid = verify_password(
+                password,
+                user.password,
+            )
+        except Exception:
+            password_is_valid = False
+
+        if not password_is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password.",
+            )
+
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your account is inactive.",
+            )
+
+        database_role = user.role
+
+        if not database_role:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User role is not configured.",
+            )
+
+        access_token = create_access_token(
+            {
+                "sub": str(user.id),
+                "email": user.email,
+                "role": database_role,
+            }
         )
 
         display_name = (

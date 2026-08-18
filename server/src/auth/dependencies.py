@@ -41,6 +41,7 @@ COMPLIANCE_ROLES = (
     EMPLOYEE,
 )
 DASHBOARD_ROLES = (
+    ADMINISTRATOR,
     LEGAL_MANAGER,
     COMPLIANCE_OFFICER,
     CONTRACT_MANAGER,
@@ -68,7 +69,7 @@ USER_MANAGEMENT_ROLES = (
 )
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/api/auth/login",
+    tokenUrl="/api/auth/token",
     auto_error=False,
 )
 

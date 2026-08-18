@@ -4,7 +4,9 @@ from src.audit.service import create_audit_log
 
 from .models import Renewal
 from .repository import RenewalRepository
+from fastapi import HTTPException, status
 
+from src.contract_repository.models import Contract
 
 class RenewalService:
 
@@ -14,9 +16,59 @@ class RenewalService:
     def get_all(self, db):
         return self.repo.get_all(db)
 
+    # def create(self, db, data):
+    #     payload = data.dict() if hasattr(data, "dict") else data.model_dump()
+    #     renewal = Renewal(**payload)
+    #     created_renewal = self.repo.create(db, renewal)
+
+    #     create_audit_log(
+    #         db=db,
+    #         user_id=None,
+    #         event_type="CREATE",
+    #         action="Renewal Created",
+    #         module="Renewal Dashboard",
+    #         description=(
+    #             f"Created renewal: {created_renewal.contract_name} "
+    #             f"(ID: {created_renewal.id}, "
+    #             f"status: {created_renewal.status}, "
+    #             f"approval: {created_renewal.approval_status})"
+    #         ),
+    #     )
+
+    #     return created_renewal
     def create(self, db, data):
-        payload = data.dict() if hasattr(data, "dict") else data.model_dump()
+        payload = (
+            data.dict()
+            if hasattr(data, "dict")
+            else data.model_dump()
+        )
+
+        contract_id = payload.get("contract_id")
+
+        contract = (
+            db.query(Contract)
+            .filter(Contract.id == contract_id)
+            .first()
+        )
+
+        if contract is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Contract {contract_id} not found.",
+            )
+
+        # Keep renewal information synchronized with the real contract.
+        payload["contract_name"] = contract.contract_name
+        payload["vendor"] = contract.vendor
+
+        if not payload.get("department"):
+            payload["department"] = contract.department
+
+        if payload.get("contract_value") is None:
+            payload["contract_value"] = contract.contract_value
+
         renewal = Renewal(**payload)
+
         created_renewal = self.repo.create(db, renewal)
 
         create_audit_log(
@@ -28,13 +80,13 @@ class RenewalService:
             description=(
                 f"Created renewal: {created_renewal.contract_name} "
                 f"(ID: {created_renewal.id}, "
+                f"Contract ID: {created_renewal.contract_id}, "
                 f"status: {created_renewal.status}, "
                 f"approval: {created_renewal.approval_status})"
             ),
         )
 
         return created_renewal
-
     def _days_until(self, target_date):
         if not target_date:
             return None
@@ -42,13 +94,25 @@ class RenewalService:
             target_date = datetime.fromisoformat(target_date).date()
         return (target_date - date.today()).days
 
+    # def dashboard(self, db):
+    #     renewals = self.repo.get_all(db)
+    #     total_contracts = len(renewals)
     def dashboard(self, db):
         renewals = self.repo.get_all(db)
-        total_contracts = len(renewals)
 
+        # Only include renewals that are linked
+        # to an existing contract.
+        renewals = [
+            renewal
+            for renewal in renewals
+            if renewal.contract_id is not None
+            and renewal.contract is not None
+        ]
+        total_contracts = len(renewals)
         expiring30 = 0
         expiring60 = 0
         expiring90 = 0
+        overdue = 0
         reminders = 0
         contracts_payload = []
 
@@ -57,19 +121,33 @@ class RenewalService:
             if days_left is None:
                 continue
 
-            if 0 <= days_left <= 30:
+            # if 0 <= days_left <= 30:
+            #     expiring30 += 1
+            # elif 31 <= days_left <= 60:
+            #     expiring60 += 1
+            # elif 61 <= days_left <= 90:
+            #     expiring90 += 1
+
+            # if days_left <= 60:
+            #     reminders += 1
+            if days_left < 0:
+                overdue += 1
+            elif days_left <= 30:
                 expiring30 += 1
-            elif 31 <= days_left <= 60:
+            elif days_left <= 60:
                 expiring60 += 1
-            elif 61 <= days_left <= 90:
+            elif days_left <= 90:
                 expiring90 += 1
 
-            if days_left <= 60:
+            # Reminder only for upcoming renewals
+            if 0 <= days_left <= 60:
                 reminders += 1
 
             contracts_payload.append(
                 {
                     "id": renewal.id,
+                    #newly added fields to the payload for better clarity
+                    "contract_id": renewal.contract_id, 
                     "contract_name": renewal.contract_name,
                     "vendor": renewal.vendor,
                     "status": renewal.status or "Upcoming",
@@ -141,6 +219,7 @@ class RenewalService:
                 "expiring60": expiring60,
                 "expiring90": expiring90,
                 "autoReminder": reminders,
+                "overdue": overdue,
                 "totalContracts": total_contracts,
             },
             "pipeline": pipeline,
