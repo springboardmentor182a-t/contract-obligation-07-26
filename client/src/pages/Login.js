@@ -4,12 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import { Shield, Mail, Lock, Eye, EyeOff, Loader } from 'lucide-react';
 
 export default function Login() {
-  const { login, demoLogin } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [demoLoading, setDemoLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
@@ -24,23 +23,6 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDemo = async () => {
-    setError('');
-    setDemoLoading(true);
-    try {
-      await demoLogin();
-      navigate('/dashboard');
-    } catch (err) {
-      setError('Demo login failed. Make sure the backend is running and seeded.');
-    } finally {
-      setDemoLoading(false);
-    }
-  };
-
-  const fillDemo = (email) => {
-    setForm({ email, password: 'Password@123' });
   };
 
   return (
@@ -99,29 +81,6 @@ export default function Login() {
             {loading ? <><Loader size={15} style={{ animation: 'spin 1s linear infinite' }} /> Signing in...</> : 'Sign In'}
           </button>
         </form>
-
-        <div style={styles.divider}><span>or continue with demo</span></div>
-
-        <button onClick={handleDemo} disabled={demoLoading} style={styles.demoBtn}>
-          {demoLoading ? 'Loading...' : '⚡ Access Demo (Legal Manager)'}
-        </button>
-
-        {/* Demo credentials reference */}
-        <div style={styles.credBox}>
-          <p style={styles.credTitle}>Demo Credentials (password: Password@123)</p>
-          <div style={styles.credGrid}>
-            {[
-              { label: 'Legal Manager', email: 'legal.manager@contractiq.com' },
-              { label: 'Compliance Officer', email: 'compliance@contractiq.com' },
-              { label: 'Contract Manager', email: 'contracts@contractiq.com' },
-            ].map((c) => (
-              <button key={c.email} onClick={() => fillDemo(c.email)} style={styles.credBtn}>
-                <span style={styles.credRole}>{c.label}</span>
-                <span style={styles.credEmail}>{c.email}</span>
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       <style>{`
@@ -227,51 +186,4 @@ const styles = {
     boxShadow: '0 4px 15px rgba(37,99,235,0.3)',
     transition: 'opacity 0.2s',
   },
-  divider: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1rem',
-    margin: '1.5rem 0 1rem',
-    color: '#334155',
-    fontSize: '0.75rem',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    '::before': { content: '""', flex: 1, borderTop: '1px solid rgba(255,255,255,0.06)' },
-  },
-  demoBtn: {
-    width: '100%',
-    padding: '0.75rem',
-    background: 'rgba(16,185,129,0.08)',
-    border: '1px solid rgba(16,185,129,0.2)',
-    borderRadius: '10px',
-    color: '#10b981',
-    fontWeight: '600',
-    fontSize: '0.875rem',
-    cursor: 'pointer',
-    transition: 'background 0.2s',
-    marginBottom: '1.5rem',
-  },
-  credBox: {
-    background: 'rgba(255,255,255,0.02)',
-    border: '1px solid rgba(255,255,255,0.05)',
-    borderRadius: '10px',
-    padding: '1rem',
-  },
-  credTitle: { color: '#475569', fontSize: '0.72rem', fontWeight: '600', margin: '0 0 0.75rem 0', textTransform: 'uppercase', letterSpacing: '0.04em' },
-  credGrid: { display: 'flex', flexDirection: 'column', gap: '0.4rem' },
-  credBtn: {
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.06)',
-    borderRadius: '8px',
-    padding: '0.55rem 0.85rem',
-    cursor: 'pointer',
-    textAlign: 'left',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-    transition: 'background 0.15s',
-  },
-  credRole: { color: '#94a3b8', fontSize: '0.72rem', fontWeight: '700' },
-  credEmail: { color: '#3b82f6', fontSize: '0.75rem' },
 };

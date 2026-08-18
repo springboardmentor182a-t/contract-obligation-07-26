@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 
-export const useFetchContracts = (url = '/api/contracts/') => {
+export const useFetchContracts = (path = '/contracts') => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -9,7 +9,7 @@ export const useFetchContracts = (url = '/api/contracts/') => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(url);
+        const response = await api.get(path);
         setData(response.data);
       } catch (err) {
         setError(err);

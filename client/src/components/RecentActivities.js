@@ -1,83 +1,88 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FileText, AlertTriangle, Users, Clock, CheckCircle, Shield } from "lucide-react";
+import api from "../api";
 
 export default function RecentActivities() {
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get("/history?limit=7")
+      .then((res) => {
+        setActivities(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to load history", err);
+        setLoading(false);
+      });
+  }, []);
+
+  const getIcon = (action) => {
+    const act = (action || "").toUpperCase();
+    if (act.includes("CREATE")) return { icon: FileText, color: "color-green" };
+    if (act.includes("APPROV")) return { icon: CheckCircle, color: "color-green" };
+    if (act.includes("REJECT") || act.includes("CANCEL")) return { icon: XCircle, color: "color-red" };
+    if (act.includes("EXPI")) return { icon: AlertTriangle, color: "color-orange" };
+    return { icon: Shield, color: "color-blue" };
+  };
+
+  const formatTime = (dateStr) => {
+    try {
+      const dateObj = new Date(dateStr);
+      const diff = new Date() - dateObj;
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return "Just now";
+      if (mins < 60) return `${mins} min ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs} hr${hrs > 1 ? "s" : ""} ago`;
+      return dateObj.toLocaleDateString();
+    } catch {
+      return "Recent";
+    }
+  };
+
+  // Safe fallback if lucide-react doesn't export XCircle
+  const XCircle = (props) => (
+    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="15" y1="9" x2="9" y2="15" />
+      <line x1="9" y1="9" x2="15" y2="15" />
+    </svg>
+  );
+
   return (
     <div className="card details-card">
       <div className="chart-header">
         <h3 className="chart-card-title">Recent Activities</h3>
-        <button className="chart-header-link">View all</button>
       </div>
       <div className="activities-list">
-        <div className="activity-row">
-          <div className="activity-icon-wrapper color-green">
-            <FileText className="activity-row-icon" />
+        {loading ? (
+          <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
+            Loading activities...
           </div>
-          <div className="activity-info-wrapper">
-            <p className="activity-description">CTR-2024-003 approved by Legal Manager</p>
-            <span className="activity-timestamp">5 min ago</span>
+        ) : activities.length === 0 ? (
+          <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
+            No recent activities.
           </div>
-        </div>
-
-        <div className="activity-row">
-          <div className="activity-icon-wrapper color-orange">
-            <AlertTriangle className="activity-row-icon" />
-          </div>
-          <div className="activity-info-wrapper">
-            <p className="activity-description">High risk flag raised on CTR-2024-005</p>
-            <span className="activity-timestamp">22 min ago</span>
-          </div>
-        </div>
-
-        <div className="activity-row">
-          <div className="activity-icon-wrapper color-blue">
-            <Users className="activity-row-icon" />
-          </div>
-          <div className="activity-info-wrapper">
-            <p className="activity-description">New user James Wilson added to Finance dept</p>
-            <span className="activity-timestamp">1 hr ago</span>
-          </div>
-        </div>
-
-        <div className="activity-row">
-          <div className="activity-icon-wrapper color-red">
-            <Clock className="activity-row-icon" />
-          </div>
-          <div className="activity-info-wrapper">
-            <p className="activity-description">OBL-004 overdue – Property Insurance Renewal</p>
-            <span className="activity-timestamp">2 hrs ago</span>
-          </div>
-        </div>
-
-        <div className="activity-row">
-          <div className="activity-icon-wrapper color-green">
-            <CheckCircle className="activity-row-icon" />
-          </div>
-          <div className="activity-info-wrapper">
-            <p className="activity-description">OBL-003 marked complete by Sarah Lin</p>
-            <span className="activity-timestamp">3 hrs ago</span>
-          </div>
-        </div>
-
-        <div className="activity-row">
-          <div className="activity-icon-wrapper color-blue">
-            <FileText className="activity-row-icon" />
-          </div>
-          <div className="activity-info-wrapper">
-            <p className="activity-description">CTR-2024-006 draft created by Sarah Lin</p>
-            <span className="activity-timestamp">5 hrs ago</span>
-          </div>
-        </div>
-
-        <div className="activity-row">
-          <div className="activity-icon-wrapper color-teal">
-            <Shield className="activity-row-icon" />
-          </div>
-          <div className="activity-info-wrapper">
-            <p className="activity-description">Compliance score updated to 84%</p>
-            <span className="activity-timestamp">Yesterday</span>
-          </div>
-        </div>
+        ) : (
+          activities.map((act) => {
+            const { icon: Icon, color } = getIcon(act.action);
+            return (
+              <div className="activity-row" key={act.id}>
+                <div className={`activity-icon-wrapper ${color}`}>
+                  <Icon className="activity-row-icon" size={16} />
+                </div>
+                <div className="activity-info-wrapper">
+                  <p className="activity-description">
+                    {act.remarks || `${act.action.replace(/_/g, " ")} by ${act.changed_by}`}
+                  </p>
+                  <span className="activity-timestamp">{formatTime(act.created_at)}</span>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

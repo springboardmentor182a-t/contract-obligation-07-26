@@ -1,168 +1,283 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { useTheme } from '../context/ThemeContext';
 
 const Landing = () => {
   const navigate = useNavigate();
   const { isDarkMode, toggleTheme } = useTheme();
-  const [loading, setLoading] = useState(false);
+  const [activeContracts, setActiveContracts] = useState('—');
 
-  const handleDemoAccess = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.post('http://127.0.0.1:8000/api/auth/demo-login');
-      if (response.data && response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('userName', response.data.user.name);
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      console.error('Error logging into demo:', error);
-      alert('Failed to launch demo. Ensure backend is running.');
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    api.get('/dashboard/stats')
+      .then(res => setActiveContracts(res.data.active_contracts ?? '—'))
+      .catch(() => { });
+  }, []);
+
+  const dark = isDarkMode;
+
+
+
+  const s = {
+    page: {
+      minHeight: '100vh',
+      background: dark ? 'linear-gradient(135deg, #0B1121 0%, #0d1530 100%)' : '#f8fafc',
+      color: dark ? '#f8fafc' : '#0f172a',
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      position: 'relative',
+      overflowX: 'hidden',
+    },
+    blob1: {
+      position: 'absolute', top: '-10%', left: '-10%',
+      width: '40%', height: '40%', borderRadius: '50%',
+      background: 'rgba(59,130,246,0.15)', filter: 'blur(120px)',
+      pointerEvents: 'none',
+    },
+    blob2: {
+      position: 'absolute', bottom: '-10%', right: '-10%',
+      width: '40%', height: '40%', borderRadius: '50%',
+      background: 'rgba(20,184,166,0.15)', filter: 'blur(120px)',
+      pointerEvents: 'none',
+    },
+    nav: {
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      padding: '1.5rem 2rem',
+      borderBottom: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0',
+      position: 'relative', zIndex: 10,
+    },
+    navBrand: { display: 'flex', alignItems: 'center', gap: '0.75rem' },
+    navIcon: {
+      width: 40, height: 40, background: '#2563eb', borderRadius: 12,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 8px 24px rgba(37,99,235,0.35)',
+    },
+    navName: { fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em' },
+    navActions: { display: 'flex', alignItems: 'center', gap: '1rem' },
+    themeBtn: {
+      background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.3rem',
+      transition: 'transform 0.2s', padding: '0.25rem',
+    },
+    loginBtn: {
+      background: 'none', border: 'none', cursor: 'pointer',
+      fontWeight: 600, fontSize: '0.9rem', padding: '0.5rem 1rem',
+      borderRadius: 8, color: dark ? '#94a3b8' : '#475569',
+      transition: 'background 0.2s',
+    },
+    demoNavBtn: {
+      background: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer',
+      fontWeight: 700, fontSize: '0.9rem', padding: '0.6rem 1.4rem',
+      borderRadius: 10, boxShadow: '0 4px 15px rgba(37,99,235,0.3)',
+      transition: 'all 0.2s',
+      display: 'flex', alignItems: 'center', gap: '0.5rem',
+    },
+    hero: {
+      position: 'relative', zIndex: 10,
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', textAlign: 'center',
+      padding: '6rem 1rem 4rem',
+    },
+    h1: {
+      fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
+      fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1,
+      margin: '0 0 1.5rem',
+    },
+    gradientSpan: {
+      background: 'linear-gradient(90deg, #3b82f6, #14b8a6)',
+      WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text',
+    },
+    subtitle: {
+      fontSize: 'clamp(1rem, 2vw, 1.25rem)',
+      color: dark ? '#94a3b8' : '#64748b',
+      maxWidth: 600, lineHeight: 1.7, margin: '0 auto 2.5rem',
+    },
+    ctaBtn: {
+      background: '#2563eb', color: '#fff', border: 'none',
+      cursor: 'pointer', fontWeight: 800,
+      fontSize: '1.1rem', padding: '1rem 2.5rem',
+      borderRadius: 9999, opacity: 1,
+      boxShadow: '0 0 40px -10px rgba(37,99,235,0.7)',
+      transition: 'transform 0.2s, box-shadow 0.2s',
+      display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
+    },
+    mockFrame: {
+      marginTop: '4rem', width: '100%', maxWidth: 900,
+      borderRadius: 20,
+      border: dark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e2e8f0',
+      background: dark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.7)',
+      backdropFilter: 'blur(20px)', padding: '1.5rem',
+      boxShadow: '0 40px 80px -20px rgba(0,0,0,0.4)',
+    },
+    mockTopBar: {
+      display: 'flex', alignItems: 'center', gap: '0.6rem',
+      borderBottom: dark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e2e8f0',
+      paddingBottom: '1rem', marginBottom: '1.25rem',
+    },
+    dot: (color) => ({ width: 12, height: 12, borderRadius: '50%', background: color }),
+    mockLabel: { fontSize: '0.85rem', fontWeight: 600, color: dark ? '#94a3b8' : '#64748b', marginLeft: '0.5rem' },
+    mockGrid: { display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' },
+    mockCard: {
+      borderRadius: 12,
+      background: dark ? 'rgba(30,41,59,0.8)' : '#f1f5f9',
+      border: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0',
+      padding: '1rem',
+      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+      minHeight: 110,
+    },
+    mockNum: { fontSize: '1.75rem', fontWeight: 800 },
+    mockSmall: { fontSize: '0.75rem', color: '#94a3b8' },
+    barsCard: {
+      borderRadius: 12,
+      background: dark ? 'rgba(30,41,59,0.8)' : '#f1f5f9',
+      border: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0',
+      padding: '1rem', minHeight: 110,
+      display: 'flex', alignItems: 'flex-end', gap: '0.4rem',
+    },
+    section: {
+      padding: '5rem 2rem', maxWidth: 1100, margin: '0 auto',
+      position: 'relative', zIndex: 5,
+    },
+    sectionTitle: {
+      fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 800,
+      textAlign: 'center', marginBottom: '0.75rem',
+    },
+    sectionSub: {
+      textAlign: 'center', fontSize: '1.05rem',
+      color: dark ? '#94a3b8' : '#64748b', marginBottom: '3rem',
+    },
+    bentoGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gridTemplateRows: 'auto auto',
+      gap: '1.25rem',
+    },
+    bentoLarge: {
+      gridColumn: 'span 2', gridRow: 'span 2',
+      borderRadius: 24, padding: '2rem',
+      border: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0',
+      background: dark ? 'rgba(30,41,59,0.5)' : '#ffffff',
+      position: 'relative', overflow: 'hidden', minHeight: 280,
+      transition: 'border-color 0.2s',
+    },
+    bentoSmall: {
+      borderRadius: 24, padding: '1.75rem',
+      border: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0',
+      background: dark ? 'rgba(30,41,59,0.5)' : '#ffffff',
+      transition: 'border-color 0.2s',
+    },
+    featureIcon: (bg, color) => ({
+      width: 44, height: 44, borderRadius: 14,
+      background: bg, color: color, fontSize: '1.1rem',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      marginBottom: '1rem', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+    }),
+    featureTitle: { fontSize: '1.3rem', fontWeight: 800, marginBottom: '0.5rem' },
+    featureDesc: { fontSize: '0.95rem', color: dark ? '#94a3b8' : '#64748b', lineHeight: 1.65 },
+    featureTitleSm: { fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.4rem' },
+    featureDescSm: { fontSize: '0.85rem', color: dark ? '#94a3b8' : '#64748b', lineHeight: 1.6 },
   };
 
+  const bars = [40, 70, 45, 90, 65, 100, 80];
+
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-[#0B1121] text-white' : 'bg-slate-50 text-slate-900'} font-sans relative overflow-hidden`}>
-      {/* Background Mesh Gradient elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/20 blur-[120px] mix-blend-multiply pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-teal-500/20 blur-[120px] mix-blend-multiply pointer-events-none"></div>
+    <div style={s.page}>
+      <div style={s.blob1} />
+      <div style={s.blob2} />
 
       {/* Navbar */}
-      <nav className={`flex justify-between items-center px-8 py-6 border-b ${isDarkMode ? 'border-white/10' : 'border-slate-200'} relative z-10`}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-            <i className="fa-solid fa-shield-halved text-white text-xl"></i>
+      <nav style={s.nav}>
+        <div style={s.navBrand}>
+          <div style={s.navIcon}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
           </div>
-          <span className="text-2xl font-bold tracking-tight">ContractIQ</span>
+          <span style={s.navName}>ContractIQ</span>
         </div>
-
-        <div className="flex items-center gap-6">
-          <button onClick={toggleTheme} className="text-2xl hover:scale-110 transition-transform focus:outline-none">
-            {isDarkMode ? <i className="fa-solid fa-moon text-blue-400"></i> : <i className="fa-solid fa-sun text-amber-500"></i>}
+        <div style={s.navActions}>
+          <button style={s.themeBtn} onClick={toggleTheme} title="Toggle Theme">
+            {dark ? '🌙' : '☀️'}
           </button>
-          
-          <button 
-            onClick={() => navigate('/login')}
-            className={`font-semibold px-4 py-2 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-slate-200'}`}
-          >
+          <button style={s.demoNavBtn} onClick={() => navigate('/login')}>
             Login / Register
-          </button>
-
-          <button 
-            onClick={handleDemoAccess}
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow-md shadow-blue-600/20 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-70 disabled:hover:translate-y-0"
-          >
-            {loading ? (
-              <><i className="fa-solid fa-spinner fa-spin"></i> Provisioning...</>
-            ) : (
-              'Access Demo'
-            )}
           </button>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <main className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-24 pb-16">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
-            Contract Compliance, <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-teal-400">Automated and Secured.</span>
-          </h1>
-          
-          <p className={`text-xl md:text-2xl max-w-2xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} leading-relaxed`}>
-            Extract obligations, track renewals, and mitigate risks in real-time with our AI-powered legal intelligence platform.
-          </p>
+      {/* Hero */}
+      <main style={s.hero}>
+        <h1 style={s.h1}>
+          Contract Compliance,<br />
+          <span style={s.gradientSpan}>Automated and Secured.</span>
+        </h1>
+        <p style={s.subtitle}>
+          Extract obligations, track renewals, and mitigate risks in real-time with our
+          AI-powered legal intelligence platform.
+        </p>
+        <button
+          style={s.ctaBtn}
+          onClick={() => navigate('/login')}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+        >
+          Get Started <span>→</span>
+        </button>
 
-          <div className="pt-8">
-            <button 
-              onClick={handleDemoAccess}
-              disabled={loading}
-              className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-blue-600 rounded-full overflow-hidden transition-all hover:scale-105 shadow-[0_0_40px_-10px_rgba(37,99,235,0.7)]"
-            >
-              {loading ? (
-                <><i className="fa-solid fa-circle-notch fa-spin mr-3"></i> Provisioning Environment...</>
-              ) : (
-                <>
-                  Access Interactive Demo
-                  <i className="fa-solid fa-arrow-right ml-3 group-hover:translate-x-1 transition-transform"></i>
-                </>
-              )}
-            </button>
+        {/* Mock dashboard preview */}
+        <div style={s.mockFrame}>
+          <div style={s.mockTopBar}>
+            <div style={s.dot('#ef4444')} />
+            <div style={s.dot('#f59e0b')} />
+            <div style={s.dot('#22c55e')} />
+            <span style={s.mockLabel}>Dashboard Overview</span>
           </div>
-        </div>
-
-        {/* Abstract 3D Glass Mockup */}
-        <div className="mt-20 relative w-full max-w-5xl perspective-1000">
-          <div className={`relative w-full rounded-2xl overflow-hidden shadow-2xl transform rotate-x-12 scale-95 transition-transform duration-700 hover:rotate-x-0 hover:scale-100 border ${isDarkMode ? 'border-white/10 bg-slate-900/50' : 'border-slate-200 bg-white/50'} backdrop-blur-xl p-6`}>
-             <div className="flex gap-4 items-center mb-6 border-b pb-4 border-slate-500/20">
-               <div className="flex gap-2">
-                 <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                 <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
-               </div>
-               <div className={`text-sm font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Dashboard Overview</div>
-             </div>
-             
-             {/* Mock Dashboard internals */}
-             <div className="grid grid-cols-3 gap-6">
-                <div className={`col-span-1 h-32 rounded-xl border ${isDarkMode ? 'bg-slate-800/80 border-slate-700' : 'bg-slate-100 border-slate-200'} p-4 flex flex-col justify-between`}>
-                  <div className={`w-8 h-8 rounded-full ${isDarkMode ? 'bg-blue-500/20' : 'bg-blue-200'} flex items-center justify-center`}><i className="fa-solid fa-file-contract text-blue-500"></i></div>
-                  <div>
-                    <div className="text-2xl font-bold">124</div>
-                    <div className="text-xs text-slate-500">Active Contracts</div>
-                  </div>
-                </div>
-                <div className={`col-span-2 h-32 rounded-xl border ${isDarkMode ? 'bg-slate-800/80 border-slate-700' : 'bg-slate-100 border-slate-200'} p-4`}>
-                  <div className="w-full h-full flex items-end gap-2">
-                    {[40, 70, 45, 90, 65, 100, 80].map((h, i) => (
-                      <div key={i} className="flex-1 bg-gradient-to-t from-blue-600 to-teal-400 rounded-t-sm transition-all" style={{height: `${h}%`}}></div>
-                    ))}
-                  </div>
-                </div>
-             </div>
+          <div style={s.mockGrid}>
+            <div style={s.mockCard}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>📄</div>
+              <div>
+                <div style={s.mockNum}>{activeContracts}</div>
+                <div style={s.mockSmall}>Active Contracts</div>
+              </div>
+            </div>
+            <div style={s.barsCard}>
+              {bars.map((h, i) => (
+                <div key={i} style={{ flex: 1, height: `${h}%`, background: 'linear-gradient(to top, #2563eb, #14b8a6)', borderRadius: '4px 4px 0 0', transition: 'height 0.3s' }} />
+              ))}
+            </div>
           </div>
         </div>
       </main>
 
-      {/* Bento-Box Feature Grid */}
-      <section className="py-24 px-8 max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">Powerful tools, simple workflow.</h2>
-          <p className={`text-lg ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Designed to scale with your legal team.</p>
-        </div>
+      {/* Feature Bento Grid */}
+      <section style={s.section}>
+        <h2 style={s.sectionTitle}>Powerful tools, simple workflow.</h2>
+        <p style={s.sectionSub}>Designed to scale with your legal team.</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
-          {/* Smart Renewals - Large Box */}
-          <div className={`col-span-1 md:col-span-2 row-span-1 md:row-span-2 rounded-3xl p-8 border ${isDarkMode ? 'bg-slate-800/50 border-white/5' : 'bg-white border-slate-200'} shadow-sm relative overflow-hidden group hover:border-blue-500/50 transition-colors`}>
-             <div className="relative z-10 h-full flex flex-col">
-               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-6 text-xl shadow-inner"><i className="fa-solid fa-rotate"></i></div>
-               <h3 className="text-2xl font-bold mb-3">Smart Renewals</h3>
-               <p className={`text-lg ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} max-w-md`}>Never miss a deadline. Automated alerts for upcoming renewals with contextual insights on performance and obligations.</p>
-             </div>
-             <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-all"></div>
+        <div style={s.bentoGrid}>
+          {/* Large card */}
+          <div style={s.bentoLarge}>
+            <div style={s.featureIcon('rgba(59,130,246,0.12)', '#3b82f6')}>🔄</div>
+            <h3 style={s.featureTitle}>Smart Renewals</h3>
+            <p style={s.featureDesc}>
+              Never miss a deadline. Automated alerts for upcoming renewals with contextual insights on performance and obligations.
+            </p>
+            <div style={{ position: 'absolute', bottom: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'rgba(59,130,246,0.08)', filter: 'blur(60px)', pointerEvents: 'none' }} />
           </div>
 
-          {/* Risk Tracking */}
-          <div className={`col-span-1 row-span-1 rounded-3xl p-8 border ${isDarkMode ? 'bg-slate-800/50 border-white/5' : 'bg-white border-slate-200'} shadow-sm group hover:border-amber-500/50 transition-colors`}>
-            <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center mb-4 text-lg shadow-inner"><i className="fa-solid fa-triangle-exclamation"></i></div>
-            <h3 className="text-xl font-bold mb-2">Risk Tracking</h3>
-            <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Identify high-liability clauses and non-standard terms instantly.</p>
+          {/* Small cards */}
+          <div style={s.bentoSmall}>
+            <div style={s.featureIcon('rgba(245,158,11,0.12)', '#f59e0b')}>⚠️</div>
+            <h3 style={s.featureTitleSm}>Risk Tracking</h3>
+            <p style={s.featureDescSm}>Identify high-liability clauses and non-standard terms instantly.</p>
           </div>
 
-          {/* AI Analysis */}
-          <div className={`col-span-1 row-span-1 rounded-3xl p-8 border ${isDarkMode ? 'bg-slate-800/50 border-white/5' : 'bg-white border-slate-200'} shadow-sm group hover:border-teal-500/50 transition-colors`}>
-            <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded-xl flex items-center justify-center mb-4 text-lg shadow-inner"><i className="fa-solid fa-brain"></i></div>
-            <h3 className="text-xl font-bold mb-2">AI Analysis</h3>
-            <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Intelligent redlining and contract summarization powered by NLP.</p>
+          <div style={s.bentoSmall}>
+            <div style={s.featureIcon('rgba(20,184,166,0.12)', '#14b8a6')}>🧠</div>
+            <h3 style={s.featureTitleSm}>AI Analysis</h3>
+            <p style={s.featureDescSm}>Intelligent redlining and contract summarization powered by NLP.</p>
           </div>
         </div>
       </section>
-      
     </div>
   );
 };
