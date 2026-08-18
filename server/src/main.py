@@ -49,7 +49,7 @@ def startup():
 app.include_router(api_router)
 
 # Debug routes
-app.include_router(debug_router)
+# app.include_router(debug_router)
 
 # Contract Repository
 app.include_router(
