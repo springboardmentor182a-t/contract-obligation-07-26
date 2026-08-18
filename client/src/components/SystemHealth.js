@@ -1,17 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Zap } from "lucide-react";
-
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+import api from "../api";
 
 export default function SystemHealth() {
-  const [health, setHealth] = useState([]);
+  const [status, setStatus] = useState("checking");
 
   useEffect(() => {
-    fetch(`${BASE_URL}/api/contracts/system-health`)
-      .then((res) => res.json())
-      .then((data) => setHealth(data))
-      .catch((err) => console.error(err));
+    api.get("/dashboard/stats")
+      .then(() => setStatus("ok"))
+      .catch(() => setStatus("error"));
   }, []);
+
+  const apiStatus = status === "ok" ? { label: "Operational", cls: "green" }
+    : status === "error" ? { label: "Unreachable", cls: "red" }
+      : { label: "Checking...", cls: "orange" };
+
+  const rows = [
+    { label: "API Server", ...apiStatus },
+    { label: "Database", label2: "SQLite", ...apiStatus },
+    { label: "Auth Service", label2: "JWT", ...apiStatus },
+  ];
 
   return (
     <div className="card details-card">
@@ -21,15 +29,13 @@ export default function SystemHealth() {
           System Health
         </h3>
       </div>
-
       <div className="system-health-list">
-        {health.map((item, index) => (
-          <div className="health-row" key={index}>
-            <span className="health-label">{item.label}</span>
-
-            <span className={`health-status ${item.color}`}>
-              <span className={`status-ping-dot ${item.color}`}></span>
-              {item.status}
+        {rows.map(row => (
+          <div className="health-row" key={row.label}>
+            <span className="health-label">{row.label}</span>
+            <span className={`health-status ${row.cls}`}>
+              <span className={`status-ping-dot ${row.cls}`}></span>
+              {row.label}
             </span>
           </div>
         ))}

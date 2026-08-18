@@ -1,304 +1,283 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../api';
 import { useTheme } from '../context/ThemeContext';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const Landing = () => {
   const navigate = useNavigate();
   const { isDarkMode, toggleTheme } = useTheme();
-  const [loadingDemo, setLoadingDemo] = useState(false);
+  const [activeContracts, setActiveContracts] = useState('—');
 
-  const handleDemoAccess = async () => {
-    setLoadingDemo(true);
-    try {
-      const response = await axios.post(`${API_BASE}/api/auth/demo-login`);
-      if (response.data && (response.data.token || response.data.access_token)) {
-        localStorage.setItem('token', response.data.token || response.data.access_token);
-        localStorage.setItem('userName', response.data.user?.name || 'Demo User');
-        localStorage.setItem('userEmail', response.data.user?.email || 'demo@contractiq.com');
-        navigate('/dashboard');
-        return;
-      }
-      navigate('/login');
-    } catch (error) {
-      console.warn('Demo login API fallback to login page:', error);
-      navigate('/login');
-    } finally {
-      setLoadingDemo(false);
-    }
+  useEffect(() => {
+    api.get('/dashboard/stats')
+      .then(res => setActiveContracts(res.data.active_contracts ?? '—'))
+      .catch(() => { });
+  }, []);
+
+  const dark = isDarkMode;
+
+
+
+  const s = {
+    page: {
+      minHeight: '100vh',
+      background: dark ? 'linear-gradient(135deg, #0B1121 0%, #0d1530 100%)' : '#f8fafc',
+      color: dark ? '#f8fafc' : '#0f172a',
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      position: 'relative',
+      overflowX: 'hidden',
+    },
+    blob1: {
+      position: 'absolute', top: '-10%', left: '-10%',
+      width: '40%', height: '40%', borderRadius: '50%',
+      background: 'rgba(59,130,246,0.15)', filter: 'blur(120px)',
+      pointerEvents: 'none',
+    },
+    blob2: {
+      position: 'absolute', bottom: '-10%', right: '-10%',
+      width: '40%', height: '40%', borderRadius: '50%',
+      background: 'rgba(20,184,166,0.15)', filter: 'blur(120px)',
+      pointerEvents: 'none',
+    },
+    nav: {
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      padding: '1.5rem 2rem',
+      borderBottom: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0',
+      position: 'relative', zIndex: 10,
+    },
+    navBrand: { display: 'flex', alignItems: 'center', gap: '0.75rem' },
+    navIcon: {
+      width: 40, height: 40, background: '#2563eb', borderRadius: 12,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 8px 24px rgba(37,99,235,0.35)',
+    },
+    navName: { fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em' },
+    navActions: { display: 'flex', alignItems: 'center', gap: '1rem' },
+    themeBtn: {
+      background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.3rem',
+      transition: 'transform 0.2s', padding: '0.25rem',
+    },
+    loginBtn: {
+      background: 'none', border: 'none', cursor: 'pointer',
+      fontWeight: 600, fontSize: '0.9rem', padding: '0.5rem 1rem',
+      borderRadius: 8, color: dark ? '#94a3b8' : '#475569',
+      transition: 'background 0.2s',
+    },
+    demoNavBtn: {
+      background: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer',
+      fontWeight: 700, fontSize: '0.9rem', padding: '0.6rem 1.4rem',
+      borderRadius: 10, boxShadow: '0 4px 15px rgba(37,99,235,0.3)',
+      transition: 'all 0.2s',
+      display: 'flex', alignItems: 'center', gap: '0.5rem',
+    },
+    hero: {
+      position: 'relative', zIndex: 10,
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', textAlign: 'center',
+      padding: '6rem 1rem 4rem',
+    },
+    h1: {
+      fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
+      fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1,
+      margin: '0 0 1.5rem',
+    },
+    gradientSpan: {
+      background: 'linear-gradient(90deg, #3b82f6, #14b8a6)',
+      WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text',
+    },
+    subtitle: {
+      fontSize: 'clamp(1rem, 2vw, 1.25rem)',
+      color: dark ? '#94a3b8' : '#64748b',
+      maxWidth: 600, lineHeight: 1.7, margin: '0 auto 2.5rem',
+    },
+    ctaBtn: {
+      background: '#2563eb', color: '#fff', border: 'none',
+      cursor: 'pointer', fontWeight: 800,
+      fontSize: '1.1rem', padding: '1rem 2.5rem',
+      borderRadius: 9999, opacity: 1,
+      boxShadow: '0 0 40px -10px rgba(37,99,235,0.7)',
+      transition: 'transform 0.2s, box-shadow 0.2s',
+      display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
+    },
+    mockFrame: {
+      marginTop: '4rem', width: '100%', maxWidth: 900,
+      borderRadius: 20,
+      border: dark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e2e8f0',
+      background: dark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.7)',
+      backdropFilter: 'blur(20px)', padding: '1.5rem',
+      boxShadow: '0 40px 80px -20px rgba(0,0,0,0.4)',
+    },
+    mockTopBar: {
+      display: 'flex', alignItems: 'center', gap: '0.6rem',
+      borderBottom: dark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e2e8f0',
+      paddingBottom: '1rem', marginBottom: '1.25rem',
+    },
+    dot: (color) => ({ width: 12, height: 12, borderRadius: '50%', background: color }),
+    mockLabel: { fontSize: '0.85rem', fontWeight: 600, color: dark ? '#94a3b8' : '#64748b', marginLeft: '0.5rem' },
+    mockGrid: { display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' },
+    mockCard: {
+      borderRadius: 12,
+      background: dark ? 'rgba(30,41,59,0.8)' : '#f1f5f9',
+      border: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0',
+      padding: '1rem',
+      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+      minHeight: 110,
+    },
+    mockNum: { fontSize: '1.75rem', fontWeight: 800 },
+    mockSmall: { fontSize: '0.75rem', color: '#94a3b8' },
+    barsCard: {
+      borderRadius: 12,
+      background: dark ? 'rgba(30,41,59,0.8)' : '#f1f5f9',
+      border: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0',
+      padding: '1rem', minHeight: 110,
+      display: 'flex', alignItems: 'flex-end', gap: '0.4rem',
+    },
+    section: {
+      padding: '5rem 2rem', maxWidth: 1100, margin: '0 auto',
+      position: 'relative', zIndex: 5,
+    },
+    sectionTitle: {
+      fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 800,
+      textAlign: 'center', marginBottom: '0.75rem',
+    },
+    sectionSub: {
+      textAlign: 'center', fontSize: '1.05rem',
+      color: dark ? '#94a3b8' : '#64748b', marginBottom: '3rem',
+    },
+    bentoGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gridTemplateRows: 'auto auto',
+      gap: '1.25rem',
+    },
+    bentoLarge: {
+      gridColumn: 'span 2', gridRow: 'span 2',
+      borderRadius: 24, padding: '2rem',
+      border: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0',
+      background: dark ? 'rgba(30,41,59,0.5)' : '#ffffff',
+      position: 'relative', overflow: 'hidden', minHeight: 280,
+      transition: 'border-color 0.2s',
+    },
+    bentoSmall: {
+      borderRadius: 24, padding: '1.75rem',
+      border: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e2e8f0',
+      background: dark ? 'rgba(30,41,59,0.5)' : '#ffffff',
+      transition: 'border-color 0.2s',
+    },
+    featureIcon: (bg, color) => ({
+      width: 44, height: 44, borderRadius: 14,
+      background: bg, color: color, fontSize: '1.1rem',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      marginBottom: '1rem', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+    }),
+    featureTitle: { fontSize: '1.3rem', fontWeight: 800, marginBottom: '0.5rem' },
+    featureDesc: { fontSize: '0.95rem', color: dark ? '#94a3b8' : '#64748b', lineHeight: 1.65 },
+    featureTitleSm: { fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.4rem' },
+    featureDescSm: { fontSize: '0.85rem', color: dark ? '#94a3b8' : '#64748b', lineHeight: 1.6 },
   };
 
-  const stats = [
-    { label: 'Obligation Precision', value: '99.9%', desc: 'AI accuracy score on clauses' },
-    { label: 'Audit Cycle Speed', value: '10x', desc: 'Faster compliance reviews' },
-    { label: 'Penalty Risk Prevented', value: '$2.4M+', desc: 'Across enterprise portfolios' },
-    { label: 'Monitored Obligations', value: '50,000+', desc: 'Live tracked in real-time' }
-  ];
-
-  const features = [
-    {
-      icon: 'fa-solid fa-file-shield',
-      color: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
-      title: 'Automated Obligation Extraction',
-      description: 'Deep neural models analyze multi-page agreements to instantly isolate deliverables, milestones, and penalty clauses.'
-    },
-    {
-      icon: 'fa-solid fa-chart-line-up',
-      color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20',
-      title: 'Real-Time Compliance Audits',
-      description: 'Continuous validation against SOC2, GDPR, HIPAA, and internal enterprise policies with proactive compliance alerts.'
-    },
-    {
-      icon: 'fa-solid fa-arrows-rotate',
-      color: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
-      title: 'Smart Renewal Workflows',
-      description: 'Never miss an opt-out window. Automated alerts ensure renewals are negotiated on optimal commercial terms.'
-    },
-    {
-      icon: 'fa-solid fa-triangle-exclamation',
-      color: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
-      title: 'AI Risk & Liability Scoring',
-      description: 'Instant heuristic risk ratings pinpoint aggressive indemnities, uncapped liability, and high-risk terms.'
-    },
-    {
-      icon: 'fa-solid fa-lock',
-      color: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20',
-      title: 'Enterprise Role-Based Access',
-      description: 'Strict granular permissions with Google OAuth2 SSO, multi-tenant isolation, and encrypted PostgreSQL storage.'
-    },
-    {
-      icon: 'fa-solid fa-clock-rotate-left',
-      color: 'text-rose-500 bg-rose-500/10 border-rose-500/20',
-      title: 'Immutable Audit Trail',
-      description: 'Complete tamper-proof logging of every contract upload, amendment review, status change, and approval step.'
-    }
-  ];
+  const bars = [40, 70, 45, 90, 65, 100, 80];
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-[#0B1121] text-white' : 'bg-[#F8FAFC] text-slate-900'} font-sans relative overflow-x-hidden`}>
-      {/* Background ambient lighting */}
-      <div className="absolute top-[-5%] left-[-5%] w-[45%] h-[45%] rounded-full bg-blue-600/15 blur-[140px] pointer-events-none"></div>
-      <div className="absolute top-[20%] right-[-5%] w-[35%] h-[35%] rounded-full bg-indigo-600/15 blur-[140px] pointer-events-none"></div>
+    <div style={s.page}>
+      <div style={s.blob1} />
+      <div style={s.blob2} />
 
-      {/* Navigation Bar */}
-      <header className={`sticky top-0 z-50 backdrop-blur-xl border-b transition-colors ${
-        isDarkMode ? 'bg-[#0B1121]/80 border-slate-800/80' : 'bg-white/80 border-slate-200/80'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
-              <i className="fa-solid fa-shield-halved text-white text-lg"></i>
-            </div>
-            <div>
-              <span className={`text-xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-[#1E3A8A]'}`}>
-                Contract<span className="text-blue-500">IQ</span>
-              </span>
-              <span className={`block text-[9px] uppercase font-bold tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                Enterprise Platform
-              </span>
-            </div>
+      {/* Navbar */}
+      <nav style={s.nav}>
+        <div style={s.navBrand}>
+          <div style={s.navIcon}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
           </div>
-
-          <div className="flex items-center gap-4">
-            {/* Dark / Light Mode Toggle */}
-            <button
-              onClick={toggleTheme}
-              className={`p-2.5 rounded-xl border text-sm transition-all cursor-pointer ${
-                isDarkMode 
-                  ? 'bg-slate-800/90 text-slate-200 border-slate-700 hover:bg-slate-700' 
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100 shadow-sm'
-              }`}
-              title="Toggle Theme"
-            >
-              {isDarkMode ? <i className="fa-solid fa-sun text-amber-400"></i> : <i className="fa-solid fa-moon text-blue-600"></i>}
-            </button>
-
-            <Link
-              to="/login"
-              className={`hidden sm:inline-flex px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-colors ${
-                isDarkMode ? 'text-slate-300 hover:text-white hover:bg-slate-800' : 'text-slate-700 hover:text-[#1E3A8A] hover:bg-slate-100'
-              }`}
-            >
-              Sign In
-            </Link>
-
-            <button
-              onClick={handleDemoAccess}
-              disabled={loadingDemo}
-              className="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/25 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-70"
-            >
-              {loadingDemo ? (
-                <><i className="fa-solid fa-spinner fa-spin"></i><span>Provisioning...</span></>
-              ) : (
-                <><i className="fa-solid fa-bolt"></i><span>Access Demo</span></>
-              )}
-            </button>
-          </div>
+          <span style={s.navName}>ContractIQ</span>
         </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="relative z-10 pt-20 pb-16 px-6 max-w-6xl mx-auto text-center">
-        <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold border mb-8 ${
-          isDarkMode 
-            ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' 
-            : 'bg-blue-50 text-blue-700 border-blue-200'
-        }`}>
-          <i className="fa-solid fa-sparkles text-blue-500"></i>
-          <span>Next-Gen Enterprise Contract Governance 2.0</span>
-        </div>
-
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6">
-          Transform How Your Organization Handles{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-400 to-teal-400">
-            Customer Contracts
-          </span>
-        </h1>
-
-        <p className={`text-base sm:text-xl max-w-3xl mx-auto mb-10 leading-relaxed ${
-          isDarkMode ? 'text-slate-400' : 'text-slate-600'
-        }`}>
-          ContractIQ provides automated obligation extraction, real-time SLA risk monitoring, and seamless audit workflows powered by enterprise-grade AI intelligence.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link
-            to="/login"
-            className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-500 shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center gap-3 cursor-pointer"
-          >
-            <span>Request a Demo / Sign In</span>
-            <i className="fa-solid fa-arrow-right"></i>
-          </Link>
-
-          <button
-            onClick={handleDemoAccess}
-            disabled={loadingDemo}
-            className={`w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-sm border transition-all flex items-center justify-center gap-3 cursor-pointer ${
-              isDarkMode 
-                ? 'bg-slate-800/80 hover:bg-slate-700 text-slate-200 border-slate-700 hover:text-white' 
-                : 'bg-white hover:bg-gray-50 text-slate-700 border-gray-300 shadow-sm'
-            }`}
-          >
-            <i className="fa-solid fa-desktop text-blue-500"></i>
-            <span>Interactive Live Sandbox</span>
+        <div style={s.navActions}>
+          <button style={s.themeBtn} onClick={toggleTheme} title="Toggle Theme">
+            {dark ? '🌙' : '☀️'}
+          </button>
+          <button style={s.demoNavBtn} onClick={() => navigate('/login')}>
+            Login / Register
           </button>
         </div>
-      </section>
+      </nav>
 
-      {/* 4-Column Stats Strip */}
-      <section className="relative z-10 max-w-6xl mx-auto px-6 py-12">
-        <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 sm:p-8 rounded-2xl border ${
-          isDarkMode 
-            ? 'bg-[#161F2E] border-[#2A364F] shadow-2xl' 
-            : 'bg-white border-slate-200 shadow-lg'
-        }`}>
-          {stats.map((item, idx) => (
-            <div key={idx} className="text-center p-3">
-              <div className="text-3xl sm:text-4xl font-black text-blue-500 mb-1">
-                {item.value}
-              </div>
-              <div className={`text-xs sm:text-sm font-bold uppercase tracking-wider mb-1 ${
-                isDarkMode ? 'text-white' : 'text-slate-900'
-              }`}>
-                {item.label}
-              </div>
-              <div className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                {item.desc}
+      {/* Hero */}
+      <main style={s.hero}>
+        <h1 style={s.h1}>
+          Contract Compliance,<br />
+          <span style={s.gradientSpan}>Automated and Secured.</span>
+        </h1>
+        <p style={s.subtitle}>
+          Extract obligations, track renewals, and mitigate risks in real-time with our
+          AI-powered legal intelligence platform.
+        </p>
+        <button
+          style={s.ctaBtn}
+          onClick={() => navigate('/login')}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+        >
+          Get Started <span>→</span>
+        </button>
+
+        {/* Mock dashboard preview */}
+        <div style={s.mockFrame}>
+          <div style={s.mockTopBar}>
+            <div style={s.dot('#ef4444')} />
+            <div style={s.dot('#f59e0b')} />
+            <div style={s.dot('#22c55e')} />
+            <span style={s.mockLabel}>Dashboard Overview</span>
+          </div>
+          <div style={s.mockGrid}>
+            <div style={s.mockCard}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(59,130,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>📄</div>
+              <div>
+                <div style={s.mockNum}>{activeContracts}</div>
+                <div style={s.mockSmall}>Active Contracts</div>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 3x2 Features Grid */}
-      <section className="relative z-10 max-w-6xl mx-auto px-6 py-16">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight mb-4 ${
-            isDarkMode ? 'text-white' : 'text-slate-900'
-          }`}>
-            Enterprise-Grade Contract Features
-          </h2>
-          <p className={`text-sm sm:text-base ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-            Purpose-built to help legal, finance, and operations teams eliminate contract blindspots.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feat, idx) => (
-            <div 
-              key={idx}
-              className={`p-7 rounded-2xl border transition-all duration-300 hover:-translate-y-1 ${
-                isDarkMode 
-                  ? 'bg-[#161F2E] border-[#2A364F] hover:border-blue-500/50 shadow-md' 
-                  : 'bg-white border-slate-200 hover:border-blue-300 shadow-sm'
-              }`}
-            >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg mb-5 border ${feat.color}`}>
-                <i className={feat.icon}></i>
-              </div>
-              <h3 className={`text-lg font-bold mb-2.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                {feat.title}
-              </h3>
-              <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-[#8E9BAE]' : 'text-slate-600'}`}>
-                {feat.description}
-              </p>
+            <div style={s.barsCard}>
+              {bars.map((h, i) => (
+                <div key={i} style={{ flex: 1, height: `${h}%`, background: 'linear-gradient(to top, #2563eb, #14b8a6)', borderRadius: '4px 4px 0 0', transition: 'height 0.3s' }} />
+              ))}
             </div>
-          ))}
+          </div>
         </div>
-      </section>
+      </main>
 
-      {/* Bottom Call to Action */}
-      <section className="relative z-10 max-w-4xl mx-auto px-6 py-16 text-center">
-        <div className={`p-10 sm:p-14 rounded-3xl border relative overflow-hidden ${
-          isDarkMode 
-            ? 'bg-gradient-to-b from-[#161F2E] to-[#0B1121] border-[#2A364F]' 
-            : 'bg-gradient-to-b from-blue-50 to-white border-blue-200 shadow-xl'
-        }`}>
-          <h3 className={`text-2xl sm:text-3xl font-extrabold mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-            Ready to Take Control of Your Contract Lifecycle?
-          </h3>
-          <p className={`text-sm sm:text-base max-w-xl mx-auto mb-8 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-            Join enterprise compliance teams using ContractIQ to protect revenue and automate obligation adherence.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to="/register"
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/30 transition-all cursor-pointer"
-            >
-              Create Free Account
-            </Link>
-            <Link
-              to="/login"
-              className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider border transition-all cursor-pointer ${
-                isDarkMode 
-                  ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700' 
-                  : 'bg-white hover:bg-gray-100 text-slate-700 border-gray-300 shadow-sm'
-              }`}
-            >
-              Enterprise Sign In
-            </Link>
+      {/* Feature Bento Grid */}
+      <section style={s.section}>
+        <h2 style={s.sectionTitle}>Powerful tools, simple workflow.</h2>
+        <p style={s.sectionSub}>Designed to scale with your legal team.</p>
+
+        <div style={s.bentoGrid}>
+          {/* Large card */}
+          <div style={s.bentoLarge}>
+            <div style={s.featureIcon('rgba(59,130,246,0.12)', '#3b82f6')}>🔄</div>
+            <h3 style={s.featureTitle}>Smart Renewals</h3>
+            <p style={s.featureDesc}>
+              Never miss a deadline. Automated alerts for upcoming renewals with contextual insights on performance and obligations.
+            </p>
+            <div style={{ position: 'absolute', bottom: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'rgba(59,130,246,0.08)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+          </div>
+
+          {/* Small cards */}
+          <div style={s.bentoSmall}>
+            <div style={s.featureIcon('rgba(245,158,11,0.12)', '#f59e0b')}>⚠️</div>
+            <h3 style={s.featureTitleSm}>Risk Tracking</h3>
+            <p style={s.featureDescSm}>Identify high-liability clauses and non-standard terms instantly.</p>
+          </div>
+
+          <div style={s.bentoSmall}>
+            <div style={s.featureIcon('rgba(20,184,166,0.12)', '#14b8a6')}>🧠</div>
+            <h3 style={s.featureTitleSm}>AI Analysis</h3>
+            <p style={s.featureDescSm}>Intelligent redlining and contract summarization powered by NLP.</p>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className={`border-t py-8 px-6 text-center text-xs ${
-        isDarkMode ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-500'
-      }`}>
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-blue-500">ContractIQ</span>
-            <span>&copy; {new Date().getFullYear()} Enterprise Contract Intelligence. All rights reserved.</span>
-          </div>
-          <div className="flex gap-6">
-            <Link to="/login" className="hover:underline">Login</Link>
-            <Link to="/register" className="hover:underline">Register</Link>
-            <span className="text-emerald-500 font-semibold"><i className="fa-solid fa-circle text-[8px] mr-1"></i>System Operational</span>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
