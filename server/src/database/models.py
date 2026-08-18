@@ -1,16 +1,38 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from .db import Base
+
+class UserSession(Base):
+    __tablename__ = "user_sessions"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    session_token = Column(String, unique=True, index=True)
+    is_active = Column(Boolean, default=True)
+    expires_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_active_at = Column(DateTime, default=datetime.utcnow)
 
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String, unique=True, index=True)
-    name = Column(String)
+    user_id = Column(String, unique=True, index=True, nullable=True)
+    name = Column(String, nullable=True)
+    full_name = Column(String, nullable=True)
     email = Column(String, unique=True, index=True)
-    role = Column(String)
-    status = Column(String)
-    lastLogin = Column(String)
+    password_hash = Column(String, nullable=True)
+    hashed_password = Column(String, nullable=True)
+    otp_code = Column(String, nullable=True)
+    otp_expiry = Column(DateTime, nullable=True)
+    role = Column(String, default="User")
+    status = Column(String, default="Active")
+    lastLogin = Column(String, nullable=True)
+
+class Todo(Base):
+    __tablename__ = "todos"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True)
+    done = Column(Boolean, default=False)
 
 class Contract(Base):
     __tablename__ = "contracts"
@@ -22,7 +44,7 @@ class Contract(Base):
     value = Column(Float)
     owner = Column(String)
     date = Column(Date)
-    # NEW: needed for the dashboard's Risk Distribution / Department Performance widgets
+    # Needed for the dashboard's Risk Distribution / Department Performance widgets
     risk = Column(String, default="Low")           # Low | Medium | High | Critical
     department = Column(String, default="Legal")   # Legal | Procurement | HR | Finance | Operations | IT
     obligations = relationship("Obligation", back_populates="contract")
@@ -59,11 +81,12 @@ class Transaction(Base):
 class AuditLog(Base):
     __tablename__ = "audit_logs"
     id = Column(Integer, primary_key=True, index=True)
-    time = Column(String)
-    user = Column(String)
-    action = Column(String)
-    target = Column(String)
-    ip = Column(String)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    actor = Column(String, index=True)          # e.g. "Priya Volkov"
+    action = Column(String)                     # e.g. "created contract"
+    target = Column(String, index=True)         # e.g. "Non-Disclosure Agreement"
+    category = Column(String, index=True)        # Contract | Obligation | User | Approval | Security | Auth
+    ip_address = Column(String)
 
 class TaxEstimator(Base):
     __tablename__ = "tax_estimators"
@@ -73,3 +96,16 @@ class TaxEstimator(Base):
     deductions = Column(String)
     netIncome = Column(String)
     breakdown = Column(String)
+
+class Notification(Base):
+    __tablename__ = "notifications"
+    id = Column(Integer, primary_key=True, index=True)
+    notification_id = Column(String, unique=True, index=True)
+    user_id = Column(String, index=True, nullable=True)
+    type = Column(String, index=True)
+    title = Column(String)
+    message = Column(String)
+    details = Column(String, nullable=True)
+    link = Column(String, nullable=True)
+    is_read = Column(Boolean, default=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)

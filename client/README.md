@@ -1,14 +1,16 @@
-# Client
+# Contract Obligation Tracking Assistant
 
-React frontend for the project. Install dependencies and start the app with:
+Client application for the Contract Obligation Tracking Assistant.
 
-```
+## Run
+
+```bash
 npm install
 npm start
 ```
 
-Build for production with:
+## Build
 
-```
+```bash
 npm run build
 ```

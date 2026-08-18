@@ -1,5 +1,5 @@
-"""System-wide rate limiting middleware. Wraps incoming HTTP transport boundaries."""
+from fastapi import FastAPI
 
-def init_rate_limiter(app):
-    """Placeholder no-op rate limiter setup."""
+def init_rate_limiter(app: FastAPI) -> FastAPI:
+    # Placeholder for rate limiting implementation
     return app
