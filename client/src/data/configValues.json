@@ -1,0 +1,11 @@
+{
+  "appName": "ContractIQ",
+  "apiBaseUrl": "https://contract-obligation-demo-group-c.onrender.com/api",
+  "defaultCurrency": "USD",
+  "defaultDateFormat": "MMM D, YYYY",
+  "sessionTimeoutMinutes": 30,
+  "pagination": {
+    "contractsPerPage": 25,
+    "auditLogsPerPage": 50
+  }
+}
