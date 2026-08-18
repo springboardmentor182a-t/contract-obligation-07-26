@@ -258,3 +258,153 @@ th {
   margin-top: 15px;
   cursor: pointer;
 }
+
+/* =========================
+   GLOBAL THEME VARIABLES
+========================= */
+
+:root {
+  --primary-color: #5f27cd;
+  --app-bg: #f7f7f9;
+  --surface-bg: #ffffff;
+  --card-bg: #ffffff;
+  --text-primary: #1f1f1f;
+  --text-secondary: #666666;
+  --border-color: #e5e1f5;
+  --hover-bg: #f5f3ff;
+}
+
+/* =========================
+   LIGHT THEME
+========================= */
+
+html[data-theme="light"] {
+  --app-bg: #f7f7f9;
+  --surface-bg: #ffffff;
+  --card-bg: #ffffff;
+  --text-primary: #1f1f1f;
+  --text-secondary: #666666;
+  --border-color: #e5e1f5;
+  --hover-bg: #f5f3ff;
+}
+
+/* =========================
+   DARK THEME
+========================= */
+
+html[data-theme="dark"] {
+  --app-bg: #111111;
+  --surface-bg: #181818;
+  --card-bg: #222222;
+  --text-primary: #ffffff;
+  --text-secondary: #b5b5b5;
+  --border-color: #3a3a3a;
+  --hover-bg: #2b2b2b;
+}
+
+/* =========================
+   GLOBAL APPLICATION
+========================= */
+
+html,
+body,
+#root {
+  background: var(--app-bg);
+  color: var(--text-primary);
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+.App {
+  background: var(--app-bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* =========================
+   CARDS
+========================= */
+
+.card {
+  background: var(--card-bg) !important;
+  color: var(--text-primary);
+  border-color: var(--border-color) !important;
+}
+
+/* =========================
+   COMMON TEXT
+========================= */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+label,
+div {
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+/* =========================
+   INPUTS
+========================= */
+
+input,
+select,
+textarea {
+  background: var(--surface-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+/* =========================
+   TABLES
+========================= */
+
+table,
+thead,
+tbody,
+tr,
+td,
+th {
+  color: var(--text-primary);
+}
+
+th {
+  background: var(--surface-bg) !important;
+}
+
+td {
+  border-color: var(--border-color) !important;
+}
+
+/* =========================
+   DROPDOWNS
+========================= */
+
+select option {
+  background: var(--surface-bg);
+  color: var(--text-primary);
+}
+
+/* =========================
+   DARK THEME BUTTONS
+========================= */
+
+html[data-theme="dark"] button:not([style*="background"]) {
+  background: var(--surface-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
