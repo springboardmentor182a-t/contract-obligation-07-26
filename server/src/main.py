@@ -11,7 +11,6 @@ from src.insights.controller import router as insights_router
 from src.database.core import initialize_database
 from src.logging import configure_logging
 from src.rate_limiter import init_rate_limiter
-from src.debug_router import debug_router
 
 configure_logging()
 
