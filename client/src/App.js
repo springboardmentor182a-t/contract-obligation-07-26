@@ -21,9 +21,11 @@ import AddContract from './pages/AddContract/AddContract';
 import UserManagement from './pages/UserManagement';
 import Calendar from './pages/Calendar';
 import Renewals from './pages/Renewals';
+import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   return (
+   <ThemeProvider>
     <Router>
       <div className="App">
         <Routes>
@@ -66,6 +68,7 @@ function App() {
         </Routes>
       </div>
     </Router>
+    </ThemeProvider>
   );
 }
 
