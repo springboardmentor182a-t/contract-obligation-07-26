@@ -2,7 +2,7 @@ import os
 import uuid
 import requests
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends ,  Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
@@ -39,16 +39,30 @@ def health():
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+async def login(
+    request: Request,
     db: Session = Depends(get_db),
 ):
-    request = LoginRequest(
-        email=form_data.username,
-        password=form_data.password,
+    content_type = request.headers.get("content-type", "").lower()
+
+    if "application/x-www-form-urlencoded" in content_type:
+        form_data = await request.form()
+
+        email = form_data.get("username")
+        password = form_data.get("password")
+
+    else:
+        body = await request.json()
+
+        email = body.get("email") or body.get("username")
+        password = body.get("password")
+
+    login_request = LoginRequest(
+        email=email,
+        password=password,
     )
 
-    return auth_service.login(request, db)
+    return auth_service.login(login_request, db)
 
 
 @router.post("/register")
