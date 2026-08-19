@@ -5,7 +5,7 @@ import { getStoredToken } from "../utils/auth";
 const API_BASE =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
   process.env.REACT_APP_API_BASE_URL ||
-  "https://contract-obligation-demo-group-c.onrender.com/api";
+  "http://13.60.217.208:8000/api";
 
 const API = axios.create({
   baseURL: API_BASE,

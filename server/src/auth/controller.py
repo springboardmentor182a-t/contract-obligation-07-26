@@ -100,7 +100,7 @@ def reset_password(
 # Google OAuth
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-REDIRECT_URI = "http://localhost:8000/api/auth/google/callback"
+REDIRECT_URI = "http://13.60.217.208:8000/api/auth/google/callback"
 
 
 @router.get("/google/login")
@@ -190,7 +190,7 @@ def google_callback(
 
     return RedirectResponse(
         url=(
-            f"http://localhost:3000/auth/callback"
+            f"http://13.60.217.208/auth/callback"
             f"?token={jwt_token}"
             f"&role={user.role}"
             f"&name={user.name}"
