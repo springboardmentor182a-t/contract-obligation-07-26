@@ -39,7 +39,7 @@ router = APIRouter(
 def register_user(
     user_data: UserCreate,
     response: Response,
-    #current_user: User = Depends(admin_required),
+    current_user: User = Depends(admin_required),
     db: Session = Depends(get_db),
 ):
     user = User(
