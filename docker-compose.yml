@@ -1,46 +1,82 @@
-version: '3.8'
-
 services:
+
+  # =========================
+  # PostgreSQL Database
+  # =========================
   db:
-    image: postgres:15-alpine
-    container_name: contract_iq_db
-    restart: always
+    image: postgres:16-alpine
+    container_name: contractiq-db
+    restart: unless-stopped
+
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "siree@3"
       POSTGRES_DB: contract_iq
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Docker1105
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+    ports:
+      - "5432:5432"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d contract_iq"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  # =========================
+  # FastAPI Backend
+  # =========================
   backend:
     build:
       context: ./Server
       dockerfile: Dockerfile
-    container_name: contract_iq_backend
-    restart: always
-    environment:
-      - DATABASE_URL=postgresql+psycopg2://postgres:siree%403@db:5432/contract_iq
-      - ALLOWED_ORIGINS=["http://localhost","http://localhost:5173","http://127.0.0.1:5173","http://localhost:80"]
-      - DISABLE_CHATBOT_MODEL=true
+
+    container_name: contractiq-backend
+    restart: unless-stopped
+
     env_file:
       - ./Server/.env
+
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:Docker1105@db:5432/contract_iq
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    volumes:
+      - uploads_data:/app/uploads
+      - vector_data:/app/vector_db
+
     ports:
       - "8000:8000"
-    depends_on:
-      - db
 
+
+  # =========================
+  # React Frontend + Nginx
+  # =========================
   frontend:
     build:
       context: ./Client
       dockerfile: Dockerfile
-    container_name: contract_iq_frontend
-    restart: always
-    ports:
-      - "80:80"
+
+    container_name: contractiq-frontend
+    restart: unless-stopped
+
     depends_on:
       - backend
 
+    ports:
+      - "80:80"
+
+
+# =========================
+# Persistent Volumes
+# =========================
 volumes:
   postgres_data:
+  uploads_data:
+  vector_data:
