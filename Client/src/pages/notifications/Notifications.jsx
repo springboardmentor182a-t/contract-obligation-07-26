@@ -12,8 +12,7 @@ import {
   Settings,
   MoreVertical,
   Eye,
-  Globe,
-  Filter
+  Globe
 } from 'lucide-react';
 
 
@@ -141,14 +140,12 @@ const Notifications = () => {
           )}
         </div>
 
-        <div className="notif-filter-container">
-          <span className="notif-filter-label">
-            <Filter size={16} /> Priority:
-          </span>
+        <div style={{ padding: '0 2rem 1rem 2rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>Priority:</span>
           <select 
             value={priorityFilter} 
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="notif-filter-select"
+            style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid #ccc', backgroundColor: 'var(--color-bg)', color: 'var(--color-text-dark)' }}
           >
             <option value="All">All Priorities</option>
             <option value="Critical">Critical</option>

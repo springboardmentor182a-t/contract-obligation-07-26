@@ -8,10 +8,10 @@ from reportlab.pdfgen import canvas
 from sqlalchemy import inspect, or_, text, func
 from sqlalchemy.orm import Session
 
-import src.entities.user  # noqa: F401
-import src.entities.notification  # noqa: F401
-import src.entities.users_settings  # noqa: F401
-from src.entities.audit_logs import Activity, AuditLog
+import entities.user  # noqa: F401
+import entities.notification  # noqa: F401
+import entities.users_settings  # noqa: F401
+from entities.audit_logs import Activity, AuditLog
 
 
 def ensure_audit_schema(db: Session):
@@ -20,9 +20,7 @@ def ensure_audit_schema(db: Session):
         inspector = inspect(db.bind)
         if "audit_logs" not in inspector.get_table_names():
             AuditLog.__table__.create(db.bind, checkfirst=True)
-        existing = {
-            column["name"] for column in inspect(db.bind).get_columns("audit_logs")
-        }
+        existing = {column["name"] for column in inspect(db.bind).get_columns("audit_logs")}
         additions = {
             "entity_type": "VARCHAR(100)",
             "entity_id": "VARCHAR(100)",
@@ -33,9 +31,7 @@ def ensure_audit_schema(db: Session):
         }
         for name, definition in additions.items():
             if name not in existing:
-                db.execute(
-                    text(f"ALTER TABLE audit_logs ADD COLUMN {name} {definition}")
-                )
+                db.execute(text(f"ALTER TABLE audit_logs ADD COLUMN {name} {definition}"))
         if "activities" not in inspector.get_table_names():
             Activity.__table__.create(db.bind, checkfirst=True)
         db.commit()
@@ -77,16 +73,8 @@ def create_audit_log(
             entity_id=str(entity_id) if entity_id is not None else None,
             category=category,
             severity=severity,
-            old_value=(
-                json.dumps(old_value, indent=2)
-                if isinstance(old_value, (dict, list))
-                else (str(old_value) if old_value is not None else None)
-            ),
-            new_value=(
-                json.dumps(new_value, indent=2)
-                if isinstance(new_value, (dict, list))
-                else (str(new_value) if new_value is not None else None)
-            ),
+            old_value=json.dumps(old_value, indent=2) if isinstance(old_value, (dict, list)) else (str(old_value) if old_value is not None else None),
+            new_value=json.dumps(new_value, indent=2) if isinstance(new_value, (dict, list)) else (str(new_value) if new_value is not None else None),
         )
         db.add(log)
         db.add(
@@ -119,6 +107,82 @@ def query_logs(
     start_date=None,
     end_date=None,
 ):
+=======
+import csv
+import io
+import json
+from datetime import datetime, timedelta
+
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from sqlalchemy import inspect, or_, text
+from sqlalchemy.orm import Session
+
+from src.entities.audit_logs import Activity, AuditLog
+
+def create_audit_log(
+    db: Session,
+    user_id: int,
+    user_name: str,
+    action: str,
+    status: str,
+    module: str,
+    description: str,
+):
+    log = AuditLog(
+        user_id=user_id,
+        user_name=user_name,
+        action=action,
+        status=status,
+        module=module,
+        description=description,
+    )
+
+    db.add(log)
+    db.commit()
+
+
+def ensure_audit_schema(db: Session):
+    """Additive upgrade for databases created before the enriched audit model."""
+    inspector = inspect(db.bind)
+    if "audit_logs" not in inspector.get_table_names():
+        AuditLog.__table__.create(db.bind, checkfirst=True)
+    existing = {column["name"] for column in inspect(db.bind).get_columns("audit_logs")}
+    additions = {
+        "entity_type": "VARCHAR(100)", "entity_id": "VARCHAR(100)",
+        "category": "VARCHAR(50) DEFAULT 'Activity'", "severity": "VARCHAR(50) DEFAULT 'Info'",
+        "old_value": "TEXT", "new_value": "TEXT",
+    }
+    for name, definition in additions.items():
+        if name not in existing:
+            db.execute(text(f"ALTER TABLE audit_logs ADD COLUMN {name} {definition}"))
+    Activity.__table__.create(db.bind, checkfirst=True)
+    db.commit()
+
+
+def create_audit_log(db: Session, user_id=None, user_name="System", action="viewed", status="Success",
+                     module="System", description="", resource=None, ip_address=None, entity_type=None,
+                     entity_id=None, category="Activity", severity="Info", old_value=None, new_value=None):
+    """Record the detailed audit trail and its lightweight activity-feed counterpart."""
+    ensure_audit_schema(db)
+    log = AuditLog(
+        user_id=user_id, user_name=user_name or "System", action=action, status=status,
+        module=module, description=description, resource=resource, ip_address=ip_address,
+        entity_type=entity_type or module, entity_id=str(entity_id) if entity_id is not None else None,
+        category=category, severity=severity,
+        old_value=json.dumps(old_value) if isinstance(old_value, (dict, list)) else old_value,
+        new_value=json.dumps(new_value) if isinstance(new_value, (dict, list)) else new_value,
+    )
+    db.add(log)
+    db.add(Activity(user_id=user_id, user_name=user_name or "System", action=action,
+                    description=description, entity_type=entity_type or module,
+                    entity_id=str(entity_id) if entity_id is not None else None))
+    db.commit()
+    db.refresh(log)
+    return log
+
+def query_logs(db: Session, search=None, category=None, entity_type=None, status=None, start_date=None, end_date=None):
+>>>>>>> origin/main-group-A
     query = db.query(AuditLog)
     if search:
         term = f"%{search}%"
@@ -134,55 +198,31 @@ def query_logs(
             )
         )
     if category and category != "All":
+<<<<<<< HEAD
         if category == "Contract":
-            query = query.filter(
-                or_(
-                    AuditLog.category == "Contract",
-                    AuditLog.module == "Contracts",
-                    AuditLog.entity_type == "Contract",
-                )
-            )
+            query = query.filter(or_(AuditLog.category == "Contract", AuditLog.module == "Contracts", AuditLog.entity_type == "Contract"))
         elif category == "Security":
-            query = query.filter(
-                or_(
-                    AuditLog.category == "Security",
-                    AuditLog.module.in_(["Authentication", "Users"]),
-                    AuditLog.severity.in_(["Warning", "Error", "Critical"]),
-                )
-            )
+            query = query.filter(or_(AuditLog.category == "Security", AuditLog.module.in_(["Authentication", "Users"]), AuditLog.severity.in_(["Warning", "Error", "Critical"])))
         elif category == "Approval":
-            query = query.filter(
-                or_(
-                    AuditLog.category == "Approval",
-                    AuditLog.action.ilike("%approved%"),
-                    AuditLog.action.ilike("%rejected%"),
-                )
-            )
+            query = query.filter(or_(AuditLog.category == "Approval", AuditLog.action.ilike("%approved%"), AuditLog.action.ilike("%rejected%")))
         elif category == "Change":
-            query = query.filter(
-                or_(
-                    AuditLog.category == "Change",
-                    AuditLog.old_value.isnot(None),
-                    AuditLog.new_value.isnot(None),
-                )
-            )
+            query = query.filter(or_(AuditLog.category == "Change", AuditLog.old_value.isnot(None), AuditLog.new_value.isnot(None)))
         elif category == "Reports":
-            query = query.filter(
-                or_(AuditLog.category == "Reports", AuditLog.module == "Reports")
-            )
+            query = query.filter(or_(AuditLog.category == "Reports", AuditLog.module == "Reports"))
         elif category == "Activity":
-            query = query.filter(
-                or_(
-                    AuditLog.category == "Activity",
-                    AuditLog.category == "User Activity",
-                )
-            )
+            query = query.filter(or_(AuditLog.category == "Activity", AuditLog.category == "User Activity"))
         else:
             query = query.filter(AuditLog.category == category)
     if module and module != "All":
         query = query.filter(AuditLog.module == module)
     if severity and severity != "All":
         query = query.filter(AuditLog.severity == severity)
+=======
+        query = query.filter(AuditLog.category == category)
+    else:
+        query = query.filter(AuditLog.category != "Activity")
+    
+>>>>>>> origin/main-group-A
     if entity_type and entity_type != "All":
         query = query.filter(AuditLog.entity_type == entity_type)
     if status and status != "All":
@@ -198,10 +238,7 @@ def get_entity_history(db: Session, entity_type: str, entity_id: str):
     """Retrieve audit history for a specific entity (e.g. Contract or Renewal)."""
     return (
         db.query(AuditLog)
-        .filter(
-            AuditLog.entity_type.ilike(entity_type),
-            AuditLog.entity_id == str(entity_id),
-        )
+        .filter(AuditLog.entity_type.ilike(entity_type), AuditLog.entity_id == str(entity_id))
         .order_by(AuditLog.created_at.desc())
         .all()
     )
@@ -229,45 +266,17 @@ def serialize_log(log: AuditLog):
 
 
 def summary(db: Session):
+<<<<<<< HEAD
     ensure_audit_schema(db)
     seed_audit_data(db)
     all_logs = db.query(AuditLog).all()
 
-    activity_count = sum(
-        1
-        for l in all_logs
-        if l.category in ["Activity", "User Activity"]
-        or l.module in ["Users", "Authentication"]
-    )
-    contract_count = sum(
-        1
-        for l in all_logs
-        if l.category == "Contract"
-        or l.module == "Contracts"
-        or l.entity_type == "Contract"
-    )
-    approval_count = sum(
-        1
-        for l in all_logs
-        if l.category == "Approval"
-        or "approved" in (l.action or "").lower()
-        or "rejected" in (l.action or "").lower()
-    )
-    security_count = sum(
-        1
-        for l in all_logs
-        if l.category == "Security"
-        or l.severity in ["Warning", "Error", "Critical"]
-        or l.module in ["Authentication", "Users"]
-    )
-    change_count = sum(
-        1
-        for l in all_logs
-        if l.category == "Change" or l.old_value is not None or l.new_value is not None
-    )
-    reports_count = sum(
-        1 for l in all_logs if l.category == "Reports" or l.module == "Reports"
-    )
+    activity_count = sum(1 for l in all_logs if l.category in ["Activity", "User Activity"] or l.module in ["Users", "Authentication"])
+    contract_count = sum(1 for l in all_logs if l.category == "Contract" or l.module == "Contracts" or l.entity_type == "Contract")
+    approval_count = sum(1 for l in all_logs if l.category == "Approval" or "approved" in (l.action or "").lower() or "rejected" in (l.action or "").lower())
+    security_count = sum(1 for l in all_logs if l.category == "Security" or l.severity in ["Warning", "Error", "Critical"] or l.module in ["Authentication", "Users"])
+    change_count = sum(1 for l in all_logs if l.category == "Change" or l.old_value is not None or l.new_value is not None)
+    reports_count = sum(1 for l in all_logs if l.category == "Reports" or l.module == "Reports")
 
     return {
         "total": len(all_logs),
@@ -290,28 +299,12 @@ def get_audit_analytics(db: Session):
     total = len(all_logs)
 
     category_counts = {
-        "Activity": sum(
-            1 for l in all_logs if l.category in ["Activity", "User Activity"]
-        ),
-        "Contract": sum(
-            1 for l in all_logs if l.category == "Contract" or l.module == "Contracts"
-        ),
-        "Approval": sum(
-            1
-            for l in all_logs
-            if l.category == "Approval" or "approved" in (l.action or "").lower()
-        ),
-        "Security": sum(
-            1
-            for l in all_logs
-            if l.category == "Security" or l.severity in ["Warning", "Error"]
-        ),
-        "Change": sum(
-            1 for l in all_logs if l.category == "Change" or l.old_value is not None
-        ),
-        "Reports": sum(
-            1 for l in all_logs if l.category == "Reports" or l.module == "Reports"
-        ),
+        "Activity": sum(1 for l in all_logs if l.category in ["Activity", "User Activity"]),
+        "Contract": sum(1 for l in all_logs if l.category == "Contract" or l.module == "Contracts"),
+        "Approval": sum(1 for l in all_logs if l.category == "Approval" or "approved" in (l.action or "").lower()),
+        "Security": sum(1 for l in all_logs if l.category == "Security" or l.severity in ["Warning", "Error"]),
+        "Change": sum(1 for l in all_logs if l.category == "Change" or l.old_value is not None),
+        "Reports": sum(1 for l in all_logs if l.category == "Reports" or l.module == "Reports"),
     }
 
     severity_counts = {}
@@ -340,10 +333,14 @@ def get_audit_analytics(db: Session):
         "severity_counts": severity_counts,
         "module_counts": module_counts,
         "top_users": top_users,
-        "security_warnings": severity_counts.get("Warning", 0)
-        + severity_counts.get("Error", 0)
-        + severity_counts.get("Critical", 0),
+        "security_warnings": severity_counts.get("Warning", 0) + severity_counts.get("Error", 0) + severity_counts.get("Critical", 0),
     }
+=======
+    rows = db.query(AuditLog.category).all()
+    categories = ["Contract", "Approval", "Security", "Change"]
+    valid_rows = [row for row in rows if row[0] != "Activity"]
+    return {"total": len(valid_rows), "categories": {name: sum(row[0] == name for row in valid_rows) for name in categories}}
+>>>>>>> origin/main-group-A
 
 
 def seed_audit_data(db: Session):
@@ -351,6 +348,7 @@ def seed_audit_data(db: Session):
     return 0
 
     records = [
+<<<<<<< HEAD
         # (user_name, action, module, category, entity_type, entity_id, description, status, severity, ip, old_val, new_val)
         (
             "Sarah Chen",
@@ -639,11 +637,7 @@ def export_logs(logs, report_format):
         pdf.setFont("Helvetica-Bold", 18)
         pdf.drawString(45, 755, "ContractIQ Audit & Activity Report")
         pdf.setFont("Helvetica", 9)
-        pdf.drawString(
-            45,
-            740,
-            f"Generated: {datetime.utcnow():%Y-%m-%d %H:%M UTC} | Total Records: {len(logs)}",
-        )
+        pdf.drawString(45, 740, f"Generated: {datetime.utcnow():%Y-%m-%d %H:%M UTC} | Total Records: {len(logs)}")
         pdf.line(45, 732, 567, 732)
 
         # Table Column headers
@@ -662,9 +656,7 @@ def export_logs(logs, report_format):
         page_num = 1
 
         for log in logs:
-            dt_str = (
-                log.created_at.strftime("%Y-%m-%d %H:%M") if log.created_at else "N/A"
-            )
+            dt_str = log.created_at.strftime("%Y-%m-%d %H:%M") if log.created_at else "N/A"
             user_str = (log.user_name or "System")[:16]
             cat_str = (log.category or "Activity")[:10]
             mod_str = (log.module or "System")[:10]

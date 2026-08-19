@@ -65,30 +65,19 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: white;
-  color: var(--color-text-dark);
-  border: 1px solid var(--color-border);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  color: white;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   position: relative;
   overflow: hidden;
   cursor: pointer;
 }
 
 .rnw-stat-card.active {
-  border-color: var(--color-primary);
+  outline: 3px solid #ffffff;
+  outline-offset: -3px;
   transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
-}
-
-.rnw-stat-card.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 5px;
-  background: var(--color-primary);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
 }
 
 .rnw-badge-closed {
@@ -101,20 +90,31 @@
   color: #374151;
 }
 
+.rnw-stat-card::after {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -20%;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .rnw-stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 }
 
 .rnw-stat-icon {
-  background: rgba(107, 142, 177, 0.15); /* Fallback light background */
-  color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.2);
   width: 48px;
   height: 48px;
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(4px);
   flex-shrink: 0;
 }
 
@@ -122,29 +122,41 @@
   font-size: 1.8rem;
   font-weight: 700;
   line-height: 1.1;
-  color: var(--color-primary);
 }
 
 .rnw-stat-label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-text-dark);
+  opacity: 0.95;
   margin-top: 0.1rem;
 }
 
 .rnw-stat-desc {
   font-size: 0.72rem;
-  color: var(--color-text-light);
+  opacity: 0.75;
   margin-top: 0.1rem;
 }
 
-/* Card Colors - Kept empty as they are now managed by single theme colors */
-.rnw-card-upcoming {}
-.rnw-card-progress {}
-.rnw-card-renewed {}
-.rnw-card-expired {}
-.rnw-card-cancelled {}
+/* Card Colors */
+.rnw-card-upcoming {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+}
 
+.rnw-card-progress {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+}
+
+.rnw-card-renewed {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+}
+
+.rnw-card-expired {
+  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+}
+
+.rnw-card-cancelled {
+  background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+}
 
 /* ===== Alert Banner ===== */
 .rnw-alert-banner {

@@ -8,9 +8,8 @@ from sqlalchemy.orm import Session
 try:
     from database.core import get_db
     from entities.audit_logs import AuditLog
-    from entities.audit_logs import AuditLog
     from entities.user import User
-    from users.service import admin_required, get_current_user
+    from users.service import admin_required
     from audit_logs.service import (
         create_audit_log,
         ensure_audit_schema,
@@ -28,7 +27,7 @@ except ImportError:
     from src.database.core import get_db
     from src.entities.audit_logs import AuditLog
     from src.entities.user import User
-    from src.users.service import admin_required, get_current_user
+    from src.users.service import admin_required
     from src.audit_logs.service import (
         create_audit_log,
         ensure_audit_schema,
@@ -82,7 +81,7 @@ def get_entity_audit_trail(
 @router.get("/activities")
 def get_activities(
     limit: int = 50,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(admin_required),
     db: Session = Depends(get_db),
 ):
     return [

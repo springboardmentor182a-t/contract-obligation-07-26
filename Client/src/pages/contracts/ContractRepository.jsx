@@ -1,28 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import * as XLSX from "xlsx";
-import { Download } from 'lucide-react';
+
 import { saveAs } from "file-saver";
 import axios from 'axios';
 import './Contracts.css';
 import ContractDetails from './ContractDetails';
 
 const ContractRepository = () => {
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const initialSearch = queryParams.get('search') || '';
-
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-
-  // Update searchTerm if URL changes
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const search = params.get('search') || '';
-    setSearchTerm(search);
-  }, [location.search]);
   
   // Modal & Edit tracking states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -274,8 +262,8 @@ const ContractRepository = () => {
         </div>
         <div className="action-button-group">
           <button className="btn-export" onClick={handleExport}>
-            <Download size={16} /> Export
-          </button>
+    📄 Export
+</button>
           <button
             className="btn-create"
             onClick={() => {

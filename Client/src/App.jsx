@@ -54,7 +54,7 @@ const RoleProtectedRoute = ({ module, children }) => {
       'Compliance': { admin: false, legal: true, compliance: true, contract: false, default: false },
       'Reports & Analytics': { admin: false, legal: true, compliance: false, contract: false, default: false },
       'Notifications': { admin: true, legal: true, compliance: true, contract: true, default: true },
-      'Audit Logs': { admin: true, legal: false, compliance: false, contract: false, default: false },
+      'Audit Logs': { admin: true, legal: true, compliance: true, contract: false, default: false },
       'User Management': { admin: true, legal: true, compliance: false, contract: false, default: false },
       'Organization Management': { admin: true, legal: false, compliance: false, contract: false, default: false },
       'Settings': { admin: true, legal: true, compliance: true, contract: true, default: true }
