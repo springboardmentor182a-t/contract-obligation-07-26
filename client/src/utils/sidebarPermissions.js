@@ -18,7 +18,7 @@ export const allSidebarModules = Object.keys(sidebarRoutes);
 
 export const sidebarPermissions = {
   Administrator: [
-    "Dashboard",
+    
     "Notifications",
     "Audit Logs",
     "User Management",
@@ -34,6 +34,7 @@ export const sidebarPermissions = {
     "Compliance",
     "Reports & Analytics",
     "Notifications",
+    "User Management",
     "Settings",
   ],
 
