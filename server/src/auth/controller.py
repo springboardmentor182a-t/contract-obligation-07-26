@@ -1,17 +1,12 @@
+import os
+import uuid
+import requests
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import RedirectResponse
-import uuid
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from src.auth.security import hash_password
-from src.auth.jwt import create_access_token
-from src.database.models import UserModel
-from src.auth.dependencies import get_current_user
-import os
-
-
-class CompleteProfileRequest(BaseModel):
-    role: str
 
 from src.auth.models import (
     LoginRequest,
@@ -22,7 +17,16 @@ from src.auth.models import (
     TokenResponse,
 )
 from src.auth.service import AuthService
+from src.auth.security import hash_password
+from src.auth.jwt import create_access_token
+from src.auth.dependencies import get_current_user
 from src.database.core import get_db
+from src.database.models import UserModel
+
+
+class CompleteProfileRequest(BaseModel):
+    role: str
+
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -36,9 +40,14 @@ def health():
 
 @router.post("/login", response_model=TokenResponse)
 def login(
-    request: LoginRequest,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
+    request = LoginRequest(
+        email=form_data.username,
+        password=form_data.password,
+    )
+
     return auth_service.login(request, db)
 
 
@@ -74,65 +83,70 @@ def reset_password(
     return auth_service.reset_password(request, db)
 
 
-# Load real credentials
+# Google OAuth
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 REDIRECT_URI = "http://localhost:8000/api/auth/google/callback"
 
-@router.get("/google/login")
-def google_login():
-    # Uses the real Client ID and forces the account chooser
-    auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?client_id={GOOGLE_CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=email%20profile&prompt=select_account"
-    return RedirectResponse(url=auth_url)
-
-import os
-import requests
-from fastapi.responses import RedirectResponse
-import uuid
-from src.database.models import UserModel
-from src.auth.security import hash_password
-from src.auth.jwt import create_access_token
-
-# Load real credentials
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-REDIRECT_URI = "http://localhost:8000/api/auth/google/callback"
 
 @router.get("/google/login")
 def google_login():
-    # Uses the real Client ID and forces the account chooser
-    auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?client_id={GOOGLE_CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=email%20profile&prompt=select_account"
+    auth_url = (
+        "https://accounts.google.com/o/oauth2/v2/auth"
+        f"?client_id={GOOGLE_CLIENT_ID}"
+        f"&redirect_uri={REDIRECT_URI}"
+        "&response_type=code"
+        "&scope=email%20profile"
+        "&prompt=select_account"
+    )
+
     return RedirectResponse(url=auth_url)
+
 
 @router.get("/google/callback")
-def google_callback(code: str = None, db: Session = Depends(get_db)):
+def google_callback(
+    code: str = None,
+    db: Session = Depends(get_db),
+):
     if not code:
         return {"error": "No authorization code provided by Google"}
-    
-    # 1. Exchange the code for a real Google Access Token
+
     token_url = "https://oauth2.googleapis.com/token"
+
     data = {
         "client_id": GOOGLE_CLIENT_ID,
         "client_secret": GOOGLE_CLIENT_SECRET,
         "code": code,
         "grant_type": "authorization_code",
-        "redirect_uri": REDIRECT_URI
+        "redirect_uri": REDIRECT_URI,
     }
+
     response = requests.post(token_url, data=data)
     access_token = response.json().get("access_token")
-    
+
     if not access_token:
         return {"error": "Failed to retrieve access token from Google"}
 
-    # 2. Fetch the user's real email from Google
     user_info_url = "https://www.googleapis.com/oauth2/v2/userinfo"
-    user_info = requests.get(user_info_url, headers={"Authorization": f"Bearer {access_token}"}).json()
-    
+
+    user_info = requests.get(
+        user_info_url,
+        headers={"Authorization": f"Bearer {access_token}"},
+    ).json()
+
     email = user_info.get("email")
-    mail_username = email.split("@")[0] # Extracts everything before the @ symbol
-    
-    # 3. Save or update the user in the database
-    user = db.query(UserModel).filter(UserModel.email == email).first()
+
+    if not email:
+        return {"error": "Unable to retrieve email from Google"}
+
+    mail_username = email.split("@")[0]
+
+    user = (
+        db.query(UserModel)
+        .filter(UserModel.email == email)
+        .first()
+    )
+
     if not user:
         user = UserModel(
             name=mail_username,
@@ -140,17 +154,18 @@ def google_callback(code: str = None, db: Session = Depends(get_db)):
             email=email,
             password=hash_password(str(uuid.uuid4())),
             role="Employee",
-            is_active=True
+            is_active=True,
         )
+
         db.add(user)
         db.commit()
         db.refresh(user)
+
     else:
         user.name = mail_username
         user.full_name = mail_username
         db.commit()
-        
-    # 4. Generate ContractIQ JWT and redirect to the frontend (Port 3000)
+
     jwt_token = create_access_token(
         {
             "sub": str(user.id),
@@ -158,7 +173,12 @@ def google_callback(code: str = None, db: Session = Depends(get_db)):
             "role": user.role,
         }
     )
-    
-    # Redirects back to your React frontend running on port 3000
-    return RedirectResponse(url=f"http://localhost:3000/auth/callback?token={jwt_token}&role={user.role}&name={user.name}")
 
+    return RedirectResponse(
+        url=(
+            f"http://localhost:3000/auth/callback"
+            f"?token={jwt_token}"
+            f"&role={user.role}"
+            f"&name={user.name}"
+        )
+    )

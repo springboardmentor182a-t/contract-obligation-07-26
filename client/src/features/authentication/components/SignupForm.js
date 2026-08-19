@@ -29,8 +29,12 @@ export default function SignupForm() {
       setUser(user);
       navigate("/");
     } catch (err) {
-      setError(err.message);
-    } finally {
+    setError(
+      err instanceof Error
+        ? err.message
+        : "Unable to sign in. Please try again."
+    );
+  } finally {
       setLoading(false);
     }
   }
