@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, Bell, ChevronDown, Menu, User, Settings, LogOut } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Search, Bell, ChevronDown, Menu, User, Settings, LogOut, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getUserNotifications, getAdminNotifications } from '../features/notifications/services/notificationAPI';
 
@@ -8,11 +8,19 @@ const Header = ({ toggleSidebar }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [toast, setToast] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const { userProfile, logout, role, changeRole } = useAuth();
   const dropdownRef = useRef(null);
   const prevNotifsRef = useRef([]);
   const navigate = useNavigate();
+  const location = useLocation();
   const isAdmin = role === 'Admin' || role === 'Administrator';
+
+  const handleSearchSubmit = (e) => {
+    if (e.key === 'Enter' && searchQuery.trim() !== '') {
+      navigate(`/contracts?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -95,9 +103,29 @@ const Header = ({ toggleSidebar }) => {
         <button className="mobile-menu-btn" onClick={toggleSidebar}>
           <Menu size={24} />
         </button>
-        <div className="header-search">
+        <div className="header-search" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--color-bg-light)', padding: '0.5rem 1rem', borderRadius: 'var(--radius-lg)' }}>
           <Search size={16} className="text-muted" />
-          <input type="text" placeholder="Search contracts, obligations..." />
+          <input 
+            type="text" 
+            placeholder="Search contracts..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearchSubmit}
+            style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%' }}
+          />
+          {searchQuery && (
+            <X 
+              size={16} 
+              className="text-muted" 
+              style={{ cursor: 'pointer', opacity: 0.7 }}
+              onClick={() => {
+                setSearchQuery('');
+                if (location.pathname === '/contracts') {
+                  navigate('/contracts'); // Clear query params to reset list
+                }
+              }}
+            />
+          )}
         </div>
       </div>
 

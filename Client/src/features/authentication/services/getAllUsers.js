@@ -8,7 +8,8 @@ export const getAllUsers = async () => {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
-      }
+      },
+      cache: "no-store"
     });
 
     const data = await response.json();

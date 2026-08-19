@@ -110,10 +110,16 @@ const Settings = () => {
   };
 
   const handleSettingChange = (e, key) => {
+    const val = e.target.value === 'on' ? true : e.target.value === 'off' ? false : e.target.value;
     setUserSettings(prev => ({
       ...prev,
-      [key]: e.target.value === 'on' ? true : e.target.value === 'off' ? false : e.target.value
+      [key]: val
     }));
+    
+    // Instantly apply theme preview when changed in dropdown
+    if (key === 'theme' && updateGlobalTheme) {
+      updateGlobalTheme(val);
+    }
   };
 
   const handlePasswordInputChange = (e) => {

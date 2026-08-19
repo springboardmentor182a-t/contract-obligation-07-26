@@ -68,43 +68,41 @@ const AdminDashboard = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState('');
 
-  React.useEffect(() => {
-    const fetchData = async () => {
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      const [usersData, logsData, activitiesData, notifsData, summaryData] = await Promise.all([
+        getAllUsers().catch(() => []),
+        getAuditLogs().catch(() => []),
+        getActivities(10).catch(() => []),
+        getUserNotifications().catch(() => []),
+        getNotificationSummary().catch(() => ({ critical: 0, high: 0, medium: 0, low: 0 }))
+      ]);
+      setUsers(usersData);
+      setAuditLogs(logsData);
+      setActivities(activitiesData);
+      setNotifications(notifsData);
+      setNotifSummary(summaryData);
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      setLoading(true);
-      try {
-        const [usersData, logsData, activitiesData, notifsData, summaryData] = await Promise.all([
-          getAllUsers().catch(() => []),
-          getAuditLogs().catch(() => []),
-          getActivities(10).catch(() => []),
-          getUserNotifications().catch(() => []),
-          getNotificationSummary().catch(() => ({ critical: 0, high: 0, medium: 0, low: 0 }))
-        ]);
-        setUsers(usersData);
-        setAuditLogs(logsData);
-        setActivities(activitiesData);
-        setNotifications(notifsData);
-        setNotifSummary(summaryData);
-      } catch (err) {
-        console.error("Dashboard fetch error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+  React.useEffect(() => {
+    fetchDashboardData();
   }, []);
 
   const handleCreateUserFull = async (formData) => {
-
     setIsCreating(true);
     setCreateError('');
     try {
       await signupService(formData);
-      alert(`User ${formData.name || 'New User'} registered successfully!`);
       setIsUserModalOpen(false);
-      // Re-fetch users to update dashboard
-      const newUsers = await getAllUsers();
-      setUsers(newUsers);
+      // Re-fetch all data to update dashboard entirely (users, activities, stats)
+      await fetchDashboardData();
+      alert(`User ${formData.name || 'New User'} registered successfully!`);
     } catch (err) {
       setCreateError(err.message || 'Registration failed.');
     } finally {
@@ -195,6 +193,22 @@ const AdminDashboard = () => {
     plugins: {
       legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true, pointStyle: 'circle' } }
     }
+  };
+
+  // Notification Priority
+  const priorityLabels = ['Critical', 'High', 'Medium', 'Low'];
+  const priorityData = [notifSummary.critical || 0, notifSummary.high || 0, notifSummary.medium || 0, notifSummary.low || 0];
+  
+  const priorityDoughnutData = {
+    labels: priorityData.some(d => d > 0) ? priorityLabels : ['No Data'],
+    datasets: [
+      {
+        data: priorityData.some(d => d > 0) ? priorityData : [1],
+        backgroundColor: priorityData.some(d => d > 0) ? ['#e74c3c', '#e67e22', '#f1c40f', '#3498db'] : ['#cbd5e1'],
+        borderWidth: 0,
+        hoverOffset: 4
+      }
+    ]
   };
 
   // Real System Activity (last 7 days of audit logs)
@@ -405,6 +419,18 @@ const AdminDashboard = () => {
 
             <div className="chart-wrapper doughnut-wrapper">
               <Doughnut data={doughnutData} options={doughnutOptions} />
+            </div>
+
+          </div>
+
+          <div className="dashboard-card flex-1">
+
+            <div className="dashboard-card-header">
+              <h3>Notification Priority</h3>
+            </div>
+
+            <div className="chart-wrapper doughnut-wrapper">
+              <Doughnut data={priorityDoughnutData} options={doughnutOptions} />
             </div>
 
           </div>
