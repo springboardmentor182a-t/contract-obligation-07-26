@@ -257,28 +257,28 @@ const Renewals = () => {
       label: 'Upcoming',
       count: summary.upcoming,
       icon: <Clock size={18} />,
-      colorClass: 'rnw-card-upcoming',
+      color: 'var(--color-warning)',
       desc: 'Pending renewal'
     },
     {
       label: 'In Progress',
       count: summary.in_progress,
       icon: <RefreshCw size={18} />,
-      colorClass: 'rnw-card-progress',
+      color: 'var(--color-primary)',
       desc: 'Under review'
     },
     {
       label: 'Renewed',
       count: summary.renewed,
       icon: <CheckCircle size={18} />,
-      colorClass: 'rnw-card-renewed',
+      color: 'var(--color-success)',
       desc: 'Successfully renewed'
     },
     {
       label: 'Expired',
       count: summary.expired,
       icon: <XCircle size={18} />,
-      colorClass: 'rnw-card-expired',
+      color: 'var(--color-danger)',
       desc: 'Past expiry date'
     },
     {
@@ -323,7 +323,7 @@ const Renewals = () => {
             return (
               <div
                 key={card.label}
-                className={`rnw-stat-card ${card.colorClass || ''} ${isActive ? 'active' : ''}`}
+                className={`rnw-stat-card ${card.colorClass} ${isActive ? 'active' : ''}`}
                 onClick={() => handleCardClick(card.label)}
                 role="button"
                 tabIndex={0}

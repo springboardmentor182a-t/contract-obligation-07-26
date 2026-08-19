@@ -42,9 +42,9 @@ class Renewal(Base):
     notice_period_days = Column(Integer, nullable=False, default=30)
     value = Column(Float, nullable=False, default=0.0)
     status = Column(
-        SQLEnum(RenewalStatus),
+        String(50),
         nullable=False,
-        default=RenewalStatus.UPCOMING,
+        default=RenewalStatus.UPCOMING.value,
     )
     auto_renew = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
@@ -63,9 +63,9 @@ class RenewalApproval(Base):
     renewal_id = Column(Integer, ForeignKey("renewals.renewal_id"), nullable=False, index=True)
     step_name = Column(String(150), nullable=False)
     status = Column(
-        SQLEnum(ApprovalStatus),
+        String(50),
         nullable=False,
-        default=ApprovalStatus.PENDING,
+        default=ApprovalStatus.PENDING.value,
     )
     approver = Column(String(255), nullable=False)
     comments = Column(String(1000), nullable=True)

@@ -96,49 +96,6 @@
   border-radius: 3px 3px 0 0;
 }
 
-/* Filter Section */
-.notif-filter-container {
-  padding: 1rem 1.5rem;
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  border-bottom: 1px solid var(--color-border);
-  background-color: var(--color-white);
-}
-
-.notif-filter-label {
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.notif-filter-select {
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  background-color: var(--color-bg-light);
-  color: var(--color-text-dark);
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  outline: none;
-  transition: all 0.2s ease;
-  min-width: 150px;
-}
-
-.notif-filter-select:hover {
-  border-color: var(--color-primary-light);
-  background-color: var(--color-white);
-}
-
-.notif-filter-select:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 10, 102, 194), 0.15);
-}
-
 /* List Container */
 .notif-list-container {
   display: flex;

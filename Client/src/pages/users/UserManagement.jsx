@@ -84,9 +84,9 @@ const UserManagement = () => {
         await createNotification({ title: 'User Created', message: `User ${formData.name || 'New User'} was registered.` });
         window.dispatchEvent(new Event('notification-created'));
       } catch (err) { console.error(err); }
-      setIsAddUserModalOpen(false);
-      await fetchUsers();
       alert(`User ${formData.name || 'New User'} registered successfully!`);
+      fetchUsers();
+      setIsAddUserModalOpen(false);
     } catch (err) {
       setCreateError(err.message || 'Registration failed.');
     } finally {
@@ -103,9 +103,9 @@ const UserManagement = () => {
         await createNotification({ title: 'User Updated', message: `User ${editingUser.full_name || 'User'} was updated.` });
         window.dispatchEvent(new Event('notification-created'));
       } catch (err) { console.error(err); }
-      setEditingUser(null);
-      await fetchUsers();
       alert('User updated successfully!');
+      fetchUsers();
+      setEditingUser(null);
     } catch (err) {
       alert(err.message || 'Failed to update user');
     }
@@ -119,7 +119,7 @@ const UserManagement = () => {
         await createNotification({ title: 'User Status Toggled', message: `User ${user.full_name || 'User'}'s status was toggled.` });
         window.dispatchEvent(new Event('notification-created'));
       } catch (err) { console.error(err); }
-      await fetchUsers();
+      fetchUsers();
     } catch (err) {
       alert(err.message || 'Failed to change user status');
     }
@@ -127,8 +127,6 @@ const UserManagement = () => {
 
   const handleDeleteUser = async (user_id) => {
     if (window.confirm("Are you sure you want to remove this user?")) {
-      // Optimistic update
-      setUsers(prev => prev.filter(u => u.user_id !== user_id && u.id !== user_id));
       try {
         await deleteUserService(user_id);
         try {
@@ -136,10 +134,8 @@ const UserManagement = () => {
           await createNotification({ title: 'User Deleted', message: `User ${user_id} was deleted.` });
           window.dispatchEvent(new Event('notification-created'));
         } catch (err) { console.error(err); }
-        await fetchUsers();
-      } catch (err) {
-        // Revert optimistic update
         fetchUsers();
+      } catch (err) {
         alert(err.message || 'Failed to delete user');
       }
     }

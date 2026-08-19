@@ -20,29 +20,3 @@ export const getObligations = async () => {
   }
   return await response.json();
 };
-
-export const createObligation = async (obligationData) => {
-  const response = await fetch(`${BASE_URL}/obligations`, {
-    method: "POST",
-    headers: getHeaders(),
-    body: JSON.stringify(obligationData)
-  });
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.detail || data.message || "Failed to create obligation");
-  }
-  return await response.json();
-};
-
-export const updateObligation = async (id, obligationData) => {
-  const response = await fetch(`${BASE_URL}/obligations/${id}`, {
-    method: "PUT",
-    headers: getHeaders(),
-    body: JSON.stringify(obligationData)
-  });
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.detail || data.message || "Failed to update obligation");
-  }
-  return await response.json();
-};
