@@ -32,6 +32,8 @@ services:
     build:
       context: ./Client
       dockerfile: Dockerfile
+    depends_on:
+      - server
     ports:
       - "5173:80"  # Nginx serves on port 80 internally. We map to 5173 as per ALLOWED_ORIGINS.
     restart: unless-stopped
