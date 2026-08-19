@@ -113,6 +113,7 @@ class DashboardSummary(BaseModel):
     in_progress: int = 0
     renewed: int = 0
     expired: int = 0
+    closed: int = 0
     cancelled: int = 0
     expiring_soon_no_action: int = 0
     total_value_at_risk: float = 0.0

@@ -7,7 +7,7 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [themePreference, setThemePreference] = useState(null);
+  const [themePreference, setThemePreference] = useState(() => localStorage.getItem('theme') || 'light');
 
   const fetchProfile = async () => {
     try {
@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
           const settings = await getUserSettings();
           if (settings && settings.theme) {
             setThemePreference(settings.theme);
+            localStorage.setItem('theme', settings.theme);
           }
         } catch (err) {
           console.error("Could not apply theme:", err);
@@ -75,13 +76,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user_id');
     setUserProfile(null);
-    setThemePreference(null);
-    document.documentElement.removeAttribute('data-theme');
     window.location.href = '/login';
   };
 
   const updateGlobalTheme = (newTheme) => {
     setThemePreference(newTheme);
+    localStorage.setItem('theme', newTheme);
   };
 
   return (
