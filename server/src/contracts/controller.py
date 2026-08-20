@@ -40,7 +40,7 @@ def get_metrics(db: Session = Depends(get_db)):
 @router.post("/", status_code=201)
 def add_contract(data: ContractCreate, db: Session = Depends(get_db)):
     try:
-        val_str = str(data.value).replace('$', '').replace(',', '').strip()
+        val_str = str(data.value).replace("$", "").replace(",", "").strip()
         val = float(val_str) if val_str else 0.0
     except ValueError:
         val = 0.0
@@ -50,14 +50,10 @@ def add_contract(data: ContractCreate, db: Session = Depends(get_db)):
         vendor=data.vendor,
         type=data.type,
         status=data.status,
-<<<<<<< HEAD
-        value=float(data.value) if data.value else 0.0,
-        owner=data.owner,
-=======
         value=val,
         owner=data.owner
->>>>>>> origin/main-group-B
     )
+
     db.add(new_contract)
     db.commit()
     db.refresh(new_contract)
@@ -96,10 +92,16 @@ def dashboard():
     return {
         "totalUsers": 142,
         "totalContracts": len(contracts),
-        "pendingApprovals": len([c for c in contracts if c.get("status") == "Pending"]),
+        "pendingApprovals": len(
+            [c for c in contracts if c.get("status") == "Pending"]
+        ),
         "complianceScore": 84,
-        "activeContracts": len([c for c in contracts if c.get("status") == "Active"]),
-        "expiredContracts": len([c for c in contracts if c.get("status") == "Expired"]),
+        "activeContracts": len(
+            [c for c in contracts if c.get("status") == "Active"]
+        ),
+        "expiredContracts": len(
+            [c for c in contracts if c.get("status") == "Expired"]
+        ),
         "highRisk": 8,
         "storageUsed": 73,
     }

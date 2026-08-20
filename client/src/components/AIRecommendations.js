@@ -29,6 +29,7 @@ export default function AIRecommendations() {
               <span>{item.icon}</span>
               <span>{item.message}</span>
             </div>
+
             <ArrowRight className="rec-arrow" />
           </div>
         ))}

@@ -4,3 +4,8 @@ pydantic
 sqlalchemy
 psycopg2-binary
 python-dotenv
+httpx
+authlib
+numpy
+scikit-learn
+itsdangerous
