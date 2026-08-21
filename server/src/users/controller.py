@@ -130,7 +130,7 @@ Your temporary login details:
 Email: {payload.email}
 Temporary Password: {temp_password}
 
-Access workspace: http://localhost:3000/login
+Access workspace: http://13.60.217.208/login
 
 Best regards,
 ContractIQ Legal Operations Team

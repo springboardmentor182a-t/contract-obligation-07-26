@@ -12,7 +12,7 @@ export default function SystemHealth() {
   useEffect(() => {
     async function checkHealth() {
       try {
-        const API_BASE = (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) || process.env.REACT_APP_API_BASE_URL || "https://contract-obligation-demo-group-c.onrender.com/api";
+        const { API_BASE } = require("../config/api");
         const res = await fetch(`${API_BASE}/health`);
         if (res.ok) {
           const data = await res.json();

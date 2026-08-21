@@ -18,10 +18,7 @@ export function useHealthCheck(intervalMs = 30000) {
         const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
         
         const start = Date.now();
-        const API_BASE =
-        (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
-        process.env.REACT_APP_API_BASE_URL ||
-        "https://contract-obligation-demo-group-c.onrender.com/api";
+        const { API_BASE } = require("../config/api");
         const res = await fetch(`${API_BASE}/health`, { signal: controller.signal });
         clearTimeout(timeoutId);
 

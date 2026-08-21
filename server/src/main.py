@@ -56,6 +56,9 @@ app.add_middleware(
         "http://127.0.0.1:3001",
         "http://localhost:3002",
         "http://127.0.0.1:3002",
+        
+        # Docker Frontend
+        "http://13.60.217.208",
 
         # Render Frontend
         "https://contract-obligation-frontend-group-c.onrender.com",
