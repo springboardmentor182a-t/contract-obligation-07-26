@@ -1,11 +1,6 @@
 import axios from "axios";
 import { getStoredToken } from "../utils/auth";
-
-// Supports both Vite and Create React App
-const API_BASE =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
-  process.env.REACT_APP_API_BASE_URL ||
-  "http://13.60.217.208:8000/api";
+import { API_BASE } from "../config/api";
 
 const API = axios.create({
   baseURL: API_BASE,
