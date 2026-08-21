@@ -1,73 +1,162 @@
 Traceback (most recent call last):
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: users.reset_otp
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
     await self.app(scope, receive, _send)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\starlette\middleware\cors.py", line 96, in __call__
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\starlette\middleware\cors.py", line 96, in __call__
     await self.simple_response(scope, receive, send, request_headers=headers)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\starlette\middleware\cors.py", line 154, in simple_response
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\starlette\middleware\cors.py", line 154, in simple_response
     await self.app(scope, receive, send)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
     raise exc
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
     await app(scope, receive, sender)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
     await self.app(scope, receive, send)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
     await self.middleware_stack(scope, receive, send)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\routing.py", line 2683, in app
     await route.handle(scope, receive, send)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
     await self.original_router.handle(scope, receive, send)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
     await included_router._handle_selected(scope, receive, send)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\routing.py", line 1764, in _handle_selected
+    await route.handle(scope, receive, send)
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\routing.py", line 1753, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\routing.py", line 2738, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\routing.py", line 1773, in _handle_selected
     await original_route.handle(scope, receive, send)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\routing.py", line 1264, in handle
     await app(scope, receive, send)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\routing.py", line 150, in app
     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
     raise exc
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
     await app(scope, receive, sender)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\routing.py", line 136, in app
     response = await f(request)
                ^^^^^^^^^^^^^^^^
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\routing.py", line 690, in app
     raw_response = await run_endpoint_function(
                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     ...<3 lines>...
     )
     ^
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\fastapi\routing.py", line 346, in run_endpoint_function
-    return await run_in_threadpool(dependant.call, **values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\starlette\concurrency.py", line 34, in run_in_threadpool
-    return await anyio.to_thread.run_sync(func)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
-    return await get_async_backend().run_sync_in_worker_thread(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\fastapi\routing.py", line 344, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\src\auth\controller.py", line 65, in login
+    return auth_service.login(login_request, db)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\src\auth\service.py", line 115, in login
+    .first()
+     ~~~~~^^
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2766, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2864, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     )
     ^
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2502, in run_sync_in_worker_thread
-    return await future
-           ^^^^^^^^^^^^
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 986, in run
-    result = context.run(func, *args)
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\src\contract_repository\controller.py", line 361, in preview_document
-    return FileResponse(
-        path=file_path,
-    ...<3 lines>...
-        },
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
     )
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\starlette\responses.py", line 317, in __init__
-    self.init_headers(headers)
-    ~~~~~~~~~~~~~~~~~^^^^^^^^^
-  File "C:\Users\ritur\Downloads\contract-obligation-code\server\.venv\Lib\site-packages\starlette\responses.py", line 61, in init_headers
-    raw_headers = [(k.lower().encode("latin-1"), v.encode("latin-1")) for k, v in headers.items()]
-                                                 ~~~~~~~~^^^^^^^^^^^
-UnicodeEncodeError: 'latin-1' codec can't encode character '\u2014' in position 36: ordinal not in range(256)
+    ^
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2271, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1421, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1643, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2365, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\My Programs\Infosys springboard Intership Projects\contract-obligation-code-2\server\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: users.reset_otp
+[SQL: SELECT users.id AS users_id, users.name AS users_name, users.full_name AS users_full_name, users.email AS users_email, users.password AS users_password, users.role AS users_role, users.organization_id AS users_organization_id, users.department AS users_department, users.job_title AS users_job_title, users.phone AS users_phone, users.bio AS users_bio, users.status AS users_status, users.avatar_url AS users_avatar_url, users.is_active AS users_is_active, users.reset_otp AS users_reset_otp, users.reset_otp_expires_at AS users_reset_otp_expires_at, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.email = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('riturajkumar1105@gmail.com', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
